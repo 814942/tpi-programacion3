@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Food Store - Panel de Administración</title>
+</head>
+<body>
+
+    <!-- ==================== ENCABEZADO ADMIN ==================== -->
+    <header>
+        <h1>Food Store - Admin</h1>
+        <nav>
+            <a href="index.html">Ver Tienda</a>
+            <a href="#productos">Productos</a>
+            <a href="#agregar">Agregar Producto</a>
+            <a href="#logout">Cerrar Sesión</a>
+        </nav>
+    </header>
+
+    <main>
+
+        <!-- ==================== TABLA DE GESTIÓN DE PRODUCTOS ==================== -->
+        <section id="productos">
+            <h2>Gestión de Productos</h2>
+            
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Nombre</th>
+                        <th>Precio</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>1</td>
+                        <td>Vianda Fit Pollo</td>
+                        <td>$4500</td>
+                        <td>
+                            <button type="button">Editar</button>
+                            <button type="button">Eliminar</button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>2</td>
+                        <td>Vianda Vegetariana</td>
+                        <td>$3800</td>
+                        <td>
+                            <button type="button">Editar</button>
+                            <button type="button">Eliminar</button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>3</td>
+                        <td>Vianda Salmón</td>
+                        <td>$5500</td>
+                        <td>
+                            <button type="button">Editar</button>
+                            <button type="button">Eliminar</button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>4</td>
+                        <td>Vianda Carne</td>
+                        <td>$4800</td>
+                        <td>
+                            <button type="button">Editar</button>
+                            <button type="button">Eliminar</button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>5</td>
+                        <td>Vianda Atún</td>
+                        <td>$4200</td>
+                        <td>
+                            <button type="button">Editar</button>
+                            <button type="button">Eliminar</button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>6</td>
+                        <td>Vianda Desayuno</td>
+                        <td>$3200</td>
+                        <td>
+                            <button type="button">Editar</button>
+                            <button type="button">Eliminar</button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+
+        <!-- ==================== FORMULARIO AGREGAR/EDITAR PRODUCTO ==================== -->
+        <section id="agregar">
+            <h2>Agregar Nuevo Producto</h2>
+            
+            <form action="#" method="post">
+                <fieldset>
+                    <legend>Datos del Producto</legend>
+                    
+                    <label for="nombre">Nombre:</label>
+                    <input type="text" id="nombre" name="nombre" required>
+                    
+                    <label for="precio">Precio:</label>
+                    <input type="number" id="precio" name="precio" min="0" step="0.01" required>
+                    
+                    <label for="descripcion">Descripción:</label>
+                    <textarea id="descripcion" name="descripcion" rows="4"></textarea>
+                    
+                    <label for="categoria">Categoría:</label>
+                    <select id="categoria" name="categoria">
+                        <option value="fit">Fit</option>
+                        <option value="vegetariana">Vegetariana</option>
+                        <option value="premium">Premium</option>
+                        <option value="desayuno">Desayuno</option>
+                    </select>
+                    
+                    <button type="submit">Guardar Producto</button>
+                </fieldset>
+            </form>
+        </section>
+
+        <!-- ==================== FORMULARIO LOGIN ADMIN ==================== -->
+        <section id="login-admin">
+            <h2>Acceso Administrador</h2>
+            
+            <form action="#" method="post">
+                <fieldset>
+                    <legend>Datos de Acceso Admin</legend>
+                    
+                    <label for="admin-usuario">Usuario:</label>
+                    <input type="text" id="admin-usuario" name="admin-usuario" required>
+                    
+                    <label for="admin-contrasena">Contraseña:</label>
+                    <input type="password" id="admin-contrasena" name="admin-contrasena" required>
+                    
+                    <button type="submit">Iniciar Sesión como Admin</button>
+                </fieldset>
+            </form>
+        </section>
+
+    </main>
+
+    <!-- ==================== PIE DE PÁGINA ==================== -->
+    <footer>
+        <p>Food Store - Panel de Administración</p>
+        <address>
+            Contacto: admin@foodstore.com
+        </address>
+    </footer>
+
+</body>
+</html>
