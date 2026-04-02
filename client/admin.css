@@ -1,0 +1,304 @@
+/* ==================== ESTILOS ADMIN (usa variables de index.css) ==================== */
+
+/* ==================== HEADER ADMIN ==================== */
+.site-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: var(--spacing-md);
+}
+
+.site-header h1 {
+    margin: 0;
+    font-size: 24px;
+    color: var(--color-primario);
+}
+
+.site-header nav {
+    display: flex;
+    gap: var(--spacing-md);
+}
+
+.site-header nav a {
+    padding: var(--spacing-sm) var(--spacing-md);
+    border-radius: var(--border-radius-sm);
+    transition: background-color var(--transition-normal);
+    color: var(--color-texto);
+    text-decoration: none;
+}
+
+.site-header nav a:hover {
+    background-color: var(--color-fondo);
+    color: var(--color-primario);
+}
+
+/* ==================== MAIN ADMIN ==================== */
+main {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: var(--spacing-md);
+}
+
+main h2 {
+    color: var(--color-texto);
+    font-size: var(--font-size-xl);
+    margin-bottom: var(--spacing-lg);
+    text-align: center;
+    position: relative;
+    padding-bottom: var(--spacing-sm);
+}
+
+main h2::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 60px;
+    height: 3px;
+    background-color: var(--color-primario);
+}
+
+/* ==================== TABLA PRODUCTOS ==================== */
+.gestion-productos {
+    margin-bottom: var(--spacing-xl);
+}
+
+.gestion-productos table {
+    box-shadow: var(--shadow-md);
+    background-color: var(--color-fondo-blanco);
+}
+
+.gestion-productos th {
+    background-color: var(--color-primario);
+    color: var(--color-texto-blanco);
+    padding: var(--spacing-md);
+    text-align: center;
+}
+
+.gestion-productos td {
+    padding: var(--spacing-md);
+    text-align: center;
+    border-bottom: 1px solid var(--color-borde);
+}
+
+.gestion-productos tbody tr:hover {
+    background-color: var(--color-fondo);
+}
+
+.gestion-productos .acciones {
+    display: flex;
+    gap: var(--spacing-xs);
+    justify-content: center;
+}
+
+.gestion-productos button {
+    padding: var(--spacing-xs) var(--spacing-sm);
+    border: none;
+    border-radius: var(--border-radius-sm);
+    cursor: pointer;
+    font-size: var(--font-size-sm);
+    transition: opacity var(--transition-normal);
+}
+
+.gestion-productos button.editar {
+    background-color: var(--color-advertencia);
+    color: var(--color-texto);
+}
+
+.gestion-productos button.eliminar {
+    background-color: var(--color-error);
+    color: var(--color-texto-blanco);
+}
+
+.gestion-productos button:hover {
+    opacity: 0.8;
+}
+
+/* ==================== FORMULARIO AGREGAR PRODUCTO ==================== */
+.form-producto {
+    max-width: 600px;
+    margin: 0 auto var(--spacing-xl);
+    padding: var(--spacing-lg);
+    background-color: var(--color-fondo-blanco);
+    border-radius: var(--border-radius-md);
+    box-shadow: var(--shadow-md);
+}
+
+.form-producto fieldset {
+    border: 1px solid var(--color-borde);
+    border-radius: var(--border-radius-sm);
+    padding: var(--spacing-md);
+}
+
+.form-producto legend {
+    padding: 0 var(--spacing-sm);
+    color: var(--color-primario);
+    font-weight: bold;
+}
+
+.form-producto .form-group {
+    margin-bottom: var(--spacing-md);
+}
+
+.form-producto label {
+    display: block;
+    margin-bottom: var(--spacing-xs);
+    font-weight: bold;
+    color: var(--color-texto);
+}
+
+.form-producto input,
+.form-producto textarea,
+.form-producto select {
+    width: 100%;
+    padding: 12px 15px;
+    border: 1px solid var(--color-borde);
+    border-radius: var(--border-radius-sm);
+    font-size: var(--font-size-base);
+    transition: border-color var(--transition-normal);
+}
+
+.form-producto input:focus,
+.form-producto textarea:focus,
+.form-producto select:focus {
+    outline: none;
+    border-color: var(--color-borde-focus);
+    box-shadow: 0 0 5px rgba(255, 69, 0, 0.2);
+}
+
+.form-producto textarea {
+    resize: vertical;
+    min-height: 100px;
+}
+
+.form-producto button[type="submit"] {
+    width: 100%;
+    padding: var(--spacing-md);
+    background-color: var(--color-exito);
+    color: var(--color-texto-blanco);
+    border: none;
+    border-radius: var(--border-radius-sm);
+    font-size: var(--font-size-md);
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color var(--transition-normal);
+}
+
+.form-producto button[type="submit"]:hover {
+    background-color: #218838;
+}
+
+/* ==================== LOGIN ADMIN ==================== */
+.login-admin-section {
+    max-width: 400px;
+    margin: 0 auto var(--spacing-xl);
+    padding: var(--spacing-lg);
+    background-color: var(--color-fondo-blanco);
+    border-radius: var(--border-radius-md);
+    box-shadow: var(--shadow-md);
+}
+
+.login-admin-section h2 {
+    margin-bottom: var(--spacing-md);
+}
+
+.login-admin-section fieldset {
+    border: 1px solid var(--color-borde);
+    border-radius: var(--border-radius-sm);
+    padding: var(--spacing-md);
+}
+
+.login-admin-section legend {
+    padding: 0 var(--spacing-sm);
+    color: var(--color-primario);
+    font-weight: bold;
+}
+
+.login-admin-section .form-group {
+    margin-bottom: var(--spacing-md);
+}
+
+.login-admin-section label {
+    display: block;
+    margin-bottom: var(--spacing-xs);
+    font-weight: bold;
+    color: var(--color-texto);
+}
+
+.login-admin-section input {
+    width: 100%;
+    padding: 12px 15px;
+    border: 1px solid var(--color-borde);
+    border-radius: var(--border-radius-sm);
+    font-size: var(--font-size-base);
+    transition: border-color var(--transition-normal);
+}
+
+.login-admin-section input:focus {
+    outline: none;
+    border-color: var(--color-borde-focus);
+    box-shadow: 0 0 5px rgba(255, 69, 0, 0.2);
+}
+
+.login-admin-section button[type="submit"] {
+    width: 100%;
+    padding: var(--spacing-md);
+    background-color: var(--color-primario);
+    color: var(--color-texto-blanco);
+    border: none;
+    border-radius: var(--border-radius-sm);
+    font-size: var(--font-size-md);
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color var(--transition-normal);
+}
+
+.login-admin-section button[type="submit"]:hover {
+    background-color: var(--color-primario-hover);
+}
+
+/* ==================== FOOTER ==================== */
+.site-footer {
+    background-color: var(--color-fondo-oscuro);
+    color: var(--color-texto-blanco);
+    padding: var(--spacing-lg);
+    text-align: center;
+}
+
+.site-footer address {
+    font-style: normal;
+    color: var(--color-texto-claro);
+}
+
+/* ==================== RESPONSIVE ==================== */
+@media (max-width: 768px) {
+    .site-header {
+        flex-direction: column;
+        gap: var(--spacing-md);
+    }
+    
+    .site-header nav {
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+    
+    .gestion-productos {
+        overflow-x: auto;
+    }
+    
+    .gestion-productos table {
+        font-size: var(--font-size-sm);
+    }
+    
+    .gestion-productos th,
+    .gestion-productos td {
+        padding: var(--spacing-xs);
+    }
+    
+    .gestion-productos .acciones {
+        flex-direction: column;
+    }
+}

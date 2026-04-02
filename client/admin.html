@@ -4,11 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Food Store - Panel de Administración</title>
+    <link rel="stylesheet" href="index.css">
+    <link rel="stylesheet" href="admin.css">
 </head>
 <body>
 
     <!-- ==================== ENCABEZADO ADMIN ==================== -->
-    <header>
+    <header class="site-header">
         <h1>Food Store - Admin</h1>
         <nav>
             <a href="index.html">Ver Tienda</a>
@@ -21,7 +23,7 @@
     <main>
 
         <!-- ==================== TABLA DE GESTIÓN DE PRODUCTOS ==================== -->
-        <section id="productos">
+        <section id="productos" class="gestion-productos">
             <h2>Gestión de Productos</h2>
             
             <table>
@@ -100,32 +102,42 @@
         </section>
 
         <!-- ==================== FORMULARIO AGREGAR/EDITAR PRODUCTO ==================== -->
-        <section id="agregar">
+        <section id="agregar" class="form-producto">
             <h2>Agregar Nuevo Producto</h2>
             
             <form action="#" method="post">
                 <fieldset>
                     <legend>Datos del Producto</legend>
                     
-                    <label for="nombre">Nombre:</label>
-                    <input type="text" id="nombre" name="nombre" required>
+                    <div class="form-group">
+                        <label for="nombre">Nombre:</label>
+                        <input type="text" id="nombre" name="nombre" placeholder="Nombre del producto" required>
+                    </div>
                     
-                    <label for="precio">Precio:</label>
-                    <input type="number" id="precio" name="precio" min="0" step="0.01" required>
+                    <div class="form-group">
+                        <label for="precio">Precio:</label>
+                        <input type="number" id="precio" name="precio" min="0" step="0.01" placeholder="0.00" required>
+                    </div>
                     
-                    <label for="stock">Stock:</label>
-                    <input type="number" id="stock" name="stock" min="0" required>
+                    <div class="form-group">
+                        <label for="stock">Stock:</label>
+                        <input type="number" id="stock" name="stock" min="0" placeholder="Cantidad" required>
+                    </div>
                     
-                    <label for="descripcion">Descripción:</label>
-                    <textarea id="descripcion" name="descripcion" rows="4"></textarea>
+                    <div class="form-group">
+                        <label for="descripcion">Descripción:</label>
+                        <textarea id="descripcion" name="descripcion" rows="4" placeholder="Descripción del producto"></textarea>
+                    </div>
                     
-                    <label for="categoria">Categoría:</label>
-                    <select id="categoria" name="categoria">
-                        <option value="fit">Fit</option>
-                        <option value="vegetariana">Vegetariana</option>
-                        <option value="premium">Premium</option>
-                        <option value="desayuno">Desayuno</option>
-                    </select>
+                    <div class="form-group">
+                        <label for="categoria">Categoría:</label>
+                        <select id="categoria" name="categoria">
+                            <option value="fit">Fit</option>
+                            <option value="vegetariana">Vegetariana</option>
+                            <option value="premium">Premium</option>
+                            <option value="desayuno">Desayuno</option>
+                        </select>
+                    </div>
                     
                     <button type="submit">Guardar Producto</button>
                 </fieldset>
@@ -133,18 +145,22 @@
         </section>
 
         <!-- ==================== FORMULARIO LOGIN ADMIN ==================== -->
-        <section id="login-admin">
+        <section id="login-admin" class="login-admin-section">
             <h2>Acceso Administrador</h2>
             
             <form action="#" method="post">
                 <fieldset>
                     <legend>Datos de Acceso Admin</legend>
                     
-                    <label for="admin-usuario">Usuario:</label>
-                    <input type="text" id="admin-usuario" name="admin-usuario" required>
+                    <div class="form-group">
+                        <label for="admin-usuario">Usuario:</label>
+                        <input type="text" id="admin-usuario" name="admin-usuario" placeholder="Usuario admin" required>
+                    </div>
                     
-                    <label for="admin-contrasena">Contraseña:</label>
-                    <input type="password" id="admin-contrasena" name="admin-contrasena" required>
+                    <div class="form-group">
+                        <label for="admin-contrasena">Contraseña:</label>
+                        <input type="password" id="admin-contrasena" name="admin-contrasena" placeholder="Contraseña" required>
+                    </div>
                     
                     <button type="submit">Iniciar Sesión como Admin</button>
                 </fieldset>
@@ -154,7 +170,7 @@
     </main>
 
     <!-- ==================== PIE DE PÁGINA ==================== -->
-    <footer>
+    <footer class="site-footer">
         <p>Food Store - Panel de Administración</p>
         <address>
             Contacto: admin@foodstore.com

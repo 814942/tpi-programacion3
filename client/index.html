@@ -4,77 +4,42 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Food Store - Comida Saludable a Domicilio</title>
+    <link rel="stylesheet" href="index.css">
+    <link rel="stylesheet" href="index-specific.css">
 </head>
 <body>
 
     <!-- ==================== ENCABEZADO ==================== -->
-    <header>
+    <header class="site-header">
         <h1>Food Store</h1>
         <nav>
             <a href="index.html">Inicio</a>
-            <a href="index.html#productos">Productos</a>
-            <a href="index.html#carrito">Carrito</a>
+            <a href="#productos">Productos</a>
+            <a href="#carrito">Carrito</a>
             <a href="admin.html">Panel Admin</a>
+            <a href="login.html">Login</a>
         </nav>
     </header>
 
     <main>
 
+        <!-- ==================== CATEGORÍAS ==================== -->
+        <aside>
+            <h2>Categorías</h2>
+            <ul id="lista-categorias"></ul>
+        </aside>
+
+        <!-- ==================== BÚSQUEDA ==================== -->
+        <form id="form-busqueda">
+            <input type="text" id="input-busqueda" placeholder="Buscar productos...">
+            <button type="submit">Buscar</button>
+        </form>
+
         <!-- ==================== CATÁLOGO DE PRODUCTOS ==================== -->
-        <section id="productos">
-            <h2>Nuestros Productos</h2>
-            
-            <article>
-                <img src="https://via.placeholder.com/200x150" alt="Vianda Fit Pollo - Pollo a la plancha con verduras">
-                <h3>Vianda Fit Pollo</h3>
-                <p>Pollo a la plancha con verduras</p>
-                <data value="4500">$4500</data>
-                <button type="button">Agregar al Carrito</button>
-            </article>
-
-            <article>
-                <img src="https://via.placeholder.com/200x150" alt="Vianda Vegetariana - Wrap de vegetales frescos">
-                <h3>Vianda Vegetariana</h3>
-                <p>Wrap de vegetales frescos</p>
-                <data value="3800">$3800</data>
-                <button type="button">Agregar al Carrito</button>
-            </article>
-
-            <article>
-                <img src="https://via.placeholder.com/200x150" alt="Vianda Salmón - Salmón al vapor con arroz y brotes">
-                <h3>Vianda Salmón</h3>
-                <p>Salmón al vapor con arroz y brotes</p>
-                <data value="5500">$5500</data>
-                <button type="button">Agregar al Carrito</button>
-            </article>
-
-            <article>
-                <img src="https://via.placeholder.com/200x150" alt="Vianda Carne - Carne magra con puré de calabaza">
-                <h3>Vianda Carne</h3>
-                <p>Carne magra con puré de calabaza</p>
-                <data value="4800">$4800</data>
-                <button type="button">Agregar al Carrito</button>
-            </article>
-
-            <article>
-                <img src="https://via.placeholder.com/200x150" alt="Vianda Atún - Ensalada de atún con quínoa">
-                <h3>Vianda Atún</h3>
-                <p>Ensalada de atún con quínoa</p>
-                <data value="4200">$4200</data>
-                <button type="button">Agregar al Carrito</button>
-            </article>
-
-            <article>
-                <img src="https://via.placeholder.com/200x150" alt="Vianda Desayuno - Tostadas con palta y huevo">
-                <h3>Vianda Desayuno</h3>
-                <p>Tostadas con palta y huevo</p>
-                <data value="3200">$3200</data>
-                <button type="button">Agregar al Carrito</button>
-            </article>
-        </section>
+        <section id="contenedor-productos"></section>
 
         <!-- ==================== CARRITO DE COMPRAS ==================== -->
-        <section id="carrito">
+        <section id="carrito" class="carrito-section">
             <h2>Carrito de Compras</h2>
             
             <table>
@@ -93,20 +58,20 @@
                         <td>$4500</td>
                         <td>2</td>
                         <td>$9000</td>
-                        <td><button type="button">Eliminar</button></td>
+                        <td><button type="button" class="eliminar">Eliminar</button></td>
                     </tr>
                     <tr>
                         <td>Vianda Vegetariana</td>
                         <td>$3800</td>
                         <td>1</td>
                         <td>$3800</td>
-                        <td><button type="button">Eliminar</button></td>
+                        <td><button type="button" class="eliminar">Eliminar</button></td>
                     </tr>
                 </tbody>
                 <tfoot>
                     <tr>
                         <td colspan="3"><strong>Total:</strong></td>
-                        <td><strong>$12800</strong></td>
+                        <td class="total-col"><strong>$12800</strong></td>
                         <td></td>
                     </tr>
                 </tfoot>
@@ -114,18 +79,22 @@
         </section>
 
         <!-- ==================== FORMULARIO DE LOGIN ==================== -->
-        <section id="login">
+        <section id="login" class="login-section">
             <h2>Iniciar Sesión</h2>
             
             <form action="#" method="post">
                 <fieldset>
                     <legend>Datos de Acceso</legend>
                     
-                    <label for="usuario">Usuario:</label>
-                    <input type="text" id="usuario" name="usuario" required>
+                    <div class="form-group">
+                        <label for="usuario">Usuario:</label>
+                        <input type="text" id="usuario" name="usuario" placeholder="Tu usuario" required>
+                    </div>
                     
-                    <label for="contrasena">Contraseña:</label>
-                    <input type="password" id="contrasena" name="contrasena" required>
+                    <div class="form-group">
+                        <label for="contrasena">Contraseña:</label>
+                        <input type="password" id="contrasena" name="contrasena" placeholder="Tu contraseña" required>
+                    </div>
                     
                     <button type="submit">Iniciar Sesión</button>
                 </fieldset>
@@ -135,12 +104,14 @@
     </main>
 
     <!-- ==================== PIE DE PÁGINA ==================== -->
-    <footer>
+    <footer class="site-footer">
         <p>Food Store - Comida saludable a domicilio</p>
         <address>
             Contacto: info@foodstore.com
         </address>
     </footer>
 
+    <script src="./js/data.js"></script>
+    <script src="./js/main.js"></script>
 </body>
 </html>
