@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin - Food Store</title>
+  <link rel="stylesheet" href="../../../admin.css">
+</head>
+<body>
+  <header class="admin-header">
+    <h1>Food Store - Panel de Administración</h1>
+    <nav>
+      <span id="user-info"></span>
+      <button id="btn-logout" class="btn-logout">Cerrar Sesión</button>
+    </nav>
+  </header>
+  
+  <main class="admin-main">
+    <h2>Bienvenido al Panel de Admin</h2>
+    <p>Esta es la zona protegida para administradores.</p>
+    
+    <section class="admin-actions">
+      <div class="action-card">
+        <h3>Gestión de Productos</h3>
+        <p>Agregar, editar o eliminar productos del catálogo.</p>
+      </div>
+      
+      <div class="action-card">
+        <h3>Gestión de Usuarios</h3>
+        <p>Ver y administrar usuarios registrados.</p>
+      </div>
+      
+      <div class="action-card">
+        <h3>Pedidos</h3>
+        <p>Ver y gestionar pedidos de clientes.</p>
+      </div>
+    </section>
+  </main>
+  
+  <script type="module" src="../../../src/pages/admin/admin.ts"></script>
+</body>
+</html>

@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cliente - Food Store</title>
+  <link rel="stylesheet" href="../../../index.css">
+  <link rel="stylesheet" href="../../../index-specific.css">
+</head>
+<body>
+  <header class="site-header">
+    <h1>Food Store</h1>
+    <nav>
+      <span id="user-info"></span>
+      <button id="btn-logout" class="btn-logout">Cerrar Sesión</button>
+    </nav>
+  </header>
+  
+  <main>
+    <!-- ==================== CATEGORÍAS ==================== -->
+    <aside>
+      <h2>Categorías</h2>
+      <ul id="lista-categorias"></ul>
+    </aside>
+
+    <!-- ==================== BÚSQUEDA ==================== -->
+    <form id="form-busqueda">
+      <input type="text" id="input-busqueda" placeholder="Buscar productos...">
+      <button type="submit">Buscar</button>
+    </form>
+
+    <!-- ==================== CATÁLOGO DE PRODUCTOS ==================== -->
+    <section id="contenedor-productos"></section>
+
+    <!-- ==================== CARRITO DE COMPRAS ==================== -->
+    <section id="carrito" class="carrito-section">
+      <h2>Carrito de Compras</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Producto</th>
+            <th>Precio Unitario</th>
+            <th>Cantidad</th>
+            <th>Subtotal</th>
+            <th>Acción</th>
+          </tr>
+        </thead>
+        <tbody id="carrito-body">
+          <tr>
+            <td colspan="5" style="text-align: center;">El carrito está vacío</td>
+          </tr>
+        </tbody>
+        <tfoot>
+          <tr>
+            <td colspan="3"><strong>Total:</strong></td>
+            <td class="total-col"><strong id="carrito-total">$0</strong></td>
+            <td></td>
+          </tr>
+        </tfoot>
+      </table>
+    </section>
+  </main>
+
+  <!-- ==================== PIE DE PÁGINA ==================== -->
+  <footer class="site-footer">
+    <p>Food Store - Comida saludable a domicilio</p>
+    <address>
+      Contacto: info@foodstore.com
+    </address>
+  </footer>
+  
+  <!-- Scripts -->
+  <script type="module" src="../../../src/pages/client/client.ts"></script>
+</body>
+</html>
