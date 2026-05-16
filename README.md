@@ -115,89 +115,210 @@ tpi/
 - NPM 9+
 
 ### Backend
-- Java 17+ (OpenJDK 17)
+- Java 17+ (JDK 17 o 21)
 - PostgreSQL 15+
-- Gradle (usar `./gradlew` incluido en el proyecto)
+- Gradle (usar `./gradlew` o `gradlew.bat` incluido en el proyecto)
 
 ---
 
 ## Instalación y Ejecución
 
-### 1. Instalar PostgreSQL (Linux - Ubuntu/Debian)
+### Linux (Ubuntu/Debian)
+
+#### 1. Instalar Java
 
 ```bash
-# Instalar PostgreSQL
+# Instalar OpenJDK 17
 sudo apt update
+sudo apt install -y openjdk-17-jdk
+
+# Verificar
+java -version
+# → openjdk version "17.x.x"
+```
+
+#### 2. Instalar PostgreSQL
+
+```bash
 sudo apt install -y postgresql postgresql-contrib
-
-# Iniciar el servicio
 sudo systemctl start postgresql
-
-# Opcional: que arranque solo al prender la PC
-sudo systemctl enable postgresql
-
-# Verificar que está corriendo
-sudo systemctl status postgresql
+sudo systemctl enable postgresql   # arranque automático al iniciar
+sudo systemctl status postgresql   # verificar que está corriendo
 ```
 
-### 2. Crear la base de datos
+#### 3. Crear la base de datos
 
 ```bash
-# Crear la base de datos foodstore
 sudo -u postgres psql -c "CREATE DATABASE foodstore;"
-
-# (Opcional) Setear contraseña al usuario postgres
 sudo -u postgres psql -c "ALTER USER postgres PASSWORD 'postgres';"
-
-# Verificar que se creó correctamente
-sudo -u postgres psql -c "\l" | grep foodstore
+sudo -u postgres psql -c "\l" | grep foodstore   # verificar
 ```
 
-### 3. Compilar y ejecutar el backend
+#### 4. Compilar y ejecutar
 
 ```bash
-# Ir al directorio del backend
 cd back
 
-# Compilar (descarga dependencias + compila + corre tests)
+# Build (descarga dependencias + compila + tests)
 ./gradlew build
 
-# Compilar sin tests (más rápido para desarrollo)
+# Build sin tests (más rápido)
 ./gradlew build -x test
 
 # Solo tests
 ./gradlew test
 
-# Solo compilar (sin tests)
-./gradlew compileJava
-
-# Iniciar servidor (puerto 8080)
+# Iniciar servidor (localhost:8080)
 ./gradlew bootRun
+```
+
+---
+
+### Windows (PowerShell / Git Bash / CMD)
+
+#### 1. Instalar Java
+
+- Bajá el instalador desde [Adoptium Temurin 17](https://adoptium.net/temurin/releases/?version=17) (archivo `.msi`)
+- Ejecutalo, siguiente, siguiente
+- **Verificar** desde **PowerShell** o **CMD**:
+  ```cmd
+  java -version
+  ```
+  → tiene que mostrar `openjdk version "17.x.x"`
+
+  También funciona con **Java 21** (el proyecto compila a bytecode 17):
+  ```cmd
+  java -version
+  # → openjdk version "21.x.x"  ✅ compatible
+  ```
+
+> 💡 Si tenés varias versiones de Java, creá la variable de entorno `JAVA_HOME` apuntando a la instalación de Java 17 o 21.
+
+#### 2. Instalar PostgreSQL
+
+- Bajá el installer de [EnterpriseDB PostgreSQL](https://www.enterprisedb.com/downloads/postgres-postgresql-downloads)
+- Ejecutalo, siguiente, siguiente
+- Cuando pregunte:
+  - **Password para `postgres`**: poné `postgres`
+  - **Puerto**: dejá `5432`
+- Al final, **Stack Builder** preguntará si querés instalar extras — podés saltarlo
+
+#### 3. Crear la base de datos (desde PowerShell/CMD)
+
+```powershell
+# Opción A — desde terminal
+"C:\Program Files\PostgreSQL\17\bin\psql.exe" -U postgres -c "CREATE DATABASE foodstore;"
+
+# Te va a pedir la contraseña que pusiste durante la instalación
+```
+
+**Opción B — desde DBeaver** (recomendado si ya lo tenés):
+1. Abrí DBeaver
+2. Nueva Conexión → PostgreSQL
+3. Host: `localhost`, Puerto: `5432`
+4. Usuario: `postgres`, Password: la que pusiste
+5. Test Connection → Finish
+6. Click derecho en la conexión → Create New Database → nombre: `foodstore`
+
+#### 4. Compilar y ejecutar
+
+Desde **PowerShell** o **CMD**:
+
+```powershell
+cd tpi\back
+
+# Build completo (descarga dependencias + compila + tests)
+.\gradlew.bat build
+
+# Build sin tests
+.\gradlew.bat build -x test
+
+# Solo tests
+.\gradlew.bat test
+
+# Iniciar servidor (localhost:8080)
+.\gradlew.bat bootRun
+```
+
+Desde **Git Bash** (MINGW64):
+
+```bash
+cd tpi/back
+
+# Usar ./gradlew en vez de .\gradlew.bat
+./gradlew build
+./gradlew bootRun
+```
+
+> Si tenés **Git Bash**, usá `./gradlew` (el script para Unix). Si estás en **PowerShell** o **CMD**, usá `.\gradlew.bat`.
+
+#### 5. VS Code Extensions recomendadas
+
+| Extensión | ID | Para qué |
+|-----------|-----|----------|
+| Extension Pack for Java | `vscjava.vscode-java-pack` | Lenguaje, debug, test |
+| Spring Boot Extension Pack | `vmware.vscode-boot-dev-pack` | Spring Boot, properties, snippets |
+| Gradle for Java | `vscjava.vscode-gradle` | Tareas de Gradle desde VS Code |
+| Lombok Annotations | `vscjava.vscode-lombok` | Soporte `@Data`, `@Builder` |
+
+Instalálas desde `Ctrl+Shift+X` buscando por ID.
+
+---
+
+### Para ambas plataformas
+
+#### Verificar que funciona
+
+```bash
+curl http://localhost:8080/api-docs
+# → JSON con la especificación OpenAPI
+
+# O abrí en el navegador:
+# http://localhost:8080/swagger-ui/index.html
 ```
 
 > Al iniciar por primera vez, se crea automáticamente un usuario admin (seed data):
 > - **Email**: `admin@admin.com`
 > - **Password**: `123456`
 
-### 4. Verificar que funciona
+#### (Alternativa) Ejecutar con H2 en memoria — sin PostgreSQL
+
+Si no tenés PostgreSQL instalado o solo querés probar rápido:
 
 ```bash
-# La API debería responder con el JSON de OpenAPI
-curl http://localhost:8080/api-docs
-
-# O abrí en el navegador:
-# http://localhost:8080/swagger-ui/index.html
-```
-
-### 5. (Alternativa) Ejecutar con H2 en memoria — sin PostgreSQL
-
-Si no tenés PostgreSQL o solo querés probar rápido:
-
-```bash
+# Linux / Git Bash
 ./gradlew bootRun --args='--spring.profiles.active=test'
+
+# PowerShell / CMD
+.\gradlew.bat bootRun --args='--spring.profiles.active=test'
 ```
 
-Esto usa H2 (base de datos en memoria) en vez de PostgreSQL. **Los datos se pierden al apagar el servidor.** Ideal para desarrollo rápido o demostraciones.
+Esto usa H2 (base de datos en memoria) en vez de PostgreSQL. **Los datos se pierden al apagar.** Ideal para desarrollo rápido o demos.
+
+### Troubleshooting
+
+| Error | Causa | Solución |
+|-------|-------|----------|
+| `Error: no se ha encontrado o cargado la clase principal org.gradle.wrapper.GradleWrapperMain` | Falta `gradle/wrapper/gradle-wrapper.jar` | `git pull` para traer el archivo o descargalo manualmente |
+| `JAVA_HOME is not set` | Java no está instalado o no está en el PATH | Instalar JDK 17+ y verificar con `java -version` |
+| `Failed to load ApplicationContext` en tests | Tests intentan conectar a PostgreSQL | El test ya usa `@ActiveProfiles("test")` con H2. Si sigue fallando, revisá `application-test.properties` |
+| `Port 8080 already in use` | Otro proceso usando el puerto | Cambiá el puerto con `--server.port=8081` o matá el proceso anterior |
+
+#### Si `./gradlew build` falla con el wrapper
+
+```bash
+# Asegurate de tener la última versión del repo
+git pull
+
+# Si el gradle-wrapper.jar sigue sin existir, descargalo:
+# Linux / Git Bash
+curl -sL "https://raw.githubusercontent.com/gradle/gradle/v8.7.0/gradlew" -o gradlew
+chmod +x gradlew
+curl -sL "https://raw.githubusercontent.com/gradle/gradle/v8.7.0/gradle/wrapper/gradle-wrapper.jar" -o gradle/wrapper/gradle-wrapper.jar
+
+# Windows (PowerShell)
+Invoke-WebRequest -Uri "https://raw.githubusercontent.com/gradle/gradle/v8.7.0/gradle/wrapper/gradle-wrapper.jar" -OutFile "gradle/wrapper/gradle-wrapper.jar"
+```
 
 ### Configuración de base de datos
 
