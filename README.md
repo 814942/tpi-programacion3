@@ -301,7 +301,7 @@ Los valores sensibles (contraseña de DB, secreto JWT) se configuran **también*
 
 | Variable | Default | Descripción |
 |----------|---------|-------------|
-| `DB_URL` | `jdbc:postgresql://localhost:5432/foodstore` | URL de conexión a PostgreSQL |
+| `DB_URL` | `jdbc:postgresql://localhost:5433/foodstore` | URL de conexión a PostgreSQL |
 | `DB_USERNAME` | `postgres` | Usuario de la base de datos |
 | `DB_PASSWORD` | `postgres` | Contraseña de la base de datos |
 | `JWT_SECRET` | *default hardcodeado* | Clave secreta para firmar tokens JWT |
@@ -358,7 +358,7 @@ Invoke-WebRequest -Uri "https://raw.githubusercontent.com/gradle/gradle/v8.7.0/g
 Las credenciales de PostgreSQL se configuran en `back/src/main/resources/application.properties`:
 
 ```properties
-spring.datasource.url=jdbc:postgresql://localhost:5432/foodstore
+spring.datasource.url=jdbc:postgresql://localhost:5433/foodstore
 spring.datasource.username=postgres
 spring.datasource.password=postgres
 ```
