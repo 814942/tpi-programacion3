@@ -4,8 +4,247 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Cliente - Food Store</title>
-  <link rel="stylesheet" href="../../../index.css">
-  <link rel="stylesheet" href="../../../index-specific.css">
+  <style>
+    :root {
+      --primary: #ff4500;
+      --primary-hover: #e03e00;
+      --white: #ffffff;
+      --text: #333333;
+      --text-light: #666666;
+      --bg: #f5f5f5;
+      --border: #ddd;
+    }
+    
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    
+    body {
+      font-family: Arial, sans-serif;
+      background: var(--bg);
+    }
+    
+    .site-header {
+      background: var(--primary);
+      color: var(--white);
+      padding: 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .site-header h1 {
+      font-size: 28px;
+    }
+    
+    .site-header nav {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+    
+    .site-header nav a {
+      color: var(--white);
+      text-decoration: none;
+    }
+    
+    #user-info {
+      font-size: 14px;
+    }
+    
+    .btn-logout {
+      padding: 8px 16px;
+      background: var(--white);
+      color: var(--primary);
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+    
+    .btn-logout:hover {
+      background: #f0f0f0;
+    }
+    
+    main {
+      display: grid;
+      grid-template-columns: 200px 1fr;
+      gap: 20px;
+      padding: 20px;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    
+    aside {
+      background: var(--white);
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    
+    aside h2 {
+      color: var(--primary);
+      margin-bottom: 15px;
+      font-size: 18px;
+    }
+    
+    aside ul {
+      list-style: none;
+    }
+    
+    aside li {
+      margin-bottom: 10px;
+    }
+    
+    aside a {
+      color: var(--text);
+      text-decoration: none;
+      display: block;
+      padding: 8px;
+      border-radius: 4px;
+      transition: background 0.3s;
+    }
+    
+    aside a:hover {
+      background: #f0f0f0;
+    }
+    
+    #form-busqueda {
+      grid-column: 1 / -1;
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+    
+    #form-busqueda input {
+      flex: 1;
+      padding: 12px;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      font-size: 16px;
+    }
+    
+    #form-busqueda button {
+      padding: 12px 24px;
+      background: var(--primary);
+      color: var(--white);
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+    
+    #form-busqueda button:hover {
+      background: var(--primary-hover);
+    }
+    
+    #contenedor-productos {
+      grid-column: 1 / -1;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+      gap: 20px;
+    }
+    
+    .producto {
+      background: var(--white);
+      padding: 15px;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      text-align: center;
+    }
+    
+    .producto img {
+      width: 100%;
+      height: 150px;
+      object-fit: cover;
+      border-radius: 4px;
+    }
+    
+    .producto h3 {
+      color: var(--text);
+      margin: 10px 0;
+    }
+    
+    .producto .descripcion {
+      color: var(--text-light);
+      font-size: 14px;
+      margin-bottom: 10px;
+    }
+    
+    .producto .precio {
+      color: var(--primary);
+      font-size: 20px;
+      font-weight: bold;
+      margin-bottom: 10px;
+    }
+    
+    .btn-agregar {
+      padding: 10px 20px;
+      background: var(--primary);
+      color: var(--white);
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    
+    .btn-agregar:hover {
+      background: var(--primary-hover);
+    }
+    
+    .carrito-section {
+      grid-column: 1 / -1;
+      background: var(--white);
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    
+    .carrito-section h2 {
+      color: var(--primary);
+      margin-bottom: 15px;
+    }
+    
+    .carrito-section table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    
+    .carrito-section th,
+    .carrito-section td {
+      padding: 12px;
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+    }
+    
+    .carrito-section th {
+      background: #f5f5f5;
+      color: var(--text);
+    }
+    
+    .carrito-section .total-col {
+      color: var(--primary);
+      font-size: 18px;
+    }
+    
+    .eliminar {
+      padding: 6px 12px;
+      background: #c33;
+      color: var(--white);
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    
+    .site-footer {
+      background: #333;
+      color: var(--white);
+      text-align: center;
+      padding: 20px;
+      margin-top: 40px;
+    }
+  </style>
 </head>
 <body>
   <header class="site-header">
@@ -17,22 +256,22 @@
   </header>
   
   <main>
-    <!-- ==================== CATEGORÍAS ==================== -->
+    <!-- CATEGORÍAS -->
     <aside>
       <h2>Categorías</h2>
       <ul id="lista-categorias"></ul>
     </aside>
 
-    <!-- ==================== BÚSQUEDA ==================== -->
+    <!-- BÚSQUEDA -->
     <form id="form-busqueda">
       <input type="text" id="input-busqueda" placeholder="Buscar productos...">
       <button type="submit">Buscar</button>
     </form>
 
-    <!-- ==================== CATÁLOGO DE PRODUCTOS ==================== -->
+    <!-- CATÁLOGO DE PRODUCTOS -->
     <section id="contenedor-productos"></section>
 
-    <!-- ==================== CARRITO DE COMPRAS ==================== -->
+    <!-- CARRITO DE COMPRAS -->
     <section id="carrito" class="carrito-section">
       <h2>Carrito de Compras</h2>
       <table>
@@ -61,15 +300,11 @@
     </section>
   </main>
 
-  <!-- ==================== PIE DE PÁGINA ==================== -->
   <footer class="site-footer">
     <p>Food Store - Comida saludable a domicilio</p>
-    <address>
-      Contacto: info@foodstore.com
-    </address>
+    <address>Contacto: info@foodstore.com</address>
   </footer>
   
-  <!-- Scripts -->
-  <script type="module" src="../../../src/pages/client/client.ts"></script>
+  <script type="module" src="./client.ts"></script>
 </body>
 </html>

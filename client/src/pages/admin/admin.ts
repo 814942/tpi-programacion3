@@ -1,34 +1,44 @@
-// admin.ts — Lógica del panel de administración
+// admin.ts — Admin panel logic
 
-import { getUserSession, logout, isAdmin } from '../../utils/auth';
-import { redirectToLogin, redirectToHome } from '../../utils/navigate';
+import { getUserSession, logout } from '../../utils/auth';
 
 /**
- * Inicializa la página de admin
+ * Initialize admin page
  */
 function initAdmin(): void {
-  // Verificar que el usuario es admin
-  if (!isAdmin()) {
-    redirectToHome();
+  const user = getUserSession();
+  
+  // Check if user is authenticated and is admin
+  if (!user || user.role !== 'admin') {
+    // Route guard should have handled this, but just in case show message
+    document.body.innerHTML = `
+      <div style="display:flex;justify-content:center;align-items:center;min-height:100vh;font-family:Arial,sans-serif;">
+        <div style="text-align:center;">
+          <h1 style="color:#c33;">Acceso Denegado</h1>
+          <p>No tenés permisos para ver esta página.</p>
+          <a href="/" style="color:#ff4500;">Volver al inicio</a>
+        </div>
+      </div>
+    `;
     return;
   }
 
-  // Mostrar información del usuario
-  const user = getUserSession();
+  // Display user info
   const userInfo = document.getElementById('user-info');
-  if (userInfo && user) {
-    userInfo.textContent = `Logged in as: ${user.email} (${user.role})`;
+  if (userInfo) {
+    userInfo.textContent = `Sesión: ${user.email} (${user.role})`;
   }
 
-  // Configurar botón de logout
+  // Configure logout button
   const btnLogout = document.getElementById('btn-logout');
   if (btnLogout) {
     btnLogout.addEventListener('click', () => {
       logout();
-      redirectToLogin();
+      alert('Sesión cerrada correctamente.');
+      window.location.href = '/';
     });
   }
 }
 
-// Ejecutar cuando el DOM esté listo
+// Run when DOM is ready
 document.addEventListener('DOMContentLoaded', initAdmin);

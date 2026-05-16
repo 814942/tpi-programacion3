@@ -1,209 +1,209 @@
-// client.ts — Lógica del panel de cliente (catálogo, carrito, búsqueda)
+// client.ts — Client panel logic (catalog, cart, search)
 
-import { getUserSession, logout, isClient, isAuthenticated } from '../../utils/auth';
-import { redirectToLogin, redirectToHome } from '../../utils/navigate';
+import { getUserSession, logout } from '../../utils/auth';
 
-// ==================== DATOS (simulación de data.js) ====================
+// ==================== DATA ====================
 
-interface Producto {
+interface Product {
   id: number;
-  nombre: string;
-  descripcion: string;
-  precio: number;
-  imagen: string;
-  categoria: string;
+  name: string;
+  description: string;
+  price: number;
+  image: string;
+  category: string;
 }
 
-const categorias: string[] = ["Hamburguesas", "Pizzas", "Papas Fritas", "Bebidas"];
+const categories: string[] = ['Hamburguesas', 'Pizzas', 'Papas Fritas', 'Bebidas'];
 
-const productos: Producto[] = [
+const products: Product[] = [
   {
     id: 1,
-    nombre: "Hamburguesa Triple",
-    descripcion: "Triple carne, cheddar y bacon",
-    precio: 25000,
-    imagen: "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=300&h=200&fit=crop",
-    categoria: "Hamburguesas"
+    name: 'Hamburguesa Triple',
+    description: 'Triple carne, cheddar y bacon',
+    price: 25000,
+    image: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=300&h=200&fit=crop',
+    category: 'Hamburguesas'
   },
   {
     id: 2,
-    nombre: "Pizza Muzzarella",
-    descripcion: "Salsa casera y orégano",
-    precio: 18000,
-    imagen: "https://images.unsplash.com/photo-1513104890138-7c749659a591?w=300&h=200&fit=crop",
-    categoria: "Pizzas"
+    name: 'Pizza Muzzarella',
+    description: 'Salsa casera y orégano',
+    price: 18000,
+    image: 'https://images.unsplash.com/photo-1513104890138-7c749659a591?w=300&h=200&fit=crop',
+    category: 'Pizzas'
   },
   {
     id: 3,
-    nombre: "Hamburguesa Doble",
-    descripcion: "Doble carne con lechuga y tomate",
-    precio: 20000,
-    imagen: "https://images.unsplash.com/photo-1550547660-d9450f859349?w=300&h=200&fit=crop",
-    categoria: "Hamburguesas"
+    name: 'Hamburguesa Doble',
+    description: 'Doble carne con lechuga y tomate',
+    price: 20000,
+    image: 'https://images.unsplash.com/photo-1550547660-d9450f859349?w=300&h=200&fit=crop',
+    category: 'Hamburguesas'
   },
   {
     id: 4,
-    nombre: "Pizza Especial",
-    descripcion: "Jamón, morrón y aceitunas",
-    precio: 22000,
-    imagen: "https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=300&h=200&fit=crop",
-    categoria: "Pizzas"
+    name: 'Pizza Especial',
+    description: 'Jamón, morrón y aceitunas',
+    price: 22000,
+    image: 'https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=300&h=200&fit=crop',
+    category: 'Pizzas'
   },
   {
     id: 5,
-    nombre: "Pizza Pepperoni",
-    descripcion: "Pepperoni extra con queso",
-    precio: 24000,
-    imagen: "https://images.unsplash.com/photo-1628840042765-356cda07504e?w=300&h=200&fit=crop",
-    categoria: "Pizzas"
+    name: 'Pizza Pepperoni',
+    description: 'Pepperoni extra con queso',
+    price: 24000,
+    image: 'https://images.unsplash.com/photo-1628840042765-356cda07504e?w=300&h=200&fit=crop',
+    category: 'Pizzas'
   },
   {
     id: 6,
-    nombre: "Papas Fritas",
-    descripcion: "Papas crocantes con sal gruesa",
-    precio: 8000,
-    imagen: "https://images.unsplash.com/photo-1573080496219-bb080dd4f877?w=300&h=200&fit=crop",
-    categoria: "Papas Fritas"
+    name: 'Papas Fritas',
+    description: 'Papas crocantes con sal gruesa',
+    price: 8000,
+    image: 'https://images.unsplash.com/photo-1573080496219-bb080dd4f877?w=300&h=200&fit=crop',
+    category: 'Papas Fritas'
   },
   {
     id: 7,
-    nombre: "Papas con Cheddar",
-    descripcion: "Papas fritas con salsa cheddar",
-    precio: 10000,
-    imagen: "https://images.unsplash.com/photo-1630384060421-cb20d0e0649d?w=300&h=200&fit=crop",
-    categoria: "Papas Fritas"
+    name: 'Papas con Cheddar',
+    description: 'Papas fritas con salsa cheddar',
+    price: 10000,
+    image: 'https://images.unsplash.com/photo-1630384060421-cb20d0e0649d?w=300&h=200&fit=crop',
+    category: 'Papas Fritas'
   },
   {
     id: 8,
-    nombre: "Coca Cola",
-    descripcion: "Lata 350ml bien fría",
-    precio: 3500,
-    imagen: "https://images.unsplash.com/photo-1622483767028-3f66f32aef97?w=300&h=200&fit=crop",
-    categoria: "Bebidas"
+    name: 'Coca Cola',
+    description: 'Lata 350ml bien fría',
+    price: 3500,
+    image: 'https://images.unsplash.com/photo-1622483767028-3f66f32aef97?w=300&h=200&fit=crop',
+    category: 'Bebidas'
   },
   {
     id: 9,
-    nombre: "Agua Mineral",
-    descripcion: "Agua sin gas 500ml",
-    precio: 2500,
-    imagen: "https://images.unsplash.com/photo-1548839140-29a749e1cf4d?w=300&h=200&fit=crop",
-    categoria: "Bebidas"
+    name: 'Agua Mineral',
+    description: 'Agua sin gas 500ml',
+    price: 2500,
+    image: 'https://images.unsplash.com/photo-1548839140-29a749e1cf4d?w=300&h=200&fit=crop',
+    category: 'Bebidas'
   }
 ];
 
-// ==================== CARRITO ====================
+// ==================== CART ====================
 
-interface CarritoItem {
-  producto: Producto;
-  cantidad: number;
+interface CartItem {
+  product: Product;
+  quantity: number;
 }
 
-let carrito: CarritoItem[] = [];
+let cart: CartItem[] = [];
 
-// ==================== FUNCIONES ====================
+// ==================== FUNCTIONS ====================
 
 /**
- * Carga las categorías en el aside
+ * Load categories in the aside
  */
-function cargarCategorias(): void {
+function loadCategories(): void {
   const listaCategorias = document.getElementById('lista-categorias');
   if (!listaCategorias) return;
 
   listaCategorias.innerHTML = '';
   
-  // Opción "Todas" primero
-  const liTodas = document.createElement('li');
-  liTodas.innerHTML = '<a href="#" data-categoria="todas">Todas</a>';
-  listaCategorias.appendChild(liTodas);
+  // "All" option first
+  const liAll = document.createElement('li');
+  liAll.innerHTML = '<a href="#" data-category="all">Todas</a>';
+  listaCategorias.appendChild(liAll);
 
-  // Cada categoría
-  categorias.forEach(cat => {
+  // Each category
+  categories.forEach(cat => {
     const li = document.createElement('li');
-    li.innerHTML = `<a href="#" data-categoria="${cat}">${cat}</a>`;
+    li.innerHTML = `<a href="#" data-category="${cat}">${cat}</a>`;
     listaCategorias.appendChild(li);
   });
 
-  // Event listeners para filtrar
+  // Event listeners to filter
   listaCategorias.querySelectorAll('a').forEach(link => {
     link.addEventListener('click', (e) => {
       e.preventDefault();
-      const categoria = (e.target as HTMLElement).dataset.categoria;
-      filtrarPorCategoria(categoria || 'todas');
+      const category = (e.target as HTMLElement).dataset.category;
+      filterByCategory(category || 'all');
     });
   });
 }
 
 /**
- * Filtra productos por categoría
+ * Filter products by category
  */
-function filtrarPorCategoria(categoria: string): void {
-  if (categoria === 'todas') {
-    cargarProductos(productos);
+function filterByCategory(category: string): void {
+  if (category === 'all') {
+    loadProducts(products);
   } else {
-    const filtrados = productos.filter(p => p.categoria === categoria);
-    cargarProductos(filtrados);
+    const filtered = products.filter(p => p.category === category);
+    loadProducts(filtered);
   }
 }
 
 /**
- * Carga los productos en el contenedor
+ * Load products in the container
  */
-function cargarProductos(productosAMostrar: Producto[]): void {
-  const contenedor = document.getElementById('contenedor-productos');
-  if (!contenedor) return;
+function loadProducts(productsToShow: Product[]): void {
+  const container = document.getElementById('contenedor-productos');
+  if (!container) return;
 
-  contenedor.innerHTML = '';
+  container.innerHTML = '';
 
-  productosAMostrar.forEach(producto => {
+  productsToShow.forEach(product => {
     const article = document.createElement('article');
     article.className = 'producto';
     article.innerHTML = `
-      <img src="${producto.imagen}" alt="${producto.nombre}">
-      <h3>${producto.nombre}</h3>
-      <p class="descripcion">${producto.descripcion}</p>
-      <p class="precio">$${producto.precio.toLocaleString('es-AR')}</p>
-      <button class="btn-agregar" data-id="${producto.id}">Agregar al Carrito</button>
+      <img src="${product.image}" alt="${product.name}">
+      <h3>${product.name}</h3>
+      <p class="descripcion">${product.description}</p>
+      <p class="precio">$${product.price.toLocaleString('es-AR')}</p>
+      <button class="btn-agregar" data-id="${product.id}">Agregar al Carrito</button>
     `;
-    contenedor.appendChild(article);
+    container.appendChild(article);
   });
 
-  // Agregar event listeners a los botones
-  contenedor.querySelectorAll('.btn-agregar').forEach(btn => {
+  // Add event listeners to buttons
+  container.querySelectorAll('.btn-agregar').forEach(btn => {
     btn.addEventListener('click', (e) => {
       const id = parseInt((e.target as HTMLElement).dataset.id || '0');
-      const producto = productos.find(p => p.id === id);
-      if (producto) {
-        agregarAlCarrito(producto);
+      const product = products.find(p => p.id === id);
+      if (product) {
+        addToCart(product);
       }
     });
   });
 }
 
 /**
- * Agrega un producto al carrito
+ * Add product to cart
  */
-function agregarAlCarrito(producto: Producto): void {
-  const existingItem = carrito.find(item => item.producto.id === producto.id);
+function addToCart(product: Product): void {
+  const existingItem = cart.find(item => item.product.id === product.id);
   
   if (existingItem) {
-    existingItem.cantidad++;
+    existingItem.quantity++;
   } else {
-    carrito.push({ producto, cantidad: 1 });
+    cart.push({ product, quantity: 1 });
   }
   
-  actualizarCarrito();
+  updateCart();
+  alert('Producto agregado al carrito.');
 }
 
 /**
- * Actualiza la visualización del carrito
+ * Update cart display
  */
-function actualizarCarrito(): void {
+function updateCart(): void {
   const tbody = document.getElementById('carrito-body');
   const totalEl = document.getElementById('carrito-total');
   
   if (!tbody || !totalEl) return;
 
-  if (carrito.length === 0) {
+  if (cart.length === 0) {
     tbody.innerHTML = '<tr><td colspan="5" style="text-align: center;">El carrito está vacío</td></tr>';
     totalEl.textContent = '$0';
     return;
@@ -212,15 +212,15 @@ function actualizarCarrito(): void {
   let total = 0;
   tbody.innerHTML = '';
 
-  carrito.forEach((item, index) => {
-    const subtotal = item.producto.precio * item.cantidad;
+  cart.forEach((item, index) => {
+    const subtotal = item.product.price * item.quantity;
     total += subtotal;
 
     const tr = document.createElement('tr');
     tr.innerHTML = `
-      <td>${item.producto.nombre}</td>
-      <td>$${item.producto.precio.toLocaleString('es-AR')}</td>
-      <td>${item.cantidad}</td>
+      <td>${item.product.name}</td>
+      <td>$${item.product.price.toLocaleString('es-AR')}</td>
+      <td>${item.quantity}</td>
       <td>$${subtotal.toLocaleString('es-AR')}</td>
       <td><button class="eliminar" data-index="${index}">Eliminar</button></td>
     `;
@@ -229,61 +229,61 @@ function actualizarCarrito(): void {
 
   totalEl.textContent = `$${total.toLocaleString('es-AR')}`;
 
-  // Event listeners para eliminar
+  // Event listeners for delete
   tbody.querySelectorAll('.eliminar').forEach(btn => {
     btn.addEventListener('click', (e) => {
       const index = parseInt((e.target as HTMLElement).dataset.index || '0');
-      eliminarDelCarrito(index);
+      removeFromCart(index);
     });
   });
 }
 
 /**
- * Elimina un producto del carrito
+ * Remove product from cart
  */
-function eliminarDelCarrito(index: number): void {
-  if (index >= 0 && index < carrito.length) {
-    if (carrito[index].cantidad > 1) {
-      carrito[index].cantidad--;
+function removeFromCart(index: number): void {
+  if (index >= 0 && index < cart.length) {
+    if (cart[index].quantity > 1) {
+      cart[index].quantity--;
     } else {
-      carrito.splice(index, 1);
+      cart.splice(index, 1);
     }
-    actualizarCarrito();
+    updateCart();
   }
 }
 
 /**
- * Configura el buscador
+ * Configure search
  */
-function configurarBuscador(): void {
-  const formBusqueda = document.getElementById('form-busqueda');
-  const inputBusqueda = document.getElementById('input-busqueda') as HTMLInputElement;
+function configureSearch(): void {
+  const formSearch = document.getElementById('form-busqueda');
+  const inputSearch = document.getElementById('input-busqueda') as HTMLInputElement;
 
-  if (!formBusqueda || !inputBusqueda) return;
+  if (!formSearch || !inputSearch) return;
 
-  formBusqueda.addEventListener('submit', (e) => {
+  formSearch.addEventListener('submit', (e) => {
     e.preventDefault();
-    const query = inputBusqueda.value.toLowerCase().trim();
+    const query = inputSearch.value.toLowerCase().trim();
     
     if (!query) {
-      cargarProductos(productos);
+      loadProducts(products);
       return;
     }
 
-    const resultados = productos.filter(p => 
-      p.nombre.toLowerCase().includes(query) ||
-      p.descripcion.toLowerCase().includes(query) ||
-      p.categoria.toLowerCase().includes(query)
+    const results = products.filter(p => 
+      p.name.toLowerCase().includes(query) ||
+      p.description.toLowerCase().includes(query) ||
+      p.category.toLowerCase().includes(query)
     );
 
-    cargarProductos(resultados);
+    loadProducts(results);
   });
 }
 
 /**
- * Muestra la info del usuario en el header
+ * Display user info in header
  */
-function mostrarInfoUsuario(): void {
+function displayUserInfo(): void {
   const user = getUserSession();
   const userInfo = document.getElementById('user-info');
   const btnLogout = document.getElementById('btn-logout');
@@ -295,33 +295,39 @@ function mostrarInfoUsuario(): void {
   if (btnLogout) {
     btnLogout.addEventListener('click', () => {
       logout();
-      redirectToLogin();
+      alert('Sesión cerrada correctamente.');
+      window.location.href = '/';
     });
   }
 }
 
 /**
- * Inicializa la página de cliente
+ * Initialize client page
  */
 function initClient(): void {
-  // Verificar que hay sesión y es cliente
-  if (!isAuthenticated()) {
-    redirectToLogin();
+  const user = getUserSession();
+  
+  // Check if user is authenticated and is client (route guard should handle this)
+  if (!user || user.role !== 'client') {
+    document.body.innerHTML = `
+      <div style="display:flex;justify-content:center;align-items:center;min-height:100vh;font-family:Arial,sans-serif;">
+        <div style="text-align:center;">
+          <h1 style="color:#c33;">Acceso Denegado</h1>
+          <p>No tenés permisos para ver esta página.</p>
+          <a href="/" style="color:#ff4500;">Volver al inicio</a>
+        </div>
+      </div>
+    `;
     return;
   }
 
-  if (!isClient()) {
-    redirectToHome();
-    return;
-  }
-
-  // Inicializar componentes
-  mostrarInfoUsuario();
-  cargarCategorias();
-  cargarProductos(productos);
-  configurarBuscador();
-  actualizarCarrito();
+  // Initialize components
+  displayUserInfo();
+  loadCategories();
+  loadProducts(products);
+  configureSearch();
+  updateCart();
 }
 
-// Ejecutar cuando el DOM esté listo
+// Run when DOM is ready
 document.addEventListener('DOMContentLoaded', initClient);

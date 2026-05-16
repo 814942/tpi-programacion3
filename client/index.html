@@ -4,7 +4,6 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Food Store - Comida Saludable</title>
-  <link rel="stylesheet" href="login.css">
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -76,15 +75,15 @@
     <p class="description">Sistema de delivery de comida saludable a domicilio</p>
     
     <div class="links">
-      <a href="src/pages/auth/login/index.html" class="btn btn-primary">Iniciar Sesión</a>
-      <a href="src/pages/auth/registro/index.html" class="btn btn-secondary">Registrarse</a>
+      <a href="/src/pages/auth/login/index.html" class="btn btn-primary">Iniciar Sesión</a>
+      <a href="/src/pages/auth/registro/index.html" class="btn btn-secondary">Registrarse</a>
     </div>
     
     <div id="auth-status" class="auth-status hidden"></div>
   </div>
   
   <script type="module">
-    // Verificar estado de autenticación
+    // Check authentication status
     const userData = localStorage.getItem('userData');
     const statusEl = document.getElementById('auth-status');
     
@@ -95,12 +94,12 @@
         statusEl.className = 'auth-status logged-in';
         statusEl.classList.remove('hidden');
         
-        // Redirigir automáticamente según rol
+        // Auto redirect based on role
         setTimeout(() => {
           if (user.role === 'admin') {
-            window.location.href = 'src/pages/admin/index.html';
+            window.location.href = '/src/pages/admin/index.html';
           } else {
-            window.location.href = 'src/pages/client/index.html';
+            window.location.href = '/src/pages/client/index.html';
           }
         }, 1500);
       } catch (e) {

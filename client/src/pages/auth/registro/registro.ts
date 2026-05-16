@@ -1,93 +1,59 @@
-// registro.ts — Lógica de registro de usuarios
+// registro.ts — Registration logic
 
 import { register, setUserSession, isAuthenticated } from '../../../utils/auth';
-import { redirectToClient } from '../../../utils/navigate';
 
-// Elementos del DOM
+// DOM elements
 const form = document.getElementById('form-registro') as HTMLFormElement;
 const emailInput = document.getElementById('email') as HTMLInputElement;
 const passwordInput = document.getElementById('password') as HTMLInputElement;
 const confirmPasswordInput = document.getElementById('confirm-password') as HTMLInputElement;
-const mensajeError = document.getElementById('mensaje-error') as HTMLDivElement;
-const mensajeExito = document.getElementById('mensaje-exito') as HTMLDivElement;
 
 /**
- * Muestra un mensaje de error
- */
-function showError(message: string): void {
-  mensajeError.textContent = message;
-  mensajeError.classList.remove('hidden');
-  mensajeExito.classList.add('hidden');
-}
-
-/**
- * Muestra un mensaje de éxito
- */
-function showSuccess(message: string): void {
-  mensajeExito.textContent = message;
-  mensajeExito.classList.remove('hidden');
-  mensajeError.classList.add('hidden');
-}
-
-/**
- * Oculta todos los mensajes
- */
-function hideMessages(): void {
-  mensajeError.classList.add('hidden');
-  mensajeExito.classList.add('hidden');
-}
-
-/**
- * Maneja el envío del formulario de registro
+ * Handle registration form submission
  */
 function handleRegister(event: Event): void {
   event.preventDefault();
-  hideMessages();
 
   const email = emailInput.value.trim();
   const password = passwordInput.value;
   const confirmPassword = confirmPasswordInput.value;
 
-  // Validaciones del cliente
+  // Validations
   if (!email || !password || !confirmPassword) {
-    showError('Todos los campos son requeridos');
+    alert('Error: Todos los campos son requeridos');
     return;
   }
 
   if (password !== confirmPassword) {
-    showError('Las contraseñas no coinciden');
+    alert('Error: Las contraseñas no coinciden');
     return;
   }
 
   if (password.length < 6) {
-    showError('La contraseña debe tener al menos 6 caracteres');
+    alert('Error: La contraseña debe tener al menos 6 caracteres');
     return;
   }
 
-  // Validar formato de email básico
+  // Validate email format
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   if (!emailRegex.test(email)) {
-    showError('Ingresa un email válido');
+    alert('Error: Ingresa un email válido');
     return;
   }
 
-  // Intentar registro
+  // Attempt registration
   const result = register({
     email,
     password,
-    role: 'client', // Por defecto, cliente
+    role: 'client',
   });
 
   if (result.success && result.user) {
-    showSuccess('¡Registro exitoso! Redirigiendo...');
-    // Guardar sesión automáticamente
+    alert('¡Registro exitoso! Bienvenido a Food Store.');
     setUserSession(result.user);
-    // Redirigir después de un pequeño delay
-    setTimeout(() => {
-      redirectToClient();
-    }, 1500);
+    window.location.href = '/src/pages/client/index.html';
   } else {
-    showError(result.message);
+    alert(`Error: ${result.message}`);
   }
 }
 
@@ -96,7 +62,7 @@ if (form) {
   form.addEventListener('submit', handleRegister);
 }
 
-// Validación en tiempo real de confirmación de contraseña
+// Real-time password confirmation validation
 if (confirmPasswordInput) {
   confirmPasswordInput.addEventListener('input', () => {
     if (confirmPasswordInput.value !== passwordInput.value) {
@@ -107,8 +73,7 @@ if (confirmPasswordInput) {
   });
 }
 
-// Verificar si ya hay sesión activa
+// Check if already authenticated
 if (isAuthenticated()) {
-  // Ya está logueado, redirigir
-  redirectToClient();
+  window.location.href = '/src/pages/client/index.html';
 }

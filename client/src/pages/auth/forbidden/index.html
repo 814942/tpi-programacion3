@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Acceso Denegado - Food Store</title>
+  <style>
+    :root {
+      --primary: #ff4500;
+      --primary-hover: #e03e00;
+      --white: #ffffff;
+      --text: #333333;
+      --text-light: #666666;
+      --bg: #f5f5f5;
+      --danger: #c33;
+    }
+    
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    
+    body {
+      font-family: Arial, sans-serif;
+      background: var(--bg);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+    
+    .container {
+      background: var(--white);
+      padding: 40px;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      width: 100%;
+      max-width: 500px;
+      text-align: center;
+    }
+    
+    .icon {
+      font-size: 64px;
+      color: var(--danger);
+      margin-bottom: 20px;
+    }
+    
+    h1 {
+      color: var(--danger);
+      margin-bottom: 15px;
+    }
+    
+    p {
+      color: var(--text-light);
+      margin-bottom: 30px;
+      line-height: 1.6;
+    }
+    
+    .btn {
+      display: inline-block;
+      padding: 12px 24px;
+      border-radius: 4px;
+      text-decoration: none;
+      font-weight: bold;
+      margin: 5px;
+      cursor: pointer;
+      border: none;
+    }
+    
+    .btn-primary {
+      background: var(--primary);
+      color: var(--white);
+    }
+    
+    .btn-primary:hover {
+      background: var(--primary-hover);
+    }
+    
+    .btn-secondary {
+      background: #f0f0f0;
+      color: var(--text);
+    }
+    
+    .btn-secondary:hover {
+      background: #e0e0e0;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="icon">🚫</div>
+    <h1>Acceso Denegado</h1>
+    <p>No tenés permisos para acceder a esta sección.<br>Si creés que esto es un error, contactá al administrador.</p>
+    <div>
+      <a href="/src/pages/client/index.html" class="btn btn-primary">Ir a Mi Panel</a>
+      <a href="/" class="btn btn-secondary">Volver al Inicio</a>
+    </div>
+  </div>
+  
+  <script type="module">
+    // Check user role and redirect to appropriate dashboard
+    const userData = localStorage.getItem('userData');
+    if (userData) {
+      const user = JSON.parse(userData);
+      const homeLink = document.querySelector('.btn-primary');
+      if (homeLink) {
+        if (user.role === 'admin') {
+          homeLink.href = '/src/pages/admin/index.html';
+        } else {
+          homeLink.href = '/src/pages/client/index.html';
+        }
+      }
+    }
+  </script>
+</body>
+</html>

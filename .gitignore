@@ -27,5 +27,12 @@ npm-debug.log*
 # Testing
 coverage/
 
+# Deliveries / artifacts
+*.zip
+*.pdf
+
+# Windows zone identifiers
+*:Zone.Identifier
+
 # Misc
 *.local

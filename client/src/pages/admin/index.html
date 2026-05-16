@@ -4,7 +4,103 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Admin - Food Store</title>
-  <link rel="stylesheet" href="../../../admin.css">
+  <style>
+    :root {
+      --primary: #ff4500;
+      --primary-hover: #e03e00;
+      --white: #ffffff;
+      --text: #333333;
+      --text-light: #666666;
+      --bg: #f5f5f5;
+      --border: #ddd;
+    }
+    
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    
+    body {
+      font-family: Arial, sans-serif;
+      background: var(--bg);
+    }
+    
+    .admin-header {
+      background: var(--primary);
+      color: var(--white);
+      padding: 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .admin-header h1 {
+      font-size: 24px;
+    }
+    
+    .admin-header nav {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+    
+    #user-info {
+      font-size: 14px;
+    }
+    
+    .btn-logout {
+      padding: 8px 16px;
+      background: var(--white);
+      color: var(--primary);
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+    
+    .btn-logout:hover {
+      background: #f0f0f0;
+    }
+    
+    .admin-main {
+      padding: 40px;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    
+    .admin-main h2 {
+      color: var(--text);
+      margin-bottom: 10px;
+    }
+    
+    .admin-main > p {
+      color: var(--text-light);
+      margin-bottom: 30px;
+    }
+    
+    .admin-actions {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 20px;
+    }
+    
+    .action-card {
+      background: var(--white);
+      padding: 30px;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    
+    .action-card h3 {
+      color: var(--primary);
+      margin-bottom: 10px;
+    }
+    
+    .action-card p {
+      color: var(--text-light);
+    }
+  </style>
 </head>
 <body>
   <header class="admin-header">
@@ -37,6 +133,6 @@
     </section>
   </main>
   
-  <script type="module" src="../../../src/pages/admin/admin.ts"></script>
+  <script type="module" src="./admin.ts"></script>
 </body>
 </html>

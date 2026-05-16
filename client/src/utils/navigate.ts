@@ -1,146 +1,143 @@
-// navigate.ts — Funciones de navegación y gestión de rutas
+// navigate.ts — Navigation and route management functions
 
-import { Role } from '../types';
+import type { Role } from '../types';
 import { getUserSession, isAuthenticated } from './auth';
 
 /**
- * Rutas de la aplicación
+ * Application routes - absolute paths from server root
  */
 export const ROUTES = {
   HOME: '/',
-  LOGIN: '/pages/auth/login/index.html',
-  REGISTER: '/pages/auth/registro/index.html',
-  ADMIN: '/pages/admin/index.html',
-  CLIENT: '/pages/client/index.html',
+  LOGIN: '/src/pages/auth/login/index.html',
+  REGISTER: '/src/pages/auth/registro/index.html',
+  ADMIN: '/src/pages/admin/index.html',
+  CLIENT: '/src/pages/client/index.html',
+  FORBIDDEN: '/src/pages/auth/forbidden/index.html',
 } as const;
 
 export type Route = typeof ROUTES[keyof typeof ROUTES];
 
 /**
- * Navega a una ruta
+ * Navigate to a path (absolute from root)
  */
 export function navigateTo(path: string): void {
   window.location.href = path;
 }
 
 /**
- * Redirige al login
+ * Redirect to login page
  */
 export function redirectToLogin(): void {
   navigateTo(ROUTES.LOGIN);
 }
 
 /**
- * Redirige al registro
+ * Redirect to registration page
  */
 export function redirectToRegister(): void {
   navigateTo(ROUTES.REGISTER);
 }
 
 /**
- * Redirige al panel de admin
+ * Redirect to admin panel
  */
 export function redirectToAdmin(): void {
   navigateTo(ROUTES.ADMIN);
 }
 
 /**
- * Redirige al panel de cliente
+ * Redirect to client panel
  */
 export function redirectToClient(): void {
   navigateTo(ROUTES.CLIENT);
 }
 
 /**
- * Redirige a la página principal
+ * Redirect to home page
  */
 export function redirectToHome(): void {
   navigateTo(ROUTES.HOME);
 }
 
 /**
- * Obtiene la ruta based en el rol del usuario
+ * Redirect to forbidden page
+ */
+export function redirectToForbidden(): void {
+  navigateTo(ROUTES.FORBIDDEN);
+}
+
+/**
+ * Get dashboard route based on role
  */
 export function getDashboardByRole(role: Role): string {
   return role === 'admin' ? ROUTES.ADMIN : ROUTES.CLIENT;
 }
 
 /**
- * Verifica si la ruta actual es una ruta protegida
+ * Check if current route is protected
  */
 export function isProtectedRoute(pathname: string): boolean {
   const protectedPaths = [
-    '/pages/admin/',
-    '/pages/client/',
+    '/src/pages/admin/',
+    '/src/pages/client/',
   ];
   return protectedPaths.some(p => pathname.includes(p));
 }
 
 /**
- * Obtiene el rol requerido para una ruta
+ * Get required role for a route
  */
 export function getRequiredRole(pathname: string): Role | null {
-  if (pathname.includes('/pages/admin/')) {
+  if (pathname.includes('/src/pages/admin/')) {
     return 'admin';
   }
-  if (pathname.includes('/pages/client/')) {
+  if (pathname.includes('/src/pages/client/')) {
     return 'client';
   }
   return null;
 }
 
 /**
- * Protege la ruta actual basándose en el rol
- * Retorna true si el acceso es permitido, false si debe redirigir
+ * Protect current route based on role
+ * Returns true if access is allowed, false if should redirect
  */
 export function protectRoute(): boolean {
   const pathname = window.location.pathname;
   
-  // Si no es ruta protegida, permitir
+  // If not protected route, allow
   if (!isProtectedRoute(pathname)) {
     return true;
   }
 
-  // Si no hay sesión, redirigir al login
+  // If no session, redirect to forbidden
   if (!isAuthenticated()) {
-    redirectToLogin();
+    redirectToForbidden();
     return false;
   }
 
-  // Obtener rol requerido y rol actual
+  // Get required role and current role
   const requiredRole = getRequiredRole(pathname);
   const user = getUserSession();
 
   if (!user) {
-    redirectToLogin();
+    redirectToForbidden();
     return false;
   }
 
-  // Verificar rol
+  // Verify role - redirect to forbidden if role doesn't match
   if (requiredRole && user.role !== requiredRole) {
-    // Cliente intentando acceder a admin -> redirigir a su dashboard
-    if (user.role === 'client' && requiredRole === 'admin') {
-      redirectToClient();
-      return false;
-    }
-    // Admin intentando acceder a client -> redirigir a su dashboard
-    if (user.role === 'admin' && requiredRole === 'client') {
-      redirectToAdmin();
-      return false;
-    }
+    redirectToForbidden();
+    return false;
   }
 
   return true;
 }
 
 /**
- * Inicializa el protector de rutas (para usar en main.ts)
+ * Initialize route guard
  */
 export function initRouteGuard(): void {
-  // Ejecutar protección al cargar la página
   protectRoute();
-
-  // También escuchar cambios de navegación (SPA)
   window.addEventListener('popstate', () => {
     protectRoute();
   });

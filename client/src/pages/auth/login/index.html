@@ -4,91 +4,111 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Login - Food Store</title>
-  <link rel="stylesheet" href="../../login.css">
   <style>
-    /* Estilos adicionales para el container */
-    .auth-container {
-      width: 100%;
-      max-width: 400px;
-      padding: 20px;
-      margin: 0 auto;
+    :root {
+      --primary: #ff4500;
+      --primary-hover: #e03e00;
+      --white: #ffffff;
+      --text: #333333;
+      --text-light: #666666;
+      --bg: #f5f5f5;
+      --border: #ddd;
     }
     
-    .auth-form {
-      background: #fff;
-      padding: 30px;
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    
+    body {
+      font-family: Arial, sans-serif;
+      background: var(--bg);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+    
+    .auth-container {
+      background: var(--white);
+      padding: 40px;
       border-radius: 8px;
       box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      width: 100%;
+      max-width: 400px;
     }
     
-    .auth-form h1 {
+    .auth-container h1 {
+      color: var(--primary);
       text-align: center;
-      color: #ff4500;
       margin-bottom: 10px;
     }
     
-    .auth-form h2 {
+    .auth-container h2 {
       text-align: center;
+      color: var(--text);
       font-size: 20px;
-      color: #333;
       margin-bottom: 30px;
+    }
+    
+    .form-group {
+      margin-bottom: 20px;
+    }
+    
+    .form-group label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: bold;
+      color: var(--text);
+    }
+    
+    .form-group input {
+      width: 100%;
+      padding: 12px 15px;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      font-size: 16px;
+      transition: border-color 0.3s;
+    }
+    
+    .form-group input:focus {
+      outline: none;
+      border-color: var(--primary);
     }
     
     .btn-primary {
       width: 100%;
       padding: 14px;
-      background-color: #ff4500;
-      color: white;
+      background: var(--primary);
+      color: var(--white);
       border: none;
       border-radius: 4px;
       font-size: 16px;
       font-weight: bold;
       cursor: pointer;
-      transition: background-color 0.3s;
-      margin-top: 10px;
+      transition: background 0.3s;
     }
     
     .btn-primary:hover {
-      background-color: #e03e00;
+      background: var(--primary-hover);
     }
     
     .auth-link {
       text-align: center;
       margin-top: 20px;
-      color: #666;
+      color: var(--text-light);
     }
     
     .auth-link a {
-      color: #ff4500;
+      color: var(--primary);
       text-decoration: none;
       font-weight: bold;
     }
     
     .auth-link a:hover {
       text-decoration: underline;
-    }
-    
-    .mensaje {
-      padding: 12px;
-      border-radius: 4px;
-      margin-bottom: 15px;
-      text-align: center;
-    }
-    
-    .mensaje.error {
-      background-color: #fee;
-      color: #c33;
-      border: 1px solid #fcc;
-    }
-    
-    .mensaje.success {
-      background-color: #efe;
-      color: #3c3;
-      border: 1px solid #cfc;
-    }
-    
-    .hidden {
-      display: none;
     }
   </style>
 </head>
@@ -97,7 +117,7 @@
     <h1>Food Store</h1>
     <h2>Iniciar Sesión</h2>
     
-    <form id="form-login" class="auth-form">
+    <form id="form-login">
       <div class="form-group">
         <label for="email">Email:</label>
         <input type="email" id="email" name="email" placeholder="tu@email.com" required>
@@ -108,17 +128,14 @@
         <input type="password" id="password" name="password" placeholder="Tu contraseña" required>
       </div>
       
-      <div id="mensaje-error" class="mensaje error hidden"></div>
-      <div id="mensaje-exito" class="mensaje success hidden"></div>
-      
       <button type="submit" class="btn-primary">Iniciar Sesión</button>
     </form>
     
     <p class="auth-link">
-      ¿No tienes cuenta? <a href="../registro/index.html">Regístrate</a>
+      ¿No tienes cuenta? <a href="/src/pages/auth/registro/index.html">Regístrate</a>
     </p>
   </main>
   
-  <script type="module" src="../../../src/pages/auth/login/login.ts"></script>
+  <script type="module" src="./login.ts"></script>
 </body>
 </html>
