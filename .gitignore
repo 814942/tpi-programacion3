@@ -36,5 +36,9 @@ coverage/
 # Windows zone identifiers
 *:Zone.Identifier
 
+# Spring Boot local profile
+application-local.properties
+application-local.yml
+
 # Misc
 *.local

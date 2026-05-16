@@ -295,22 +295,31 @@ Si no tenés PostgreSQL instalado o solo querés probar rápido:
 
 Esto usa H2 (base de datos en memoria) en vez de PostgreSQL. **Los datos se pierden al apagar.** Ideal para desarrollo rápido o demos.
 
-### Variables de Entorno
+### Credenciales y Configuración Local
 
-Los valores sensibles (contraseña de DB, secreto JWT) se configuran **también** vía variables de entorno, con fallback a valores por defecto para desarrollo.
+Spring Boot maneja credenciales sensibles con un sistema de perfiles y resolución por orden de precedencia:
 
-| Variable | Default | Descripción |
-|----------|---------|-------------|
-| `DB_URL` | `jdbc:postgresql://localhost:5433/foodstore` | URL de conexión a PostgreSQL |
-| `DB_USERNAME` | `postgres` | Usuario de la base de datos |
-| `DB_PASSWORD` | `postgres` | Contraseña de la base de datos |
-| `JWT_SECRET` | *default hardcodeado* | Clave secreta para firmar tokens JWT |
-| `JWT_EXPIRATION` | `86400000` (24h) | Expiración del token en milisegundos |
-| `SERVER_PORT` | `8080` | Puerto del servidor |
+1. **application.properties** — valores default para desarrollo (en git)
+2. **application-local.properties** — credenciales reales de tu máquina (**NO subir a git**)
+3. **Variables de entorno** — `DB_PASSWORD`, `JWT_SECRET`, etc.
+4. **Argumentos de línea de comandos** — `--spring.datasource.password=xxx`
 
-Ver `back/.env.example` para un template completo.
+#### Para desarrollo local (recomendado)
 
-**Cómo setearlas:**
+Creá `back/src/main/resources/application-local.properties`:
+
+```properties
+# No subir a git (ya está en .gitignore)
+spring.datasource.password=tuPasswordPostgres
+```
+
+Y levantás con:
+
+```bash
+./gradlew bootRun --args='--spring.profiles.active=local'
+```
+
+#### Vía variable de entorno (alternativa)
 
 ```bash
 # Linux / Git Bash
@@ -320,13 +329,18 @@ export DB_PASSWORD=miPassword123
 # Windows PowerShell
 $env:DB_PASSWORD="miPassword123"
 .\gradlew.bat bootRun
-
-# Windows CMD
-set DB_PASSWORD=miPassword123
-.\gradlew.bat bootRun
 ```
 
-El archivo `back/.env.example` documenta todas las variables disponibles (copiar a `.env` como referencia, Spring Boot no lo lee automáticamente).
+#### Variables disponibles
+
+| Variable | Default | Descripción |
+|----------|---------|-------------|
+| `DB_URL` | `jdbc:postgresql://localhost:5433/foodstore` | URL de conexión a PostgreSQL |
+| `DB_USERNAME` | `postgres` | Usuario de la base de datos |
+| `DB_PASSWORD` | `postgres` | Contraseña de la base de datos |
+| `JWT_SECRET` | *default hardcodeado* | Clave secreta para firmar tokens JWT |
+| `JWT_EXPIRATION` | `86400000` (24h) | Expiración del token en milisegundos |
+| `SERVER_PORT` | `8080` | Puerto del servidor |
 
 ### Troubleshooting
 
