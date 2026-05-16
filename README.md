@@ -295,6 +295,39 @@ Si no tenés PostgreSQL instalado o solo querés probar rápido:
 
 Esto usa H2 (base de datos en memoria) en vez de PostgreSQL. **Los datos se pierden al apagar.** Ideal para desarrollo rápido o demos.
 
+### Variables de Entorno
+
+Los valores sensibles (contraseña de DB, secreto JWT) se configuran **también** vía variables de entorno, con fallback a valores por defecto para desarrollo.
+
+| Variable | Default | Descripción |
+|----------|---------|-------------|
+| `DB_URL` | `jdbc:postgresql://localhost:5432/foodstore` | URL de conexión a PostgreSQL |
+| `DB_USERNAME` | `postgres` | Usuario de la base de datos |
+| `DB_PASSWORD` | `postgres` | Contraseña de la base de datos |
+| `JWT_SECRET` | *default hardcodeado* | Clave secreta para firmar tokens JWT |
+| `JWT_EXPIRATION` | `86400000` (24h) | Expiración del token en milisegundos |
+| `SERVER_PORT` | `8080` | Puerto del servidor |
+
+Ver `back/.env.example` para un template completo.
+
+**Cómo setearlas:**
+
+```bash
+# Linux / Git Bash
+export DB_PASSWORD=miPassword123
+./gradlew bootRun
+
+# Windows PowerShell
+$env:DB_PASSWORD="miPassword123"
+.\gradlew.bat bootRun
+
+# Windows CMD
+set DB_PASSWORD=miPassword123
+.\gradlew.bat bootRun
+```
+
+El archivo `back/.env.example` documenta todas las variables disponibles (copiar a `.env` como referencia, Spring Boot no lo lee automáticamente).
+
 ### Troubleshooting
 
 | Error | Causa | Solución |
