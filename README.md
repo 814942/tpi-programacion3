@@ -115,39 +115,101 @@ tpi/
 - NPM 9+
 
 ### Backend
-- Java 17+
+- Java 17+ (OpenJDK 17)
 - PostgreSQL 15+
-- Gradle (usar `./gradlew`)
+- Gradle (usar `./gradlew` incluido en el proyecto)
 
 ---
 
 ## Instalación y Ejecución
 
-### Base de datos
-```bash
-# Crear base de datos PostgreSQL
-createdb foodstore
+### 1. Instalar PostgreSQL (Linux - Ubuntu/Debian)
 
-# O via psql
-psql -U postgres -c "CREATE DATABASE foodstore;"
+```bash
+# Instalar PostgreSQL
+sudo apt update
+sudo apt install -y postgresql postgresql-contrib
+
+# Iniciar el servicio
+sudo systemctl start postgresql
+
+# Opcional: que arranque solo al prender la PC
+sudo systemctl enable postgresql
+
+# Verificar que está corriendo
+sudo systemctl status postgresql
 ```
 
-### Backend
+### 2. Crear la base de datos
+
 ```bash
+# Crear la base de datos foodstore
+sudo -u postgres psql -c "CREATE DATABASE foodstore;"
+
+# (Opcional) Setear contraseña al usuario postgres
+sudo -u postgres psql -c "ALTER USER postgres PASSWORD 'postgres';"
+
+# Verificar que se creó correctamente
+sudo -u postgres psql -c "\l" | grep foodstore
+```
+
+### 3. Compilar y ejecutar el backend
+
+```bash
+# Ir al directorio del backend
 cd back
 
-# Configurar conexión a DB en src/main/resources/application-dev.properties
-# spring.datasource.url=jdbc:postgresql://localhost:5432/foodstore
-# spring.datasource.username=postgres
-# spring.datasource.password=postgres
+# Compilar (descarga dependencias + compila + corre tests)
+./gradlew build
+
+# Compilar sin tests (más rápido para desarrollo)
+./gradlew build -x test
+
+# Solo tests
+./gradlew test
+
+# Solo compilar (sin tests)
+./gradlew compileJava
 
 # Iniciar servidor (puerto 8080)
 ./gradlew bootRun
 ```
 
-> Al iniciar por primera vez, se crea automáticamente un usuario admin:
+> Al iniciar por primera vez, se crea automáticamente un usuario admin (seed data):
 > - **Email**: `admin@admin.com`
 > - **Password**: `123456`
+
+### 4. Verificar que funciona
+
+```bash
+# La API debería responder con el JSON de OpenAPI
+curl http://localhost:8080/api-docs
+
+# O abrí en el navegador:
+# http://localhost:8080/swagger-ui/index.html
+```
+
+### 5. (Alternativa) Ejecutar con H2 en memoria — sin PostgreSQL
+
+Si no tenés PostgreSQL o solo querés probar rápido:
+
+```bash
+./gradlew bootRun --args='--spring.profiles.active=test'
+```
+
+Esto usa H2 (base de datos en memoria) en vez de PostgreSQL. **Los datos se pierden al apagar el servidor.** Ideal para desarrollo rápido o demostraciones.
+
+### Configuración de base de datos
+
+Las credenciales de PostgreSQL se configuran en `back/src/main/resources/application.properties`:
+
+```properties
+spring.datasource.url=jdbc:postgresql://localhost:5432/foodstore
+spring.datasource.username=postgres
+spring.datasource.password=postgres
+```
+
+Si tus credenciales son distintas, ajustalas ahí.
 
 ### Frontend
 ```bash
