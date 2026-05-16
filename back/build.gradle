@@ -8,9 +8,11 @@ group = 'com.foodstore'
 version = '0.0.1-SNAPSHOT'
 
 java {
-    toolchain {
-        languageVersion = JavaLanguageVersion.of(17)
-    }
+    // Compila a bytecode Java 17 desde JDK 17+ (compatible con Java 21)
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.release = 17
 }
 
 configurations {
