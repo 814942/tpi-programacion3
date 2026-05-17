@@ -4,6 +4,8 @@ node_modules/
 # Build output
 dist/
 build/
+.gradle/
+bin/
 
 # Environment variables
 .env
@@ -33,6 +35,10 @@ coverage/
 
 # Windows zone identifiers
 *:Zone.Identifier
+
+# Spring Boot local profile
+application-local.properties
+application-local.yml
 
 # Misc
 *.local
