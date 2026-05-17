@@ -10,6 +10,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -27,7 +28,7 @@ class DataLoaderTest {
     @Test
     void shouldCreateAdminWhenNoUsersExist() throws Exception {
         when(usuarioRepository.count()).thenReturn(0L);
-        when(passwordEncoder.encode("123456")).thenReturn("encoded-123456");
+        when(passwordEncoder.encode(anyString())).thenReturn("encoded-123456");
 
         dataLoader.run();
 
