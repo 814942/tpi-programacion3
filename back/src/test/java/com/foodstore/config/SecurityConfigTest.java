@@ -14,6 +14,9 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.foodstore.security.JwtProvider;
 
+import java.util.Map;
+import java.util.stream.Collectors;
+
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.options;
@@ -38,8 +41,14 @@ class SecurityConfigTest {
     static class TestController {
 
         @GetMapping("/test/secure")
-        public String secure(Authentication authentication) {
-            return authentication.getName();
+        public Map<String, Object> secure(Authentication authentication) {
+            return Map.of(
+                    "name", authentication.getName(),
+                    "authorities", authentication.getAuthorities()
+                            .stream()
+                            .map(grantedAuthority -> grantedAuthority.getAuthority())
+                            .collect(Collectors.toSet())
+            );
         }
     }
 
@@ -95,7 +104,8 @@ class SecurityConfigTest {
         mockMvc.perform(get("/test/secure")
                         .header("Authorization", "Bearer " + token))
                 .andExpect(status().isOk())
-                .andExpect(content().string("1"));
+                .andExpect(jsonPath("$.name").value("1"))
+                .andExpect(jsonPath("$.authorities[0]").value("ROLE_USER"));
     }
 
     @Test
