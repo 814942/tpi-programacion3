@@ -46,7 +46,7 @@ class AuthControllerTest {
 
         @Test
         void shouldReturn200WithTokenWhenCredentialsAreValid() throws Exception {
-            LoginRequest request = new LoginRequest("juan@test.com", "password123");
+            LoginRequest request = new LoginRequest("juan@test.com", "Pass1234!");
             when(authService.login(any(LoginRequest.class))).thenReturn(authResponse);
 
             mockMvc.perform(post("/api/auth/login")
@@ -65,7 +65,7 @@ class AuthControllerTest {
 
         @Test
         void shouldReturn400WhenEmailDoesNotExist() throws Exception {
-            LoginRequest request = new LoginRequest("inexistente@test.com", "password123");
+            LoginRequest request = new LoginRequest("inexistente@test.com", "Pass1234!");
             when(authService.login(any(LoginRequest.class)))
                     .thenThrow(new BusinessException("Email o contraseña inválidos"));
 
@@ -79,7 +79,7 @@ class AuthControllerTest {
 
         @Test
         void shouldReturn400WhenPasswordIsIncorrect() throws Exception {
-            LoginRequest request = new LoginRequest("juan@test.com", "wrong-password");
+            LoginRequest request = new LoginRequest("juan@test.com", "WrongPass1!");
             when(authService.login(any(LoginRequest.class)))
                     .thenThrow(new BusinessException("Email o contraseña inválidos"));
 
@@ -93,7 +93,7 @@ class AuthControllerTest {
 
         @Test
         void shouldReturn400WhenEmailIsEmpty() throws Exception {
-            LoginRequest request = new LoginRequest("", "password123");
+            LoginRequest request = new LoginRequest("", "Pass1234!");
 
             mockMvc.perform(post("/api/auth/login")
                             .contentType(MediaType.APPLICATION_JSON)
@@ -115,7 +115,7 @@ class AuthControllerTest {
 
         @Test
         void shouldReturn400WhenEmailIsInvalid() throws Exception {
-            LoginRequest request = new LoginRequest("email-invalido", "password123");
+            LoginRequest request = new LoginRequest("email-invalido", "Pass1234!");
 
             mockMvc.perform(post("/api/auth/login")
                             .contentType(MediaType.APPLICATION_JSON)
@@ -131,7 +131,7 @@ class AuthControllerTest {
         @Test
         void shouldReturn201WithTokenWhenDataIsValid() throws Exception {
             RegisterRequest request = new RegisterRequest(
-                    "Juan", "Perez", "nuevo@test.com", "1234567890", "password123"
+                    "Juan", "Perez", "nuevo@test.com", "1234567890", "Pass1234!"
             );
             when(authService.register(any(RegisterRequest.class))).thenReturn(authResponse);
 
@@ -152,7 +152,7 @@ class AuthControllerTest {
         @Test
         void shouldReturn400WhenEmailAlreadyExists() throws Exception {
             RegisterRequest request = new RegisterRequest(
-                    "Juan", "Perez", "existente@test.com", null, "password123"
+                    "Juan", "Perez", "existente@test.com", null, "Pass1234!"
             );
             when(authService.register(any(RegisterRequest.class)))
                     .thenThrow(new BusinessException("El email ya está registrado"));
@@ -168,7 +168,7 @@ class AuthControllerTest {
         @Test
         void shouldReturn400WhenNombreIsEmpty() throws Exception {
             RegisterRequest request = new RegisterRequest(
-                    "", "Perez", "nuevo@test.com", "1234567890", "password123"
+                    "", "Perez", "nuevo@test.com", "1234567890", "Pass1234!"
             );
 
             mockMvc.perform(post("/api/auth/register")
@@ -181,7 +181,7 @@ class AuthControllerTest {
         @Test
         void shouldReturn400WhenApellidoIsEmpty() throws Exception {
             RegisterRequest request = new RegisterRequest(
-                    "Juan", "", "nuevo@test.com", null, "password123"
+                    "Juan", "", "nuevo@test.com", null, "Pass1234!"
             );
 
             mockMvc.perform(post("/api/auth/register")
@@ -192,7 +192,7 @@ class AuthControllerTest {
         }
 
         @Test
-        void shouldReturn400WhenPasswordIsLessThan6Chars() throws Exception {
+        void shouldReturn400WhenPasswordIsLessThan8Chars() throws Exception {
             RegisterRequest request = new RegisterRequest(
                     "Juan", "Perez", "nuevo@test.com", null, "12345"
             );
@@ -207,7 +207,7 @@ class AuthControllerTest {
         @Test
         void shouldReturn400WhenEmailIsInvalid() throws Exception {
             RegisterRequest request = new RegisterRequest(
-                    "Juan", "Perez", "email-invalido", null, "password123"
+                    "Juan", "Perez", "email-invalido", null, "Pass1234!"
             );
 
             mockMvc.perform(post("/api/auth/register")
@@ -220,7 +220,7 @@ class AuthControllerTest {
         @Test
         void shouldReturn201WhenCelularIsNull() throws Exception {
             RegisterRequest request = new RegisterRequest(
-                    "Juan", "Perez", "nuevo@test.com", null, "password123"
+                    "Juan", "Perez", "nuevo@test.com", null, "Pass1234!"
             );
             when(authService.register(any(RegisterRequest.class))).thenReturn(authResponse);
 

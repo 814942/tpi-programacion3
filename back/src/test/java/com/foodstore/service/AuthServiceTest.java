@@ -56,10 +56,10 @@ class AuthServiceTest {
                 .rol(Rol.USUARIO)
                 .build();
 
-        loginRequest = new LoginRequest("juan@test.com", "password123");
+        loginRequest = new LoginRequest("juan@test.com", "Pass1234!");
 
         registerRequest = new RegisterRequest(
-                "Juan", "Perez", "nuevo@test.com", "1234567890", "password123"
+                "Juan", "Perez", "nuevo@test.com", "1234567890", "Pass1234!"
         );
     }
 
@@ -70,7 +70,7 @@ class AuthServiceTest {
         void shouldReturnAuthResponseWhenCredentialsAreValid() {
             when(usuarioRepository.findByEmailAndEliminadoFalse("juan@test.com"))
                     .thenReturn(Optional.of(usuario));
-            when(passwordEncoder.matches("password123", "encoded-password")).thenReturn(true);
+            when(passwordEncoder.matches("Pass1234!", "encoded-password")).thenReturn(true);
             when(jwtProvider.generateToken(1L, "juan@test.com", "USUARIO")).thenReturn("jwt-token");
 
             AuthResponse response = authService.login(loginRequest);
@@ -100,7 +100,7 @@ class AuthServiceTest {
         void shouldThrowWhenPasswordIsIncorrect() {
             when(usuarioRepository.findByEmailAndEliminadoFalse("juan@test.com"))
                     .thenReturn(Optional.of(usuario));
-            when(passwordEncoder.matches("password123", "encoded-password")).thenReturn(false);
+            when(passwordEncoder.matches("Pass1234!", "encoded-password")).thenReturn(false);
 
             assertThatThrownBy(() -> authService.login(loginRequest))
                     .isInstanceOf(BusinessException.class)
@@ -138,7 +138,7 @@ class AuthServiceTest {
         @Test
         void shouldCreateUserAndReturnAuthResponse() {
             when(usuarioRepository.existsByEmailAndEliminadoFalse("nuevo@test.com")).thenReturn(false);
-            when(passwordEncoder.encode("password123")).thenReturn("encoded-password");
+            when(passwordEncoder.encode("Pass1234!")).thenReturn("encoded-password");
             when(usuarioRepository.save(any(Usuario.class))).thenReturn(usuario);
             when(jwtProvider.generateToken(1L, "juan@test.com", "USUARIO")).thenReturn("jwt-token");
 
@@ -166,11 +166,11 @@ class AuthServiceTest {
         @Test
         void shouldLowercaseEmailWhenRegistering() {
             RegisterRequest upperCaseRequest = new RegisterRequest(
-                    "Juan", "Perez", "NUEVO@TEST.COM", null, "password123"
+                    "Juan", "Perez", "NUEVO@TEST.COM", null, "Pass1234!"
             );
 
-            when(usuarioRepository.existsByEmailAndEliminadoFalse("nuevo@test.com")).thenReturn(false);
-            when(passwordEncoder.encode("password123")).thenReturn("encoded-pass");
+            when(usuarioRepository.existsByEmailAndEliminadoFalse("NUEVO@TEST.COM")).thenReturn(false);
+            when(passwordEncoder.encode("Pass1234!")).thenReturn("encoded-pass");
             when(usuarioRepository.save(any(Usuario.class))).thenReturn(usuario);
             when(jwtProvider.generateToken(anyLong(), anyString(), anyString())).thenReturn("jwt");
 
@@ -195,7 +195,7 @@ class AuthServiceTest {
         @Test
         void shouldAlwaysCreateUserWithRolUsuario() {
             when(usuarioRepository.existsByEmailAndEliminadoFalse("nuevo@test.com")).thenReturn(false);
-            when(passwordEncoder.encode("password123")).thenReturn("encoded-pass");
+            when(passwordEncoder.encode("Pass1234!")).thenReturn("encoded-pass");
             when(usuarioRepository.save(any(Usuario.class))).thenReturn(usuario);
             when(jwtProvider.generateToken(anyLong(), anyString(), anyString())).thenReturn("jwt");
 
@@ -209,7 +209,7 @@ class AuthServiceTest {
         @Test
         void shouldNotReturnPasswordInResponse() {
             when(usuarioRepository.existsByEmailAndEliminadoFalse("nuevo@test.com")).thenReturn(false);
-            when(passwordEncoder.encode("password123")).thenReturn("encoded-password");
+            when(passwordEncoder.encode("Pass1234!")).thenReturn("encoded-password");
             when(usuarioRepository.save(any(Usuario.class))).thenReturn(usuario);
             when(jwtProvider.generateToken(1L, "juan@test.com", "USUARIO")).thenReturn("jwt-token");
 
