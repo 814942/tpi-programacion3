@@ -2,9 +2,9 @@ package com.foodstore.config;
 
 import com.foodstore.model.enums.Rol;
 import com.foodstore.repository.UsuarioRepository;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -22,8 +22,12 @@ class DataLoaderTest {
     @Mock
     private PasswordEncoder passwordEncoder;
 
-    @InjectMocks
     private DataLoader dataLoader;
+
+    @BeforeEach
+    void setUp() {
+        dataLoader = new DataLoader(usuarioRepository, passwordEncoder, "admin@admin.com", "123456");
+    }
 
     @Test
     void shouldCreateAdminWhenNoUsersExist() throws Exception {

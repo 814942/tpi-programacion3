@@ -10,10 +10,9 @@ jobs:
     environment:
       name: Desa
     env:
-      ADMIN_EMAIL: ${{ secrets.ADMIN_EMAIL }}
-      ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
-      # fallback para tests locales o si no existen los secrets
-      # (Spring usará los defaults si no están definidos)
+      # Spring Boot mapea APP_ADMIN_EMAIL → app.admin.email automáticamente
+      APP_ADMIN_EMAIL: ${{ secrets.ADMIN_EMAIL }}
+      APP_ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
     defaults:
       run:
         working-directory: back
