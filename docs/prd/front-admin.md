@@ -146,24 +146,21 @@ Página `/src/pages/admin/users/` con tabla + modales
 
 ```mermaid
 flowchart TD
-    A[Admin logueado] --> B[Sidebar navegación]
-    B --> C[Dashboard]
-    B --> D[Categorías]
-    B --> E[Productos]
-    B --> F[Pedidos]
-    B --> G[Usuarios]
-    
-    C --> C1[Stats: totales + enlaces]
-    
-    D --> D1[Tabla categorías]
-    D1 --> D2[Nueva categoría]
-    D1 --> D3[Editar]
-    D1 --> D4[Eliminar]
-    
-    E --> E1[Tabla productos]
-    E1 --> E2[Nuevo producto]
-    E1 --> E3[Editar]
-    E1 --> E4[Eliminar]
+  A["Admin logueado"] --> B["Sidebar navegación"]
+  B --> C["Dashboard"]
+  B --> D["Categorías"]
+  B --> E["Productos"]
+  B --> F["Pedidos"]
+  B --> G["Usuarios"]
+  C --> C1["Stats: totales + enlaces"]
+  D --> D1["Tabla categorías"]
+  D1 --> D2["Nueva categoría"]
+  D1 --> D3["Editar"]
+  D1 --> D4["Eliminar"]
+  E --> E1["Tabla productos"]
+  E1 --> E2["Nuevo producto"]
+  E1 --> E3["Editar"]
+  E1 --> E4["Eliminar"]
     
     F --> F1[Lista pedidos]
     F1 --> F2[Filtro por estado]

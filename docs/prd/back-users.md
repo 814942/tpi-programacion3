@@ -158,18 +158,18 @@ CRUD de usuarios para administración, con validaciones y soft delete.
 
 ```mermaid
 flowchart TD
-    A[Admin en Panel Usuarios] --> B[GET /api/v1/usuarios]
-    B --> C[Tabla con usuarios]
-    C --> D{Selecciona acción}
-    D -->|Ver detalle| E[Abre modal con datos]
-    D -->|Editar| F[Abre formulario precargado]
-    D -->|Eliminar| G[Confirmación]
-    F --> H[PUT /api/v1/usuarios/{id}]
-    H --> I{Actualizado?}
-    I -->|Sí| J[Toast éxito + refresh]
-    I -->|No| K[Toast error]
-    G --> L[DELETE /api/v1/usuarios/{id}]
-    L --> J
+  A["Admin en Panel Usuarios"] --> B["GET /api/v1/usuarios"]
+  B --> C["Tabla con usuarios"]
+  C --> D{"Selecciona acción"}
+  D -->|"Ver detalle"| E["Abre modal con datos"]
+  D -->|"Editar"| F["Abre formulario precargado"]
+  D -->|"Eliminar"| G["Confirmación"]
+  F --> H["PUT /api/v1/usuarios/{id}"]
+  H --> I{"Actualizado?"}
+  I -->|"Sí"| J["Toast éxito + refresh"]
+  I -->|"No"| K["Toast error"]
+  G --> L["DELETE /api/v1/usuarios/{id}"]
+  L --> J
 ```
 
 ---

@@ -260,19 +260,19 @@ Configuración CORS para desarrollo local.
 
 ```mermaid
 flowchart TD
-    A[Request entrante] --> B{JwtAuthFilter}
-    B -->|Ruta pública?| C[Sin autenticación]
-    B -->|Ruta protegida| D{Tiene JWT?}
-    D -->|Sí| E{Válido?}
-    E -->|Sí| F[Setea SecurityContext]
-    F --> G{Requiere rol?}
-    G -->|Sí| H{Rol autorizado?}
-    H -->|Sí| I[Ejecuta endpoint]
-    H -->|No| J[403 Forbidden]
-    D -->|No| K[401 Unauthorized]
-    E -->|No| K
-    C --> I
-    G -->|No| I
+  A["Request entrante"] --> B{"JwtAuthFilter"}
+  B -->|"Ruta pública?"| C["Sin autenticación"]
+  B -->|"Ruta protegida"| D{"Tiene JWT?"}
+  D -->|"Sí"| E{"Válido?"}
+  E -->|"Sí"| F["Setea SecurityContext"]
+  F --> G{"Requiere rol?"}
+  G -->|"Sí"| H{"Rol autorizado?"}
+  H -->|"Sí"| I["Ejecuta endpoint"]
+  H -->|"No"| J["403 Forbidden"]
+  D -->|"No"| K["401 Unauthorized"]
+  E -->|"No"| K
+  C --> I
+  G -->|"No"| I
 ```
 
 ---

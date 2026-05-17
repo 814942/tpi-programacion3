@@ -171,17 +171,17 @@ CRUD completo de categorías con validaciones, soft delete y autorización por r
 
 ```mermaid
 flowchart TD
-    A[Admin hace click en Gestionar Categorías] --> B[Carga lista GET /categorias]
-    B --> C[Ve tabla con datos]
-    C --> D{Crear, editar o eliminar?}
-    D -->|Crear| E[Abre modal con formulario]
-    D -->|Editar| F[Abre modal precargado]
-    D -->|Eliminar| G[Confirmación de eliminación]
-    E --> H[Completa datos + valida frontend]
-    H --> I[POST /categorias]
-    I --> J{Crear categoría en BD}
-    J -->|Éxito| K[Actualiza tabla + toast éxito]
-    J -->|Error| L[Toast con mensaje de error]
+  A["Admin hace click en Gestionar Categorías"] --> B["Carga lista GET /categorias"]
+  B --> C["Ve tabla con datos"]
+  C --> D{"Crear, editar o eliminar?"}
+  D -->|"Crear"| E["Abre modal con formulario"]
+  D -->|"Editar"| F["Abre modal precargado"]
+  D -->|"Eliminar"| G["Confirmación de eliminación"]
+  E --> H["Completa datos + valida frontend"]
+  H --> I["POST /categorias"]
+  I --> J{"Crear categoría en BD"}
+  J -->|"Éxito"| K["Actualiza tabla + toast éxito"]
+  J -->|"Error"| L["Toast con mensaje de error"]
 ```
 
 ---

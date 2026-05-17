@@ -151,20 +151,20 @@ export const api = {
 
 ```mermaid
 flowchart TD
-    A[Usuario abre la app] --> B{Hay token en localStorage?}
-    B -->|No| C[Muestra login/register]
-    B -->|Sí| D{Token expirado?}
-    D -->|Sí| E[Limpia sesión → login]
-    D -->|No| F{Decodificar rol}
-    F -->|ADMIN| G[Redirige a /admin/]
-    F -->|USUARIO| H[Redirige a /client/]
-    
-    C --> I[Completa formulario]
-    I --> J[POST /api/auth/login o /register]
-    J -->|Éxito| K[Guarda token + user en localStorage]
-    K --> F
-    J -->|Error| L[Muestra mensaje en pantalla]
-    L --> I
+  A["Usuario abre la app"] --> B{"Hay token en localStorage?"}
+  B -->|"No"| C["Muestra login/register"]
+  B -->|"Sí"| D{"Token expirado?"}
+  D -->|"Sí"| E["Limpia sesión → login"]
+  D -->|"No"| F{"Decodificar rol"}
+  F -->|"ADMIN"| G["Redirige a /admin/"]
+  F -->|"USUARIO"| H["Redirige a /client/"]
+  C --> I["Completa formulario"]
+  I --> J["POST /api/auth/login o /register"]
+  J -->|"Éxito"| K["Guarda token + user en localStorage"]
+  K --> F
+  J -->|"Error"| L["Muestra mensaje en pantalla"]
+  L --> I
+```
 ```
 
 ---

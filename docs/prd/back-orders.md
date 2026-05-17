@@ -246,25 +246,24 @@ TARJETA, TRANSFERENCIA, EFECTIVO
 
 ```mermaid
 flowchart TD
-    A[Usuario en carrito] --> B[Completa checkout]
-    B --> C[POST /api/v1/pedidos]
-    C --> D{Validar productos}
-    D -->|Existen| E{Validar stock}
-    D -->|No existen| F[400 - producto inválido]
-    E -->|Suficiente| G{Validar usuario}
-    E -->|Insuficiente| H[400 - sin stock]
-    G -->|Válido| I[Crear Pedido + Detalles]
-    I --> J[Calcular totales]
-    J --> K[Reducir stock]
-    K --> L[Persistir TODO]
-    L --> M[201 - Pedido creado]
-    G -->|Inválido| N[404 - usuario no existe]
-    
-    O[Admin en pedidos] --> P[PATCH estado]
-    P --> Q[Actualiza estado]
-    Q --> R[200 - OK]
-    
-    S[Usuario en mis pedidos] --> T[PATCH cancelar]
+  A["Usuario en carrito"] --> B["Completa checkout"]
+  B --> C["POST /api/v1/pedidos"]
+  C --> D{"Validar productos"}
+  D -->|"Existen"| E{"Validar stock"}
+  D -->|"No existen"| F["400 - producto inválido"]
+  E -->|"Suficiente"| G{"Validar usuario"}
+  E -->|"Insuficiente"| H["400 - sin stock"]
+  G -->|"Válido"| I["Crear Pedido + Detalles"]
+  I --> J["Calcular totales"]
+  J --> K["Reducir stock"]
+  K --> L["Persistir TODO"]
+  L --> M["201 - Pedido creado"]
+  G -->|"Inválido"| N["404 - usuario no existe"]
+  O["Admin en pedidos"] --> P["PATCH estado"]
+  P --> Q["Actualiza estado"]
+  Q --> R["200 - OK"]
+  S["Usuario en mis pedidos"] --> T["PATCH cancelar"]
+```
     T --> U{Es PENDIENTE?}
     U -->|Sí| V[Cancelar + restaurar stock]
     U -->|No| W[400 - no se puede cancelar]

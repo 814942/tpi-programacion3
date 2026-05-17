@@ -118,18 +118,19 @@ Página de historial de pedidos con listado, detalle y cancelación.
 
 ```mermaid
 flowchart TD
-    A[Cliente navega a Mis Pedidos] --> B[GET /api/v1/pedidos/usuario]
-    B --> C{¿Hay pedidos?}
-    C -->|Sí| D[Muestra lista de tarjetas]
-    C -->|No| E[Muestra estado vacío + botón tienda]
-    D --> F[Click en pedido]
-    F --> G[Abre modal detalle]
-    G --> H{Cancelar?}
-    H -->|Sí| I[Confirmación]
-    I --> J[PATCH /api/v1/pedidos/{id}/cancelar]
-    J -->|Éxito| K[Toast + actualizar lista]
-    J -->|Error| L[Toast error]
-    H -->|No| M[Cierra modal]
+  A["Cliente navega a Mis Pedidos"] --> B["GET /api/v1/pedidos/usuario"]
+  B --> C{"¿Hay pedidos?"}
+  C -->|"Sí"| D["Muestra lista de tarjetas"]
+  C -->|"No"| E["Muestra estado vacío + botón tienda"]
+  D --> F["Click en pedido"]
+  F --> G["Abre modal detalle"]
+  G --> H{"Cancelar?"}
+  H -->|"Sí"| I["Confirmación"]
+  I --> J["PATCH /api/v1/pedidos/{id}/cancelar"]
+  J -->|"Éxito"| K["Toast + actualizar lista"]
+  J -->|"Error"| L["Toast error"]
+  H -->|"No"| M["Cierra modal"]
+```
 ```
 
 ---

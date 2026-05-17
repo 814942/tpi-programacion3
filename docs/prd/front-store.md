@@ -159,25 +159,26 @@ Store completo con datos reales desde API, carrito persistente, detalle de produ
 
 ```mermaid
 flowchart TD
-    A[Cliente en catálogo] --> B[Explora productos]
-    B --> C[Filtra por categoría o busca]
-    C --> B
-    B --> D[Click producto → Detalle]
-    D --> E[Selecciona cantidad]
-    E --> F[Agrega al carrito]
-    F --> G{Badge actualizado}
-    G --> H[Continúa comprando]
-    G --> I[Va al carrito]
-    I --> J[Revisa items]
-    J --> K[Modifica cantidades / elimina]
-    K --> J
-    J --> L[Proceder al pago]
-    L --> M[Modal checkout]
-    M --> N[Selecciona forma pago + teléfono]
-    N --> O[POST /api/v1/pedidos]
-    O -->|Éxito| P[Vacía carrito → redirige a Mis Pedidos]
-    O -->|Error stock| Q[Muestra producto sin stock]
-    Q --> I
+  A["Cliente en catálogo"] --> B["Explora productos"]
+  B --> C["Filtra por categoría o busca"]
+  C --> B
+  B --> D["Click producto → Detalle"]
+  D --> E["Selecciona cantidad"]
+  E --> F["Agrega al carrito"]
+  F --> G{"Badge actualizado"}
+  G --> H["Continúa comprando"]
+  G --> I["Va al carrito"]
+  I --> J["Revisa items"]
+  J --> K["Modifica cantidades / elimina"]
+  K --> J
+  J --> L["Proceder al pago"]
+  L --> M["Modal checkout"]
+  M --> N["Selecciona forma pago + teléfono"]
+  N --> O["POST /api/v1/pedidos"]
+  O -->|"Éxito"| P["Vacía carrito → redirige a Mis Pedidos"]
+  O -->|"Error stock"| Q["Muestra producto sin stock"]
+  Q --> I
+```
 ```
 
 ---

@@ -191,20 +191,20 @@ CRUD completo de productos con validaciones, control de stock y asociación a ca
 
 ```mermaid
 flowchart TD
-    A[Admin en Gestión Productos] --> B[GET /api/v1/productos]
-    B --> C[Tabla con todos los productos]
-    C --> D{Acción}
-    D -->|Nuevo| E[Abre modal crear]
-    D -->|Editar| F[Abre modal precargado]
-    D -->|Eliminar| G[Confirmación]
-    E --> H[Completa: nombre, precio, stock, categoría...]
-    H --> I[POST /api/v1/productos]
-    I --> J{¿Categoría existe?}
-    J -->|Sí| K[Persiste + refresh tabla]
-    J -->|No| L[Error: categoría inválida]
-    F --> M[Modifica campos]
-    M --> N[PUT /api/v1/productos/{id}]
-    G --> O[DELETE /api/v1/productos/{id}]
+  A["Admin en Gestión Productos"] --> B["GET /api/v1/productos"]
+  B --> C["Tabla con todos los productos"]
+  C --> D{"Acción"}
+  D -->|"Nuevo"| E["Abre modal crear"]
+  D -->|"Editar"| F["Abre modal precargado"]
+  D -->|"Eliminar"| G["Confirmación"]
+  E --> H["Completa: nombre, precio, stock, categoría..."]
+  H --> I["POST /api/v1/productos"]
+  I --> J{"¿Categoría existe?"}
+  J -->|"Sí"| K["Persiste + refresh tabla"]
+  J -->|"No"| L["Error: categoría inválida"]
+  F --> M["Modifica campos"]
+  M --> N["PUT /api/v1/productos/{id}"]
+  G --> O["DELETE /api/v1/productos/{id}"]
 ```
 
 ---

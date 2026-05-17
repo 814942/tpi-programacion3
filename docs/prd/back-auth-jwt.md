@@ -182,20 +182,20 @@ Endpoints de autenticación seguros que emitan JWT para sesiones stateless.
 
 ```mermaid
 flowchart TD
-    A[Usuario completa formulario] --> B{Login o Register?}
-    B -->|Login| C[POST /api/auth/login]
-    B -->|Register| D[POST /api/auth/register]
-    C --> E{Valida credenciales}
-    E -->|Válidas| F[Genera JWT]
-    E -->|Inválidas| G[401 o 400]
-    D --> H{Valida datos}
-    H -->|Válidos| I[BCrypt password]
-    I --> J[Guarda en BD]
-    J --> F
-    H -->|Inválidos| K[400 con detalle]
-    F --> L[Retorna JWT + user data]
-    L --> M[Frontend guarda en localStorage]
-    M --> N[Redirige según rol]
+  A["Usuario completa formulario"] --> B{"Login o Register?"}
+  B -->|"Login"| C["POST /api/auth/login"]
+  B -->|"Register"| D["POST /api/auth/register"]
+  C --> E{"Valida credenciales"}
+  E -->|"Válidas"| F["Genera JWT"]
+  E -->|"Inválidas"| G["401 o 400"]
+  D --> H{"Valida datos"}
+  H -->|"Válidos"| I["BCrypt password"]
+  I --> J["Guarda en BD"]
+  J --> F
+  H -->|"Inválidos"| K["400 con detalle"]
+  F --> L["Retorna JWT + user data"]
+  L --> M["Frontend guarda en localStorage"]
+  M --> N["Redirige según rol"]
 ```
 
 ---
