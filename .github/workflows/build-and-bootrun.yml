@@ -7,6 +7,8 @@ on:
 jobs:
   build-and-bootrun:
     runs-on: ubuntu-latest
+    environment:
+      name: Desa
     env:
       ADMIN_EMAIL: ${{ secrets.ADMIN_EMAIL }}
       ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
