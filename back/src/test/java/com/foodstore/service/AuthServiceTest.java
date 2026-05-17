@@ -169,7 +169,7 @@ class AuthServiceTest {
                     "Juan", "Perez", "NUEVO@TEST.COM", null, "Pass1234!"
             );
 
-            when(usuarioRepository.existsByEmailAndEliminadoFalse("NUEVO@TEST.COM")).thenReturn(false);
+            when(usuarioRepository.existsByEmailAndEliminadoFalse("nuevo@test.com")).thenReturn(false);
             when(passwordEncoder.encode("Pass1234!")).thenReturn("encoded-pass");
             when(usuarioRepository.save(any(Usuario.class))).thenReturn(usuario);
             when(jwtProvider.generateToken(anyLong(), anyString(), anyString())).thenReturn("jwt");
