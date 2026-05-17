@@ -12,7 +12,6 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -119,12 +118,61 @@ class UsuarioServiceTest {
     }
 
     @Nested
+    class CreateTests {
+
+        @Test
+        void shouldCreateUser() {
+            when(usuarioRepository.existsByEmailAndEliminadoFalse("nuevo@test.com")).thenReturn(false);
+            when(passwordEncoder.encode("newPassword123")).thenReturn("encoded-new-password");
+            when(usuarioRepository.save(any(Usuario.class))).thenReturn(usuario);
+
+            UsuarioResponse result = usuarioService.create(request);
+
+            assertThat(result).isNotNull();
+            ArgumentCaptor<Usuario> captor = ArgumentCaptor.forClass(Usuario.class);
+            verify(usuarioRepository).save(captor.capture());
+            Usuario saved = captor.getValue();
+            assertThat(saved.getNombre()).isEqualTo("Juan Actualizado");
+            assertThat(saved.getEmail()).isEqualTo("nuevo@test.com");
+            assertThat(saved.getPassword()).isEqualTo("encoded-new-password");
+            assertThat(saved.getRol()).isEqualTo(Rol.ADMIN);
+        }
+
+        @Test
+        void shouldDefaultRolToUsuarioWhenNull() {
+            UsuarioRequest noRolRequest = new UsuarioRequest(
+                    "Juan", "Perez", "nuevo@test.com", null, "pass123", null
+            );
+            when(usuarioRepository.existsByEmailAndEliminadoFalse("nuevo@test.com")).thenReturn(false);
+            when(passwordEncoder.encode("pass123")).thenReturn("encoded-pass");
+            when(usuarioRepository.save(any(Usuario.class))).thenReturn(usuario);
+
+            usuarioService.create(noRolRequest);
+
+            ArgumentCaptor<Usuario> captor = ArgumentCaptor.forClass(Usuario.class);
+            verify(usuarioRepository).save(captor.capture());
+            assertThat(captor.getValue().getRol()).isEqualTo(Rol.USUARIO);
+        }
+
+        @Test
+        void shouldThrowWhenEmailAlreadyExists() {
+            when(usuarioRepository.existsByEmailAndEliminadoFalse("nuevo@test.com")).thenReturn(true);
+
+            assertThatThrownBy(() -> usuarioService.create(request))
+                    .isInstanceOf(BusinessException.class)
+                    .hasMessageContaining("email ya está registrado");
+
+            verify(usuarioRepository, never()).save(any());
+        }
+    }
+
+    @Nested
     class UpdateTests {
 
         @Test
         void shouldUpdateAllFields() {
             when(usuarioRepository.findByIdOrThrow(1L)).thenReturn(usuario);
-            when(usuarioRepository.existsByEmail("nuevo@test.com")).thenReturn(false);
+            when(usuarioRepository.existsByEmailAndEliminadoFalse("nuevo@test.com")).thenReturn(false);
             when(passwordEncoder.encode("newPassword123")).thenReturn("new-encoded-password");
             when(usuarioRepository.save(any(Usuario.class))).thenReturn(usuario);
 
@@ -162,7 +210,7 @@ class UsuarioServiceTest {
         @Test
         void shouldThrowWhenEmailAlreadyExists() {
             when(usuarioRepository.findByIdOrThrow(1L)).thenReturn(usuario);
-            when(usuarioRepository.existsByEmail("nuevo@test.com")).thenReturn(true);
+            when(usuarioRepository.existsByEmailAndEliminadoFalse("nuevo@test.com")).thenReturn(true);
 
             assertThatThrownBy(() -> usuarioService.update(1L, request))
                     .isInstanceOf(BusinessException.class)

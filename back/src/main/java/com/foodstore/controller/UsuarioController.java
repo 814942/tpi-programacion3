@@ -5,6 +5,7 @@ import com.foodstore.dto.response.UsuarioResponse;
 import com.foodstore.service.UsuarioService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -29,7 +30,12 @@ public class UsuarioController {
         return ResponseEntity.ok(usuarioService.findById(id));
     }
 
-    @PutMapping("/{id}")
+    @PostMapping
+    public ResponseEntity<UsuarioResponse> create(@RequestBody @Valid UsuarioRequest request) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(usuarioService.create(request));
+    }
+
+    @PatchMapping("/{id}")
     public ResponseEntity<UsuarioResponse> update(@PathVariable Long id, @RequestBody @Valid UsuarioRequest request) {
         return ResponseEntity.ok(usuarioService.update(id, request));
     }

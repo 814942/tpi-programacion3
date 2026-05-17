@@ -4,6 +4,7 @@ import com.foodstore.dto.request.UsuarioRequest;
 import com.foodstore.dto.response.UsuarioResponse;
 import com.foodstore.exception.BusinessException;
 import com.foodstore.model.Usuario;
+import com.foodstore.model.enums.Rol;
 import com.foodstore.repository.UsuarioRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -33,13 +34,31 @@ public class UsuarioService {
     }
 
     @Transactional
+    public UsuarioResponse create(UsuarioRequest request) {
+        if (usuarioRepository.existsByEmailAndEliminadoFalse(request.email())) {
+            throw new BusinessException("El email ya está registrado");
+        }
+        Usuario usuario = Usuario.builder()
+                .nombre(request.nombre())
+                .apellido(request.apellido())
+                .email(request.email())
+                .celular(request.celular())
+                .password(passwordEncoder.encode(request.password()))
+                .rol(request.rol() != null ? request.rol() : Rol.USUARIO)
+                .build();
+        usuarioRepository.save(usuario);
+        log.info("Usuario {} creado", usuario.getId());
+        return toResponse(usuario);
+    }
+
+    @Transactional
     public UsuarioResponse update(Long id, UsuarioRequest request) {
         Usuario usuario = usuarioRepository.findByIdOrThrow(id);
 
         if (request.nombre() != null) usuario.setNombre(request.nombre());
         if (request.apellido() != null) usuario.setApellido(request.apellido());
         if (request.email() != null) {
-            if (usuarioRepository.existsByEmail(request.email()) &&
+            if (usuarioRepository.existsByEmailAndEliminadoFalse(request.email()) &&
                 !usuario.getEmail().equals(request.email())) {
                 throw new BusinessException("El email ya está registrado");
             }
@@ -58,7 +77,7 @@ public class UsuarioService {
 
     @Transactional
     public void deleteById(Long id) {
-        Usuario usuario = usuarioRepository.findByIdOrThrow(id);
+        usuarioRepository.findByIdOrThrow(id);
         usuarioRepository.deleteById(id);
         log.info("Usuario {} eliminado (soft delete)", id);
     }

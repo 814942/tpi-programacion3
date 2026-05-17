@@ -65,6 +65,16 @@ class BaseRepositoryTest {
     }
 
     @Test
+    void findByIdOrThrow_ShouldThrowWhenEntityIsSoftDeleted() {
+        var entity = TestBaseEntity.builder().name("Soft Deleted").build();
+        repository.save(entity);
+        repository.deleteById(entity.getId());
+
+        assertThrows(ResourceNotFoundException.class, () ->
+                repository.findByIdOrThrow(entity.getId()));
+    }
+
+    @Test
     void findAll_WithPageable_ShouldRespectSoftDelete() {
         var entity1 = TestBaseEntity.builder().name("Entity 1").build();
         var entity2 = TestBaseEntity.builder().name("Entity 2").build();

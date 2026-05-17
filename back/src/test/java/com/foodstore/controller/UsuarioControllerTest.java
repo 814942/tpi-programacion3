@@ -122,6 +122,50 @@ class UsuarioControllerTest {
     }
 
     @Nested
+    class CreateTests {
+
+        private final UsuarioRequest createRequest = new UsuarioRequest(
+                "Juan", "Perez", "nuevo@test.com", "1234567890", "password123", Rol.USUARIO
+        );
+
+        @Test
+        @WithMockUser(roles = "ADMIN")
+        void shouldReturn201WhenCreated() throws Exception {
+            when(usuarioService.create(any(UsuarioRequest.class))).thenReturn(response);
+
+            mockMvc.perform(post("/api/v1/usuarios")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(createRequest)))
+                    .andExpect(status().isCreated())
+                    .andExpect(jsonPath("$.id").value(1))
+                    .andExpect(jsonPath("$.nombre").value("Juan"))
+                    .andExpect(jsonPath("$.password").doesNotExist());
+        }
+
+        @Test
+        @WithMockUser(roles = "ADMIN")
+        void shouldReturn400WhenEmailDuplicate() throws Exception {
+            when(usuarioService.create(any(UsuarioRequest.class)))
+                    .thenThrow(new BusinessException("El email ya está registrado"));
+
+            mockMvc.perform(post("/api/v1/usuarios")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(createRequest)))
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.error").value("business_error"));
+        }
+
+        @Test
+        @WithMockUser(roles = "USUARIO")
+        void shouldReturn403WhenNotAdmin() throws Exception {
+            mockMvc.perform(post("/api/v1/usuarios")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(createRequest)))
+                    .andExpect(status().isForbidden());
+        }
+    }
+
+    @Nested
     class UpdateTests {
 
         private final UsuarioRequest updateRequest = new UsuarioRequest(
@@ -144,7 +188,7 @@ class UsuarioControllerTest {
             when(usuarioService.update(eq(1L), any(UsuarioRequest.class)))
                     .thenReturn(updatedResponse);
 
-            mockMvc.perform(put("/api/v1/usuarios/1")
+            mockMvc.perform(patch("/api/v1/usuarios/1")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(updateRequest)))
                     .andExpect(status().isOk())
@@ -160,7 +204,7 @@ class UsuarioControllerTest {
             when(usuarioService.update(eq(999L), any(UsuarioRequest.class)))
                     .thenThrow(new ResourceNotFoundException("Usuario", "id", "999"));
 
-            mockMvc.perform(put("/api/v1/usuarios/999")
+            mockMvc.perform(patch("/api/v1/usuarios/999")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(updateRequest)))
                     .andExpect(status().isNotFound());
@@ -172,7 +216,7 @@ class UsuarioControllerTest {
             when(usuarioService.update(eq(1L), any(UsuarioRequest.class)))
                     .thenThrow(new BusinessException("El email ya está registrado"));
 
-            mockMvc.perform(put("/api/v1/usuarios/1")
+            mockMvc.perform(patch("/api/v1/usuarios/1")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(updateRequest)))
                     .andExpect(status().isBadRequest())
@@ -182,7 +226,7 @@ class UsuarioControllerTest {
         @Test
         @WithMockUser(roles = "USUARIO")
         void shouldReturn403WhenNotAdmin() throws Exception {
-            mockMvc.perform(put("/api/v1/usuarios/1")
+            mockMvc.perform(patch("/api/v1/usuarios/1")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(updateRequest)))
                     .andExpect(status().isForbidden());
