@@ -14,6 +14,7 @@ import org.springframework.data.repository.NoRepositoryBean;
 
 import java.io.Serializable;
 import java.util.List;
+import java.util.Optional;
 
 @NoRepositoryBean
 public interface BaseRepository<E extends Base, ID extends Serializable> extends JpaRepository<E, ID> {
@@ -29,6 +30,14 @@ public interface BaseRepository<E extends Base, ID extends Serializable> extends
     @Query("SELECT e FROM #{#entityName} e WHERE e.eliminado = false")
     @Override
     Page<E> findAll(Pageable pageable);
+
+    /**
+     * Returns the entity with the given id only if it has not been soft-deleted
+     * ({@code eliminado = false}). Overrides the default JPA {@code findById}
+     * so that soft-deleted records are treated as non-existent.
+     */
+    @Query("SELECT e FROM #{#entityName} e WHERE e.id = :id AND e.eliminado = false")
+    Optional<E> findById(ID id);
 
     default E findByIdOrThrow(ID id) {
         return findById(id)

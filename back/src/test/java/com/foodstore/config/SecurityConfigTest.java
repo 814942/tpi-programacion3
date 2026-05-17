@@ -99,7 +99,7 @@ class SecurityConfigTest {
 
     @Test
     void protectedRoute_ShouldAuthenticateWithValidBearerToken() throws Exception {
-        String token = jwtProvider.generateToken(1L, "user@test.com", "ROLE_USER");
+        String token = jwtProvider.generateToken(1L, "user@test.com", "USER");
 
         mockMvc.perform(get("/test/secure")
                         .header("Authorization", "Bearer " + token))
