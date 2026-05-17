@@ -20,18 +20,21 @@ public class DataLoader implements CommandLineRunner {
     @Override
     public void run(String... args) {
         if (usuarioRepository.count() == 0) {
+            String adminEmail = System.getenv().getOrDefault("ADMIN_EMAIL", "admin@admin.com");
+            String adminPassword = System.getenv().getOrDefault("ADMIN_PASSWORD", "123456");
+
             Usuario admin = Usuario.builder()
                     .nombre("Admin")
                     .apellido("Sistema")
-                    .email("admin@admin.com")
-                    .password(passwordEncoder.encode("123456"))
+                    .email(adminEmail)
+                    .password(passwordEncoder.encode(adminPassword))
                     .rol(Rol.ADMIN)
                     .build();
 
             usuarioRepository.save(admin);
-            log.info("✅ Admin creado: admin@admin.com / 123456");
+            log.info("Admin creado: {} / {}", adminEmail, adminPassword);
         } else {
-            log.info("ℹ️ Ya existen usuarios en BD, se omite seed data");
+            log.info("Ya existen usuarios en BD, se omite seed data");
         }
     }
 }
