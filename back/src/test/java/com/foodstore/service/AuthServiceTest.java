@@ -108,6 +108,20 @@ class AuthServiceTest {
         }
 
         @Test
+        void shouldAuthenticateWithUppercaseEmailInput() {
+            LoginRequest upperCaseRequest = new LoginRequest("JUAN@TEST.COM", "password123");
+            when(usuarioRepository.findByEmailAndEliminadoFalse("juan@test.com"))
+                    .thenReturn(Optional.of(usuario));
+            when(passwordEncoder.matches("password123", "encoded-password")).thenReturn(true);
+            when(jwtProvider.generateToken(1L, "juan@test.com", "USUARIO")).thenReturn("jwt-token");
+
+            AuthResponse response = authService.login(upperCaseRequest);
+
+            assertThat(response.token()).isEqualTo("jwt-token");
+            verify(usuarioRepository).findByEmailAndEliminadoFalse("juan@test.com");
+        }
+
+        @Test
         void shouldNotRevealWhichFieldIsInvalid() {
             when(usuarioRepository.findByEmailAndEliminadoFalse("juan@test.com"))
                     .thenReturn(Optional.empty());

@@ -14,6 +14,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Locale;
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -24,7 +26,8 @@ public class AuthService {
     private final JwtProvider jwtProvider;
 
     public AuthResponse login(LoginRequest request) {
-        Usuario usuario = usuarioRepository.findByEmailAndEliminadoFalse(request.email())
+        String email = request.email().toLowerCase(Locale.ROOT);
+        Usuario usuario = usuarioRepository.findByEmailAndEliminadoFalse(email)
                 .orElseThrow(() -> new BusinessException("Email o contraseña inválidos"));
 
         if (!passwordEncoder.matches(request.password(), usuario.getPassword())) {
@@ -38,14 +41,15 @@ public class AuthService {
 
     @Transactional
     public AuthResponse register(RegisterRequest request) {
-        if (usuarioRepository.existsByEmailAndEliminadoFalse(request.email())) {
+        String email = request.email().toLowerCase(Locale.ROOT);
+        if (usuarioRepository.existsByEmailAndEliminadoFalse(email)) {
             throw new BusinessException("El email ya está registrado");
         }
 
         Usuario usuario = Usuario.builder()
                 .nombre(request.nombre())
                 .apellido(request.apellido())
-                .email(request.email().toLowerCase())
+                .email(email)
                 .celular(request.celular())
                 .password(passwordEncoder.encode(request.password()))
                 .rol(Rol.USUARIO)
