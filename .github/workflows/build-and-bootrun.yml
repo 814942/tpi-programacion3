@@ -10,6 +10,8 @@ jobs:
     env:
       ADMIN_EMAIL: ${{ secrets.ADMIN_EMAIL }}
       ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
+      # fallback para tests locales o si no existen los secrets
+      # (Spring usará los defaults si no están definidos)
     defaults:
       run:
         working-directory: back
