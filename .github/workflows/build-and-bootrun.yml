@@ -7,6 +7,12 @@ on:
 jobs:
   build-and-bootrun:
     runs-on: ubuntu-latest
+    environment:
+      name: Desa
+    env:
+      # Spring Boot mapea APP_ADMIN_EMAIL → app.admin.email automáticamente
+      APP_ADMIN_EMAIL: ${{ secrets.ADMIN_EMAIL }}
+      APP_ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
     defaults:
       run:
         working-directory: back

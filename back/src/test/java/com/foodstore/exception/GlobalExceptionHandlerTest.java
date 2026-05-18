@@ -45,6 +45,14 @@ class GlobalExceptionHandlerTest {
         public void throwValidationError(@Valid @RequestBody TestRequest request) {
         }
 
+        @PostMapping("/test/enum-invalid")
+        public void throwEnumValidation(@RequestBody EnumRequest request) {
+        }
+
+        @PostMapping("/test/type-mismatch")
+        public void throwTypeMismatch(@RequestBody TypeMismatchRequest request) {
+        }
+
         @GetMapping("/test/access-denied")
         public void throwAccessDenied() {
             throw new AccessDeniedException("Access denied");
@@ -57,6 +65,17 @@ class GlobalExceptionHandlerTest {
     }
 
     record TestRequest(@NotBlank String name) {
+    }
+
+    enum TestRol {
+        ADMIN,
+        USUARIO
+    }
+
+    record EnumRequest(TestRol rol) {
+    }
+
+    record TypeMismatchRequest(Integer age) {
     }
 
     @Test
@@ -100,5 +119,25 @@ class GlobalExceptionHandlerTest {
                 .andExpect(status().isInternalServerError())
                 .andExpect(jsonPath("$.error").value("internal_error"))
                 .andExpect(jsonPath("$.status").value(500));
+    }
+
+    @Test
+    void handleEnumInvalidValue_ShouldReturnEnumSpecificMessage() throws Exception {
+        mockMvc.perform(post("/test/enum-invalid")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"rol\":\"INVALID\"}"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.error").value("bad_request"))
+                .andExpect(jsonPath("$.message").value("Valor inválido para un campo enumerado. Valores aceptados: [ADMIN, USUARIO]"));
+    }
+
+    @Test
+    void handleNonEnumInvalidValue_ShouldReturnGenericMessage() throws Exception {
+        mockMvc.perform(post("/test/type-mismatch")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"age\":\"abc\"}"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.error").value("bad_request"))
+                .andExpect(jsonPath("$.message").value("El cuerpo de la solicitud es inválido. Verificá que el JSON esté bien formado y los valores sean correctos."));
     }
 }
