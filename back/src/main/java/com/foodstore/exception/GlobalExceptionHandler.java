@@ -3,11 +3,14 @@ package com.foodstore.exception;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -69,6 +72,34 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(403).body(response);
     }
 
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<ErrorResponse> handleMessageNotReadable(
+            HttpMessageNotReadableException ex, HttpServletRequest request) {
+        String message = "El cuerpo de la solicitud es inválido. Verificá que el JSON esté bien formado y los valores sean correctos.";
+        if (ex.getMessage() != null && ex.getMessage().contains("Cannot deserialize")) {
+            message = "Valor inválido para un campo enumerado. Valores aceptados: " + extractAcceptedValues(ex.getMessage());
+        }
+        ErrorResponse response = ErrorResponse.of(
+                "bad_request",
+                message,
+                400,
+                request.getRequestURI()
+        );
+        return ResponseEntity.status(400).body(response);
+    }
+
+    @ExceptionHandler({MissingServletRequestParameterException.class, MethodArgumentTypeMismatchException.class})
+    public ResponseEntity<ErrorResponse> handleMissingParam(
+            Exception ex, HttpServletRequest request) {
+        ErrorResponse response = ErrorResponse.of(
+                "bad_request",
+                "Parámetro de solicitud inválido: " + ex.getMessage(),
+                400,
+                request.getRequestURI()
+        );
+        return ResponseEntity.status(400).body(response);
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleGeneric(
             Exception ex, HttpServletRequest request) {
@@ -80,5 +111,18 @@ public class GlobalExceptionHandler {
                 request.getRequestURI()
         );
         return ResponseEntity.status(500).body(response);
+    }
+
+    private String extractAcceptedValues(String errorMessage) {
+        if (errorMessage == null) return "";
+        int idx = errorMessage.indexOf("accepted for Enum class: [");
+        if (idx != -1) {
+            int start = idx + "accepted for Enum class: ".length();
+            int end = errorMessage.indexOf("]", start);
+            if (end != -1) {
+                return errorMessage.substring(start, end);
+            }
+        }
+        return "Revisá la documentación de la API";
     }
 }

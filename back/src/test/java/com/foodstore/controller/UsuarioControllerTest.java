@@ -238,11 +238,12 @@ class UsuarioControllerTest {
 
         @Test
         @WithMockUser(roles = "ADMIN")
-        void shouldReturn204WhenDeleted() throws Exception {
+        void shouldReturn200WhenDeleted() throws Exception {
             doNothing().when(usuarioService).deleteById(1L);
 
             mockMvc.perform(delete("/api/v1/usuarios/1"))
-                    .andExpect(status().isNoContent());
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.message").value("Usuario eliminado correctamente"));
         }
 
         @Test
