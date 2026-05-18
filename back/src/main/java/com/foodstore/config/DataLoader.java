@@ -41,7 +41,7 @@ public class DataLoader implements CommandLineRunner {
                     .build();
 
             usuarioRepository.save(admin);
-            log.info("Admin creado: {} / {}", adminEmail, adminPassword);
+            log.info("Admin creado con email: {}. Consulte la fuente de configuración para la contraseña.", adminEmail);
         } else {
             log.info("Ya existen usuarios en BD, se omite seed data");
         }
