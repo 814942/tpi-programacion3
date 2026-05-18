@@ -20,7 +20,7 @@ public class Usuario extends Base {
     @Column(nullable = false, length = 50)
     private String apellido;
 
-    @Column(nullable = false, unique = true)
+    @Column(nullable = false)
     private String email;
 
     @Column(length = 20)

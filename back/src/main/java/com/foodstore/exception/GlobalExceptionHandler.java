@@ -1,7 +1,10 @@
 package com.foodstore.exception;
 
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.ConstraintViolationException;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.access.AccessDeniedException;
@@ -60,6 +63,23 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(400).body(response);
     }
 
+    @ExceptionHandler(ConstraintViolationException.class)
+    public ResponseEntity<ErrorResponse> handleConstraintValidation(
+            ConstraintViolationException ex, HttpServletRequest request) {
+        Map<String, String> fields = new HashMap<>();
+        ex.getConstraintViolations().forEach(violation ->
+                fields.put(violation.getPropertyPath().toString(), violation.getMessage()));
+
+        ErrorResponse response = ErrorResponse.of(
+                "validation_error",
+                "Error de validación",
+                400,
+                request.getRequestURI(),
+                fields
+        );
+        return ResponseEntity.status(400).body(response);
+    }
+
     @ExceptionHandler(AccessDeniedException.class)
     public ResponseEntity<ErrorResponse> handleAccessDenied(
             AccessDeniedException ex, HttpServletRequest request) {
@@ -86,6 +106,34 @@ public class GlobalExceptionHandler {
                 request.getRequestURI()
         );
         return ResponseEntity.status(400).body(response);
+    }
+
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ResponseEntity<ErrorResponse> handleDataIntegrityViolation(
+            DataIntegrityViolationException ex, HttpServletRequest request) {
+        String sqlState = extractSqlState(ex);
+
+        String error = "data_integrity_error";
+        String message = "Los datos enviados violan una restricción de integridad";
+        HttpStatus status = HttpStatus.BAD_REQUEST;
+
+        if ("23505".equals(sqlState)) {
+            error = "conflict";
+            message = "El recurso ya existe o viola una restricción de unicidad";
+            status = HttpStatus.CONFLICT;
+        } else if ("23502".equals(sqlState)) {
+            error = "validation_error";
+            message = "Faltan campos obligatorios";
+            status = HttpStatus.BAD_REQUEST;
+        }
+
+        ErrorResponse response = ErrorResponse.of(
+                error,
+                message,
+                status.value(),
+                request.getRequestURI()
+        );
+        return ResponseEntity.status(status).body(response);
     }
 
     @ExceptionHandler({MissingServletRequestParameterException.class, MethodArgumentTypeMismatchException.class})
@@ -124,5 +172,16 @@ public class GlobalExceptionHandler {
             }
         }
         return "Revisá la documentación de la API";
+    }
+
+    private String extractSqlState(DataIntegrityViolationException ex) {
+        Throwable current = ex;
+        while (current != null) {
+            if (current instanceof org.hibernate.exception.ConstraintViolationException hibernateEx) {
+                return hibernateEx.getSQLState();
+            }
+            current = current.getCause();
+        }
+        return null;
     }
 }

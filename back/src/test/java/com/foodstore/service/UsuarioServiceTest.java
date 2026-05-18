@@ -1,12 +1,14 @@
 package com.foodstore.service;
 
-import com.foodstore.dto.request.UsuarioRequest;
+import com.foodstore.dto.request.CreateUsuarioRequest;
+import com.foodstore.dto.request.UpdateUsuarioRequest;
 import com.foodstore.dto.response.UsuarioResponse;
 import com.foodstore.exception.BusinessException;
 import com.foodstore.exception.ResourceNotFoundException;
 import com.foodstore.model.Usuario;
 import com.foodstore.model.enums.Rol;
 import com.foodstore.repository.UsuarioRepository;
+import org.springframework.security.access.AccessDeniedException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -39,7 +41,8 @@ class UsuarioServiceTest {
     private UsuarioService usuarioService;
 
     private Usuario usuario;
-    private UsuarioRequest request;
+    private CreateUsuarioRequest createRequest;
+    private UpdateUsuarioRequest updateRequest;
 
     @BeforeEach
     void setUp() {
@@ -54,7 +57,16 @@ class UsuarioServiceTest {
                 .createdAt(LocalDateTime.of(2026, 5, 16, 12, 0))
                 .build();
 
-        request = new UsuarioRequest(
+        createRequest = new CreateUsuarioRequest(
+            "Juan Actualizado",
+            "Perez Actualizado",
+            "nuevo@test.com",
+            "0987654321",
+            "newPassword123",
+            Rol.ADMIN
+        );
+
+        updateRequest = new UpdateUsuarioRequest(
                 "Juan Actualizado",
                 "Perez Actualizado",
                 "nuevo@test.com",
@@ -126,7 +138,7 @@ class UsuarioServiceTest {
             when(passwordEncoder.encode("newPassword123")).thenReturn("encoded-new-password");
             when(usuarioRepository.save(any(Usuario.class))).thenReturn(usuario);
 
-            UsuarioResponse result = usuarioService.create(request);
+            UsuarioResponse result = usuarioService.create(createRequest);
 
             assertThat(result).isNotNull();
             ArgumentCaptor<Usuario> captor = ArgumentCaptor.forClass(Usuario.class);
@@ -139,26 +151,39 @@ class UsuarioServiceTest {
         }
 
         @Test
-        void shouldDefaultRolToUsuarioWhenNull() {
-            UsuarioRequest noRolRequest = new UsuarioRequest(
+        void shouldThrowWhenRolIsNull() {
+            CreateUsuarioRequest noRolRequest = new CreateUsuarioRequest(
                     "Juan", "Perez", "nuevo@test.com", null, "pass123", null
             );
+
+            assertThatThrownBy(() -> usuarioService.create(noRolRequest))
+                .isInstanceOf(BusinessException.class)
+                .hasMessageContaining("rol es obligatorio");
+
+            verify(usuarioRepository, never()).save(any());
+        }
+
+        @Test
+        void shouldNormalizeEmailOnCreate() {
+            CreateUsuarioRequest mixedEmailRequest = new CreateUsuarioRequest(
+                "Juan", "Perez", " Nuevo@Test.COM ", null, "Password1!", Rol.USUARIO
+            );
             when(usuarioRepository.existsByEmailAndEliminadoFalse("nuevo@test.com")).thenReturn(false);
-            when(passwordEncoder.encode("pass123")).thenReturn("encoded-pass");
+            when(passwordEncoder.encode("Password1!")).thenReturn("encoded-pass");
             when(usuarioRepository.save(any(Usuario.class))).thenReturn(usuario);
 
-            usuarioService.create(noRolRequest);
+            usuarioService.create(mixedEmailRequest);
 
             ArgumentCaptor<Usuario> captor = ArgumentCaptor.forClass(Usuario.class);
             verify(usuarioRepository).save(captor.capture());
-            assertThat(captor.getValue().getRol()).isEqualTo(Rol.USUARIO);
+            assertThat(captor.getValue().getEmail()).isEqualTo("nuevo@test.com");
         }
 
         @Test
         void shouldThrowWhenEmailAlreadyExists() {
             when(usuarioRepository.existsByEmailAndEliminadoFalse("nuevo@test.com")).thenReturn(true);
 
-            assertThatThrownBy(() -> usuarioService.create(request))
+            assertThatThrownBy(() -> usuarioService.create(createRequest))
                     .isInstanceOf(BusinessException.class)
                     .hasMessageContaining("email ya está registrado");
 
@@ -176,7 +201,7 @@ class UsuarioServiceTest {
             when(passwordEncoder.encode("newPassword123")).thenReturn("new-encoded-password");
             when(usuarioRepository.save(any(Usuario.class))).thenReturn(usuario);
 
-            UsuarioResponse result = usuarioService.update(1L, request);
+            UsuarioResponse result = usuarioService.update(1L, updateRequest);
 
             assertThat(result.nombre()).isEqualTo("Juan Actualizado");
             assertThat(result.apellido()).isEqualTo("Perez Actualizado");
@@ -192,7 +217,7 @@ class UsuarioServiceTest {
 
         @Test
         void shouldUpdatePartiallyWithNullFields() {
-            UsuarioRequest partialRequest = new UsuarioRequest(
+            UpdateUsuarioRequest partialRequest = new UpdateUsuarioRequest(
                     null, null, null, null, null, null
             );
 
@@ -212,7 +237,7 @@ class UsuarioServiceTest {
             when(usuarioRepository.findByIdOrThrow(1L)).thenReturn(usuario);
             when(usuarioRepository.existsByEmailAndEliminadoFalse("nuevo@test.com")).thenReturn(true);
 
-            assertThatThrownBy(() -> usuarioService.update(1L, request))
+            assertThatThrownBy(() -> usuarioService.update(1L, updateRequest))
                     .isInstanceOf(BusinessException.class)
                     .hasMessageContaining("email ya está registrado");
 
@@ -221,7 +246,7 @@ class UsuarioServiceTest {
 
         @Test
         void shouldNotThrowWhenUpdatingToSameEmail() {
-            UsuarioRequest sameEmailRequest = new UsuarioRequest(
+            UpdateUsuarioRequest sameEmailRequest = new UpdateUsuarioRequest(
                     "Juan", null, "juan@test.com", null, null, null
             );
 
@@ -234,11 +259,26 @@ class UsuarioServiceTest {
         }
 
         @Test
+        void shouldNormalizeEmailOnUpdate() {
+            UpdateUsuarioRequest sameEmailWithDifferentCase = new UpdateUsuarioRequest(
+                    null, null, " JUAN@TEST.COM ", null, null, null
+            );
+
+            when(usuarioRepository.findByIdOrThrow(1L)).thenReturn(usuario);
+            when(usuarioRepository.existsByEmailAndEliminadoFalse("juan@test.com")).thenReturn(true);
+            when(usuarioRepository.save(any(Usuario.class))).thenReturn(usuario);
+
+            UsuarioResponse result = usuarioService.update(1L, sameEmailWithDifferentCase);
+
+            assertThat(result.email()).isEqualTo("juan@test.com");
+        }
+
+        @Test
         void shouldThrowWhenUserNotFound() {
             when(usuarioRepository.findByIdOrThrow(999L))
                     .thenThrow(new ResourceNotFoundException("Usuario", "id", "999"));
 
-            assertThatThrownBy(() -> usuarioService.update(999L, request))
+                assertThatThrownBy(() -> usuarioService.update(999L, updateRequest))
                     .isInstanceOf(ResourceNotFoundException.class);
         }
     }
@@ -251,9 +291,18 @@ class UsuarioServiceTest {
             when(usuarioRepository.findByIdOrThrow(1L)).thenReturn(usuario);
             doNothing().when(usuarioRepository).deleteById(1L);
 
-            usuarioService.deleteById(1L);
+            usuarioService.deleteById(1L, 2L);
 
             verify(usuarioRepository).deleteById(1L);
+        }
+
+        @Test
+        void shouldPreventSelfDelete() {
+            assertThatThrownBy(() -> usuarioService.deleteById(1L, 1L))
+                    .isInstanceOf(AccessDeniedException.class)
+                    .hasMessageContaining("propio usuario");
+
+            verify(usuarioRepository, never()).deleteById(any());
         }
 
         @Test
@@ -261,7 +310,7 @@ class UsuarioServiceTest {
             when(usuarioRepository.findByIdOrThrow(999L))
                     .thenThrow(new ResourceNotFoundException("Usuario", "id", "999"));
 
-            assertThatThrownBy(() -> usuarioService.deleteById(999L))
+                assertThatThrownBy(() -> usuarioService.deleteById(999L, 1L))
                     .isInstanceOf(ResourceNotFoundException.class);
         }
     }

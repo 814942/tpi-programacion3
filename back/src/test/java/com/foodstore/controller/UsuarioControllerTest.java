@@ -1,6 +1,7 @@
 package com.foodstore.controller;
 
-import com.foodstore.dto.request.UsuarioRequest;
+import com.foodstore.dto.request.CreateUsuarioRequest;
+import com.foodstore.dto.request.UpdateUsuarioRequest;
 import com.foodstore.dto.response.UsuarioResponse;
 import com.foodstore.exception.BusinessException;
 import com.foodstore.exception.ResourceNotFoundException;
@@ -20,6 +21,7 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -124,14 +126,14 @@ class UsuarioControllerTest {
     @Nested
     class CreateTests {
 
-        private final UsuarioRequest createRequest = new UsuarioRequest(
-                "Juan", "Perez", "nuevo@test.com", "1234567890", "password123", Rol.USUARIO
+        private final CreateUsuarioRequest createRequest = new CreateUsuarioRequest(
+                "Juan", "Perez", "nuevo@test.com", "1234567890", "Password1!", Rol.USUARIO
         );
 
         @Test
         @WithMockUser(roles = "ADMIN")
         void shouldReturn201WhenCreated() throws Exception {
-            when(usuarioService.create(any(UsuarioRequest.class))).thenReturn(response);
+                        when(usuarioService.create(any(CreateUsuarioRequest.class))).thenReturn(response);
 
             mockMvc.perform(post("/api/v1/usuarios")
                             .contentType(MediaType.APPLICATION_JSON)
@@ -145,7 +147,7 @@ class UsuarioControllerTest {
         @Test
         @WithMockUser(roles = "ADMIN")
         void shouldReturn400WhenEmailDuplicate() throws Exception {
-            when(usuarioService.create(any(UsuarioRequest.class)))
+                        when(usuarioService.create(any(CreateUsuarioRequest.class)))
                     .thenThrow(new BusinessException("El email ya está registrado"));
 
             mockMvc.perform(post("/api/v1/usuarios")
@@ -153,6 +155,23 @@ class UsuarioControllerTest {
                             .content(objectMapper.writeValueAsString(createRequest)))
                     .andExpect(status().isBadRequest())
                     .andExpect(jsonPath("$.error").value("business_error"));
+        }
+
+        @Test
+        @WithMockUser(roles = "ADMIN")
+        void shouldReturn400WhenRequiredFieldMissing() throws Exception {
+            Map<String, Object> body = Map.of(
+                    "apellido", "Perez",
+                    "email", "nuevo@test.com",
+                    "password", "Password1!",
+                    "rol", "USUARIO"
+            );
+
+            mockMvc.perform(post("/api/v1/usuarios")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(body)))
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.error").value("validation_error"));
         }
 
         @Test
@@ -168,7 +187,7 @@ class UsuarioControllerTest {
     @Nested
     class UpdateTests {
 
-        private final UsuarioRequest updateRequest = new UsuarioRequest(
+        private final UpdateUsuarioRequest updateRequest = new UpdateUsuarioRequest(
                 "Juan Actualizado", null, "nuevo@test.com", null, null, Rol.ADMIN
         );
 
@@ -185,7 +204,7 @@ class UsuarioControllerTest {
                     LocalDateTime.of(2026, 5, 16, 12, 0)
             );
 
-            when(usuarioService.update(eq(1L), any(UsuarioRequest.class)))
+            when(usuarioService.update(eq(1L), any(UpdateUsuarioRequest.class)))
                     .thenReturn(updatedResponse);
 
             mockMvc.perform(patch("/api/v1/usuarios/1")
@@ -201,7 +220,7 @@ class UsuarioControllerTest {
         @Test
         @WithMockUser(roles = "ADMIN")
         void shouldReturn404WhenUserNotFound() throws Exception {
-            when(usuarioService.update(eq(999L), any(UsuarioRequest.class)))
+            when(usuarioService.update(eq(999L), any(UpdateUsuarioRequest.class)))
                     .thenThrow(new ResourceNotFoundException("Usuario", "id", "999"));
 
             mockMvc.perform(patch("/api/v1/usuarios/999")
@@ -213,7 +232,7 @@ class UsuarioControllerTest {
         @Test
         @WithMockUser(roles = "ADMIN")
         void shouldReturn400WhenEmailDuplicate() throws Exception {
-            when(usuarioService.update(eq(1L), any(UsuarioRequest.class)))
+            when(usuarioService.update(eq(1L), any(UpdateUsuarioRequest.class)))
                     .thenThrow(new BusinessException("El email ya está registrado"));
 
             mockMvc.perform(patch("/api/v1/usuarios/1")
@@ -221,6 +240,21 @@ class UsuarioControllerTest {
                             .content(objectMapper.writeValueAsString(updateRequest)))
                     .andExpect(status().isBadRequest())
                     .andExpect(jsonPath("$.error").value("business_error"));
+        }
+
+        @Test
+        @WithMockUser(roles = "ADMIN")
+        void shouldReturn400WhenUnknownFieldPresent() throws Exception {
+            Map<String, Object> body = Map.of(
+                    "nomber", "Tyron",
+                    "email", "t_to_b@foodstore.com"
+            );
+
+            mockMvc.perform(patch("/api/v1/usuarios/1")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(body)))
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.error").value("bad_request"));
         }
 
         @Test
@@ -239,7 +273,7 @@ class UsuarioControllerTest {
         @Test
         @WithMockUser(roles = "ADMIN")
         void shouldReturn200WhenDeleted() throws Exception {
-            doNothing().when(usuarioService).deleteById(1L);
+                        doNothing().when(usuarioService).deleteById(1L, null);
 
             mockMvc.perform(delete("/api/v1/usuarios/1"))
                     .andExpect(status().isOk())
@@ -250,7 +284,7 @@ class UsuarioControllerTest {
         @WithMockUser(roles = "ADMIN")
         void shouldReturn404WhenUserNotFound() throws Exception {
             doThrow(new ResourceNotFoundException("Usuario", "id", "999"))
-                    .when(usuarioService).deleteById(999L);
+                                        .when(usuarioService).deleteById(999L, null);
 
             mockMvc.perform(delete("/api/v1/usuarios/999"))
                     .andExpect(status().isNotFound());
