@@ -1,3 +1,15 @@
+-- Crear la tabla si no existe (Flyway corre antes que Hibernate ddl-auto)
+CREATE TABLE IF NOT EXISTS categorias (
+    id BIGSERIAL PRIMARY KEY,
+    nombre VARCHAR(100) NOT NULL,
+    descripcion VARCHAR(500),
+    imagen VARCHAR(500),
+    eliminado BOOLEAN DEFAULT FALSE,
+    created_at TIMESTAMP,
+    updated_at TIMESTAMP,
+    version BIGINT
+);
+
 DO $$
 DECLARE
     constraint_name text;
