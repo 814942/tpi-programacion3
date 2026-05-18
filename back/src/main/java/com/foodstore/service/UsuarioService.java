@@ -6,6 +6,7 @@ import com.foodstore.dto.response.UsuarioResponse;
 import com.foodstore.exception.BusinessException;
 import com.foodstore.model.Usuario;
 import com.foodstore.repository.UsuarioRepository;
+import com.foodstore.util.EmailNormalizer;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.AccessDeniedException;
@@ -14,7 +15,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Locale;
 
 @Slf4j
 @Service
@@ -41,7 +41,7 @@ public class UsuarioService {
             throw new BusinessException("El rol es obligatorio");
         }
 
-        String email = normalizeEmail(request.email());
+        String email = EmailNormalizer.normalize(request.email());
         if (usuarioRepository.existsByEmailAndEliminadoFalse(email)) {
             throw new BusinessException("El email ya está registrado");
         }
@@ -67,7 +67,7 @@ public class UsuarioService {
         if (request.nombre() != null) usuario.setNombre(request.nombre());
         if (request.apellido() != null) usuario.setApellido(request.apellido());
         if (request.email() != null) {
-            String normalizedEmail = normalizeEmail(request.email());
+            String normalizedEmail = EmailNormalizer.normalize(request.email());
             if (usuarioRepository.existsByEmailAndEliminadoFalse(normalizedEmail) &&
                 !usuario.getEmail().equals(normalizedEmail)) {
                 throw new BusinessException("El email ya está registrado");
@@ -94,10 +94,6 @@ public class UsuarioService {
         usuarioRepository.findByIdOrThrow(id);
         usuarioRepository.deleteById(id);
         log.info("Usuario {} eliminado (soft delete)", id);
-    }
-
-    private String normalizeEmail(String email) {
-        return email == null ? null : email.trim().toLowerCase(Locale.ROOT);
     }
 
     private UsuarioResponse toResponse(Usuario usuario) {

@@ -3,6 +3,7 @@ package com.foodstore.config;
 import com.foodstore.model.Usuario;
 import com.foodstore.model.enums.Rol;
 import com.foodstore.repository.UsuarioRepository;
+import com.foodstore.util.EmailNormalizer;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
@@ -32,16 +33,17 @@ public class DataLoader implements CommandLineRunner {
     @Override
     public void run(String... args) {
         if (usuarioRepository.count() == 0) {
+            String normalizedAdminEmail = EmailNormalizer.normalize(adminEmail);
             Usuario admin = Usuario.builder()
                     .nombre("Admin")
                     .apellido("Sistema")
-                    .email(adminEmail)
+                    .email(normalizedAdminEmail)
                     .password(passwordEncoder.encode(adminPassword))
                     .rol(Rol.ADMIN)
                     .build();
 
             usuarioRepository.save(admin);
-            log.info("Admin creado con email: {}. Consulte la fuente de configuración para la contraseña.", adminEmail);
+            log.info("Admin creado con email: {}. Consulte la fuente de configuración para la contraseña.", admin.getEmail());
         } else {
             log.info("Ya existen usuarios en BD, se omite seed data");
         }

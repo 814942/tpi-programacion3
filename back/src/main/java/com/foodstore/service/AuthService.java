@@ -8,13 +8,12 @@ import com.foodstore.model.Usuario;
 import com.foodstore.model.enums.Rol;
 import com.foodstore.repository.UsuarioRepository;
 import com.foodstore.security.JwtProvider;
+import com.foodstore.util.EmailNormalizer;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.Locale;
 
 @Slf4j
 @Service
@@ -26,7 +25,7 @@ public class AuthService {
     private final JwtProvider jwtProvider;
 
     public AuthResponse login(LoginRequest request) {
-        String email = request.email().toLowerCase(Locale.ROOT);
+        String email = EmailNormalizer.normalize(request.email());
         Usuario usuario = usuarioRepository.findByEmailAndEliminadoFalse(email)
                 .orElseThrow(() -> new BusinessException("Email o contraseña inválidos"));
 
@@ -41,7 +40,7 @@ public class AuthService {
 
     @Transactional
     public AuthResponse register(RegisterRequest request) {
-        String email = request.email().toLowerCase(Locale.ROOT);
+        String email = EmailNormalizer.normalize(request.email());
         if (usuarioRepository.existsByEmailAndEliminadoFalse(email)) {
             throw new BusinessException("El email ya está registrado");
         }

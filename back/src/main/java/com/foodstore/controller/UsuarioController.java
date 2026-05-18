@@ -6,8 +6,10 @@ import com.foodstore.dto.response.UsuarioResponse;
 import com.foodstore.service.UsuarioService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
@@ -18,6 +20,7 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/v1/usuarios")
 @PreAuthorize("hasRole('ADMIN')")
+@Slf4j
 @RequiredArgsConstructor
 public class UsuarioController {
 
@@ -64,10 +67,12 @@ public class UsuarioController {
         if (principal instanceof String rawValue) {
             try {
                 return Long.parseLong(rawValue);
-            } catch (NumberFormatException ignored) {
-                return null;
+            } catch (NumberFormatException ex) {
+                log.warn("Principal inválido para extracción de ID de usuario: {}", rawValue);
+                throw new AccessDeniedException("No se pudo validar la identidad del usuario autenticado");
             }
         }
-        return null;
+        log.warn("Tipo de principal no soportado para extracción de ID: {}", principal.getClass().getName());
+        throw new AccessDeniedException("No se pudo validar la identidad del usuario autenticado");
     }
 }

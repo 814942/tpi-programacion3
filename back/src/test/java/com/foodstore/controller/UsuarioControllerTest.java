@@ -15,6 +15,9 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
@@ -29,6 +32,7 @@ import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.authentication;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK)
@@ -271,23 +275,30 @@ class UsuarioControllerTest {
     class DeleteTests {
 
         @Test
-        @WithMockUser(roles = "ADMIN")
         void shouldReturn200WhenDeleted() throws Exception {
-                        doNothing().when(usuarioService).deleteById(1L, null);
+                        doNothing().when(usuarioService).deleteById(1L, 2L);
 
-            mockMvc.perform(delete("/api/v1/usuarios/1"))
+            mockMvc.perform(delete("/api/v1/usuarios/1")
+                            .with(authentication(adminAuthentication(2L))))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.message").value("Usuario eliminado correctamente"));
         }
 
         @Test
-        @WithMockUser(roles = "ADMIN")
         void shouldReturn404WhenUserNotFound() throws Exception {
             doThrow(new ResourceNotFoundException("Usuario", "id", "999"))
-                                        .when(usuarioService).deleteById(999L, null);
+                                        .when(usuarioService).deleteById(999L, 2L);
 
-            mockMvc.perform(delete("/api/v1/usuarios/999"))
+            mockMvc.perform(delete("/api/v1/usuarios/999")
+                            .with(authentication(adminAuthentication(2L))))
                     .andExpect(status().isNotFound());
+        }
+
+        @Test
+        void shouldReturn403WhenAdminPrincipalIsInvalid() throws Exception {
+            mockMvc.perform(delete("/api/v1/usuarios/1")
+                            .with(authentication(adminAuthentication("admin-user"))))
+                    .andExpect(status().isForbidden());
         }
 
         @Test
@@ -296,5 +307,13 @@ class UsuarioControllerTest {
             mockMvc.perform(delete("/api/v1/usuarios/1"))
                     .andExpect(status().isForbidden());
         }
+    }
+
+    private Authentication adminAuthentication(Object principal) {
+        return new UsernamePasswordAuthenticationToken(
+                principal,
+                null,
+                List.of(new SimpleGrantedAuthority("ROLE_ADMIN"))
+        );
     }
 }

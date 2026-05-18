@@ -122,6 +122,20 @@ class AuthServiceTest {
         }
 
         @Test
+        void shouldAuthenticateWithTrimmedEmailInput() {
+            LoginRequest trimEmailRequest = new LoginRequest("  juan@test.com  ", "Pass1234!");
+            when(usuarioRepository.findByEmailAndEliminadoFalse("juan@test.com"))
+                    .thenReturn(Optional.of(usuario));
+            when(passwordEncoder.matches("Pass1234!", "encoded-password")).thenReturn(true);
+            when(jwtProvider.generateToken(1L, "juan@test.com", "USUARIO")).thenReturn("jwt-token");
+
+            AuthResponse response = authService.login(trimEmailRequest);
+
+            assertThat(response.token()).isEqualTo("jwt-token");
+            verify(usuarioRepository).findByEmailAndEliminadoFalse("juan@test.com");
+        }
+
+        @Test
         void shouldNotRevealWhichFieldIsInvalid() {
             when(usuarioRepository.findByEmailAndEliminadoFalse("juan@test.com"))
                     .thenReturn(Optional.empty());
@@ -175,6 +189,24 @@ class AuthServiceTest {
             when(jwtProvider.generateToken(anyLong(), anyString(), anyString())).thenReturn("jwt");
 
             authService.register(upperCaseRequest);
+
+            ArgumentCaptor<Usuario> captor = ArgumentCaptor.forClass(Usuario.class);
+            verify(usuarioRepository).save(captor.capture());
+            assertThat(captor.getValue().getEmail()).isEqualTo("nuevo@test.com");
+        }
+
+        @Test
+        void shouldTrimEmailWhenRegistering() {
+            RegisterRequest trimEmailRequest = new RegisterRequest(
+                    "Juan", "Perez", "  Nuevo@Test.COM  ", null, "Pass1234!"
+            );
+
+            when(usuarioRepository.existsByEmailAndEliminadoFalse("nuevo@test.com")).thenReturn(false);
+            when(passwordEncoder.encode("Pass1234!")).thenReturn("encoded-pass");
+            when(usuarioRepository.save(any(Usuario.class))).thenReturn(usuario);
+            when(jwtProvider.generateToken(anyLong(), anyString(), anyString())).thenReturn("jwt");
+
+            authService.register(trimEmailRequest);
 
             ArgumentCaptor<Usuario> captor = ArgumentCaptor.forClass(Usuario.class);
             verify(usuarioRepository).save(captor.capture());

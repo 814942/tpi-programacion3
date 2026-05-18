@@ -1,5 +1,6 @@
 package com.foodstore.exception;
 
+import com.fasterxml.jackson.databind.exc.InvalidFormatException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolationException;
 import lombok.extern.slf4j.Slf4j;
@@ -96,8 +97,10 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handleMessageNotReadable(
             HttpMessageNotReadableException ex, HttpServletRequest request) {
         String message = "El cuerpo de la solicitud es inválido. Verificá que el JSON esté bien formado y los valores sean correctos.";
-        if (ex.getMessage() != null && ex.getMessage().contains("Cannot deserialize")) {
-            message = "Valor inválido para un campo enumerado. Valores aceptados: " + extractAcceptedValues(ex.getMessage());
+        InvalidFormatException invalidFormatException = findInvalidFormatException(ex);
+        if (invalidFormatException != null && isEnumType(invalidFormatException)) {
+            message = "Valor inválido para un campo enumerado. Valores aceptados: " +
+                    extractAcceptedValues(invalidFormatException.getTargetType());
         }
         ErrorResponse response = ErrorResponse.of(
                 "bad_request",
@@ -161,17 +164,39 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(500).body(response);
     }
 
-    private String extractAcceptedValues(String errorMessage) {
-        if (errorMessage == null) return "";
-        int idx = errorMessage.indexOf("accepted for Enum class: [");
-        if (idx != -1) {
-            int start = idx + "accepted for Enum class: ".length();
-            int end = errorMessage.indexOf("]", start);
-            if (end != -1) {
-                return errorMessage.substring(start, end);
+    private InvalidFormatException findInvalidFormatException(Throwable throwable) {
+        Throwable current = throwable;
+        while (current != null) {
+            if (current instanceof InvalidFormatException invalidFormatException) {
+                return invalidFormatException;
             }
+            current = current.getCause();
         }
-        return "Revisá la documentación de la API";
+        return null;
+    }
+
+    private boolean isEnumType(InvalidFormatException ex) {
+        Class<?> targetType = ex.getTargetType();
+        return targetType != null && targetType.isEnum();
+    }
+
+    private String extractAcceptedValues(Class<?> enumType) {
+        if (enumType == null || !enumType.isEnum()) {
+            return "Revisá la documentación de la API";
+        }
+        Object[] constants = enumType.getEnumConstants();
+        if (constants == null || constants.length == 0) {
+            return "Revisá la documentación de la API";
+        }
+        StringBuilder builder = new StringBuilder("[");
+        for (int i = 0; i < constants.length; i++) {
+            if (i > 0) {
+                builder.append(", ");
+            }
+            builder.append(constants[i]);
+        }
+        builder.append(']');
+        return builder.toString();
     }
 
     private String extractSqlState(DataIntegrityViolationException ex) {
