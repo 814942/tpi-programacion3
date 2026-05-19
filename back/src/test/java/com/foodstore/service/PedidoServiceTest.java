@@ -116,7 +116,7 @@ class PedidoServiceTest {
         @Test
         void shouldCreatePedidoSuccessfully() {
             when(usuarioRepository.findByIdOrThrow(1L)).thenReturn(usuario);
-            when(productoRepository.findByIdOrThrow(10L)).thenReturn(producto);
+            when(productoRepository.findByIdForUpdateOrThrow(10L)).thenReturn(producto);
             when(pedidoRepository.save(any(Pedido.class))).thenReturn(pedido);
 
             PedidoResponse result = pedidoService.create(1L, pedidoRequest);
@@ -164,7 +164,7 @@ class PedidoServiceTest {
         @Test
         void shouldThrowWhenProductoNotFound() {
             when(usuarioRepository.findByIdOrThrow(1L)).thenReturn(usuario);
-            when(productoRepository.findByIdOrThrow(10L))
+            when(productoRepository.findByIdForUpdateOrThrow(10L))
                     .thenThrow(new ResourceNotFoundException("Producto", "id", "10"));
 
             assertThatThrownBy(() -> pedidoService.create(1L, pedidoRequest))
@@ -178,7 +178,7 @@ class PedidoServiceTest {
         void shouldThrowWhenProductoNotDisponible() {
             producto.setDisponible(false);
             when(usuarioRepository.findByIdOrThrow(1L)).thenReturn(usuario);
-            when(productoRepository.findByIdOrThrow(10L)).thenReturn(producto);
+            when(productoRepository.findByIdForUpdateOrThrow(10L)).thenReturn(producto);
 
             assertThatThrownBy(() -> pedidoService.create(1L, pedidoRequest))
                     .isInstanceOf(BusinessException.class)
@@ -191,7 +191,7 @@ class PedidoServiceTest {
         void shouldThrowWhenStockInsuficiente() {
             producto.setStock(1);
             when(usuarioRepository.findByIdOrThrow(1L)).thenReturn(usuario);
-            when(productoRepository.findByIdOrThrow(10L)).thenReturn(producto);
+            when(productoRepository.findByIdForUpdateOrThrow(10L)).thenReturn(producto);
 
             assertThatThrownBy(() -> pedidoService.create(1L, pedidoRequest))
                     .isInstanceOf(BusinessException.class)
@@ -294,6 +294,7 @@ class PedidoServiceTest {
         @Test
         void shouldTransitionFromPendienteToCancelado() {
             when(pedidoRepository.findByIdOrThrow(1L)).thenReturn(pedido);
+            when(productoRepository.findByIdOrThrow(10L)).thenReturn(producto);
             when(pedidoRepository.save(any(Pedido.class))).thenReturn(pedido);
 
             PedidoResponse result = pedidoService.updateEstado(1L, Estado.CANCELADO);

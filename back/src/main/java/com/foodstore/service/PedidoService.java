@@ -10,6 +10,7 @@ import com.foodstore.model.Pedido;
 import com.foodstore.model.Producto;
 import com.foodstore.model.Usuario;
 import com.foodstore.model.enums.Estado;
+import com.foodstore.model.enums.Rol;
 import com.foodstore.repository.PedidoRepository;
 import com.foodstore.repository.ProductoRepository;
 import com.foodstore.repository.UsuarioRepository;
@@ -83,7 +84,7 @@ public class PedidoService {
         BigDecimal total = BigDecimal.ZERO;
 
         for (PedidoRequest.DetalleRequest detalleReq : request.detalles()) {
-            Producto producto = productoRepository.findByIdOrThrow(detalleReq.idProducto());
+            Producto producto = productoRepository.findByIdForUpdateOrThrow(detalleReq.idProducto());
 
             if (!producto.getDisponible()) {
                 throw new BusinessException("El producto '" + producto.getNombre() + "' no está disponible");
@@ -190,7 +191,7 @@ public class PedidoService {
     }
 
     private boolean isAdmin(Long userId) {
-        return usuarioRepository.findByIdOrThrow(userId).getRol().name().equals("ADMIN");
+        return usuarioRepository.findByIdOrThrow(userId).getRol() == Rol.ADMIN;
     }
 
     private PedidoResponse toResponse(Pedido pedido) {
