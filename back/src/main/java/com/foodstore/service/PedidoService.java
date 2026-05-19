@@ -180,8 +180,11 @@ public class PedidoService {
                             detalle.getCantidad(), producto.getNombre(), pedido.getId());
                 }
             } catch (Exception e) {
-                log.warn("No se pudo restaurar stock del producto ID {} en pedido {}: {}",
-                        detalle.getProductoId(), pedido.getId(), e.getMessage());
+                log.error("No se pudo restaurar stock del producto ID {} en pedido {}",
+                        detalle.getProductoId(), pedido.getId(), e);
+                throw new BusinessException(
+                        "No se pudo restaurar el stock del producto ID " + detalle.getProductoId()
+                                + " para el pedido " + pedido.getId());
             }
         }
     }
