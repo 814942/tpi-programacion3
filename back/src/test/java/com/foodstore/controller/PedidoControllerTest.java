@@ -91,7 +91,7 @@ class PedidoControllerTest {
 
         @Test
         @WithAuthenticatedUser(userId = 1L)
-        void shouldReturn400WhenProductoNotFound() throws Exception {
+        void shouldReturn404WhenProductoNotFound() throws Exception {
             when(pedidoService.create(eq(1L), any(PedidoRequest.class)))
                     .thenThrow(new ResourceNotFoundException("Producto", "id", "10"));
 
