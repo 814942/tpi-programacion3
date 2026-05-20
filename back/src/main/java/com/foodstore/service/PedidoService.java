@@ -2,6 +2,7 @@ package com.foodstore.service;
 
 import com.foodstore.dto.request.PedidoRequest;
 import com.foodstore.dto.response.DetallePedidoResponse;
+import com.foodstore.dto.response.PaginatedResponse;
 import com.foodstore.dto.response.PedidoResponse;
 import com.foodstore.dto.response.UsuarioResponse;
 import com.foodstore.exception.BusinessException;
@@ -16,6 +17,8 @@ import com.foodstore.repository.ProductoRepository;
 import com.foodstore.repository.UsuarioRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -48,6 +51,17 @@ public class PedidoService {
         return pedidoRepository.findAll().stream()
                 .map(this::toResponse)
                 .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public PaginatedResponse<PedidoResponse> findAll(Pageable pageable, String search) {
+        Page<Pedido> page;
+        if (search != null && !search.isBlank()) {
+            page = pedidoRepository.search(search, pageable);
+        } else {
+            page = pedidoRepository.findAll(pageable);
+        }
+        return PaginatedResponse.from(page.map(this::toResponse));
     }
 
     @Transactional(readOnly = true)

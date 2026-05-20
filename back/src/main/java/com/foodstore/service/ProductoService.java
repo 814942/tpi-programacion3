@@ -3,6 +3,7 @@ package com.foodstore.service;
 import com.foodstore.dto.request.ProductoRequest;
 import com.foodstore.dto.request.UpdateProductoRequest;
 import com.foodstore.dto.response.CategoriaResponse;
+import com.foodstore.dto.response.PaginatedResponse;
 import com.foodstore.dto.response.ProductoResponse;
 import com.foodstore.exception.BusinessException;
 import com.foodstore.model.Categoria;
@@ -11,6 +12,8 @@ import com.foodstore.repository.CategoriaRepository;
 import com.foodstore.repository.ProductoRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -30,6 +33,17 @@ public class ProductoService {
         return productoRepository.findAll().stream()
                 .map(this::toResponse)
                 .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public PaginatedResponse<ProductoResponse> findAll(Pageable pageable, String search) {
+        Page<Producto> page;
+        if (search != null && !search.isBlank()) {
+            page = productoRepository.searchByNombre(search, pageable);
+        } else {
+            page = productoRepository.findAll(pageable);
+        }
+        return PaginatedResponse.from(page.map(this::toResponse));
     }
 
     @Transactional(readOnly = true)

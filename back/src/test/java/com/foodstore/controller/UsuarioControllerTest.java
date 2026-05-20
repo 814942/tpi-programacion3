@@ -2,6 +2,7 @@ package com.foodstore.controller;
 
 import com.foodstore.dto.request.CreateUsuarioRequest;
 import com.foodstore.dto.request.UpdateUsuarioRequest;
+import com.foodstore.dto.response.PaginatedResponse;
 import com.foodstore.dto.response.UsuarioResponse;
 import com.foodstore.exception.BusinessException;
 import com.foodstore.exception.ResourceNotFoundException;
@@ -14,6 +15,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -27,8 +31,10 @@ import java.util.List;
 import java.util.Map;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -65,25 +71,29 @@ class UsuarioControllerTest {
         @Test
         @WithMockUser(roles = "ADMIN")
         void shouldReturn200WithUserList() throws Exception {
-            when(usuarioService.findAll()).thenReturn(List.of(response));
+            var page = new PageImpl<>(List.of(response), PageRequest.of(0, 20), 1);
+            var paginated = PaginatedResponse.from(page);
+            doReturn(paginated).when(usuarioService).findAll(any(Pageable.class), any());
 
             mockMvc.perform(get("/api/v1/usuarios"))
                     .andExpect(status().isOk())
-                    .andExpect(jsonPath("$[0].id").value(1))
-                    .andExpect(jsonPath("$[0].nombre").value("Juan"))
-                    .andExpect(jsonPath("$[0].email").value("juan@test.com"))
-                    .andExpect(jsonPath("$[0].rol").value("USUARIO"))
-                    .andExpect(jsonPath("$[0].password").doesNotExist());
+                    .andExpect(jsonPath("$.content[0].id").value(1))
+                    .andExpect(jsonPath("$.content[0].nombre").value("Juan"))
+                    .andExpect(jsonPath("$.content[0].email").value("juan@test.com"))
+                    .andExpect(jsonPath("$.content[0].rol").value("USUARIO"))
+                    .andExpect(jsonPath("$.content[0].password").doesNotExist());
         }
 
         @Test
         @WithMockUser(roles = "ADMIN")
         void shouldReturn200WithEmptyList() throws Exception {
-            when(usuarioService.findAll()).thenReturn(List.of());
+            var emptyPage = new PageImpl<>(List.of(), PageRequest.of(0, 20), 0);
+            var paginated = PaginatedResponse.from(emptyPage);
+            doReturn(paginated).when(usuarioService).findAll(any(Pageable.class), any());
 
             mockMvc.perform(get("/api/v1/usuarios"))
                     .andExpect(status().isOk())
-                    .andExpect(jsonPath("$").isEmpty());
+                    .andExpect(jsonPath("$.content").isEmpty());
         }
 
         @Test

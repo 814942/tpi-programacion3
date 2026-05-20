@@ -2,11 +2,14 @@ package com.foodstore.controller;
 
 import com.foodstore.dto.request.EstadoRequest;
 import com.foodstore.dto.request.PedidoRequest;
+import com.foodstore.dto.response.PaginatedResponse;
 import com.foodstore.dto.response.PedidoResponse;
 import com.foodstore.service.PedidoService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -30,6 +33,7 @@ public class PedidoController {
     }
 
     @PostMapping
+    @PreAuthorize("hasRole('USUARIO')")
     public ResponseEntity<PedidoResponse> create(@RequestBody @Valid PedidoRequest request,
                                                   Authentication authentication) {
         Long currentUserId = extractCurrentUserId(authentication);
@@ -39,8 +43,10 @@ public class PedidoController {
 
     @GetMapping
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<List<PedidoResponse>> findAll() {
-        return ResponseEntity.ok(pedidoService.findAll());
+    public ResponseEntity<PaginatedResponse<PedidoResponse>> findAll(
+            @PageableDefault(size = 20, sort = "fecha") Pageable pageable,
+            @RequestParam(required = false) String search) {
+        return ResponseEntity.ok(pedidoService.findAll(pageable, search));
     }
 
     @GetMapping("/{id}")

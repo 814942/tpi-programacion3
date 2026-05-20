@@ -3,6 +3,7 @@ package com.foodstore.controller;
 import com.foodstore.dto.request.ProductoRequest;
 import com.foodstore.dto.request.UpdateProductoRequest;
 import com.foodstore.dto.response.CategoriaResponse;
+import com.foodstore.dto.response.PaginatedResponse;
 import com.foodstore.dto.response.ProductoResponse;
 import com.foodstore.exception.BusinessException;
 import com.foodstore.exception.ResourceNotFoundException;
@@ -14,6 +15,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
@@ -24,8 +28,10 @@ import java.util.List;
 import java.util.Map;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -71,27 +77,34 @@ class ProductoControllerTest {
         @Test
         @WithMockUser
         void shouldReturn200WithProductList() throws Exception {
-            when(productoService.findAll()).thenReturn(List.of(response));
+            var page = new PageImpl<>(List.of(response), PageRequest.of(0, 20), 1);
+            var paginated = PaginatedResponse.from(page);
+            doReturn(paginated).when(productoService).findAll(any(Pageable.class), any());
 
             mockMvc.perform(get("/api/v1/productos"))
                     .andExpect(status().isOk())
-                    .andExpect(jsonPath("$[0].id").value(1))
-                    .andExpect(jsonPath("$[0].nombre").value("Clásica"))
-                    .andExpect(jsonPath("$[0].precio").value(25000.00))
-                    .andExpect(jsonPath("$[0].stock").value(50))
-                    .andExpect(jsonPath("$[0].disponible").value(true))
-                    .andExpect(jsonPath("$[0].categoria.id").value(1L))
-                    .andExpect(jsonPath("$[0].categoria.nombre").value("Hamburguesas"));
+                    .andExpect(jsonPath("$.content[0].id").value(1))
+                    .andExpect(jsonPath("$.content[0].nombre").value("Clásica"))
+                    .andExpect(jsonPath("$.content[0].precio").value(25000.00))
+                    .andExpect(jsonPath("$.content[0].stock").value(50))
+                    .andExpect(jsonPath("$.content[0].disponible").value(true))
+                    .andExpect(jsonPath("$.content[0].categoria.id").value(1L))
+                    .andExpect(jsonPath("$.content[0].categoria.nombre").value("Hamburguesas"))
+                    .andExpect(jsonPath("$.page").value(0))
+                    .andExpect(jsonPath("$.totalElements").value(1));
         }
 
         @Test
         @WithMockUser
         void shouldReturn200WithEmptyList() throws Exception {
-            when(productoService.findAll()).thenReturn(List.of());
+            var emptyPage = new PageImpl<>(List.of(), PageRequest.of(0, 20), 0);
+            var paginated = PaginatedResponse.from(emptyPage);
+            doReturn(paginated).when(productoService).findAll(any(Pageable.class), any());
 
             mockMvc.perform(get("/api/v1/productos"))
                     .andExpect(status().isOk())
-                    .andExpect(jsonPath("$").isEmpty());
+                    .andExpect(jsonPath("$.content").isEmpty())
+                    .andExpect(jsonPath("$.totalElements").value(0));
         }
 
         @Test

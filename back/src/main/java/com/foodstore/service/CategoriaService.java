@@ -3,11 +3,14 @@ package com.foodstore.service;
 import com.foodstore.dto.request.CategoriaRequest;
 import com.foodstore.dto.request.UpdateCategoriaRequest;
 import com.foodstore.dto.response.CategoriaResponse;
+import com.foodstore.dto.response.PaginatedResponse;
 import com.foodstore.exception.BusinessException;
 import com.foodstore.model.Categoria;
 import com.foodstore.repository.CategoriaRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -24,6 +27,12 @@ public class CategoriaService {
         return categoriaRepository.findAll().stream()
                 .map(this::toResponse)
                 .toList();
+    }
+
+    public PaginatedResponse<CategoriaResponse> findAll(Pageable pageable) {
+        Page<CategoriaResponse> page = categoriaRepository.findAll(pageable)
+                .map(this::toResponse);
+        return PaginatedResponse.from(page);
     }
 
     public CategoriaResponse findById(Long id) {

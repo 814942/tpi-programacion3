@@ -2,11 +2,14 @@ package com.foodstore.controller;
 
 import com.foodstore.dto.request.CreateUsuarioRequest;
 import com.foodstore.dto.request.UpdateUsuarioRequest;
+import com.foodstore.dto.response.PaginatedResponse;
 import com.foodstore.dto.response.UsuarioResponse;
 import com.foodstore.service.UsuarioService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
@@ -27,8 +30,10 @@ public class UsuarioController {
     private final UsuarioService usuarioService;
 
     @GetMapping
-    public ResponseEntity<List<UsuarioResponse>> findAll() {
-        return ResponseEntity.ok(usuarioService.findAll());
+    public ResponseEntity<PaginatedResponse<UsuarioResponse>> findAll(
+            @PageableDefault(size = 20, sort = "nombre") Pageable pageable,
+            @RequestParam(required = false) String search) {
+        return ResponseEntity.ok(usuarioService.findAll(pageable, search));
     }
 
     @GetMapping("/{id}")
