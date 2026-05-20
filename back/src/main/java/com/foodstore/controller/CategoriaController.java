@@ -3,10 +3,13 @@ package com.foodstore.controller;
 import com.foodstore.dto.request.CategoriaRequest;
 import com.foodstore.dto.request.UpdateCategoriaRequest;
 import com.foodstore.dto.response.CategoriaResponse;
+import com.foodstore.dto.response.PaginatedResponse;
 import com.foodstore.service.CategoriaService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -23,8 +26,10 @@ public class CategoriaController {
     private final CategoriaService categoriaService;
 
     @GetMapping
-    public ResponseEntity<List<CategoriaResponse>> findAll() {
-        return ResponseEntity.ok(categoriaService.findAll());
+    public ResponseEntity<PaginatedResponse<CategoriaResponse>> findAll(
+            @PageableDefault(size = 20, sort = "nombre") Pageable pageable,
+            @RequestParam(required = false) String search) {
+        return ResponseEntity.ok(categoriaService.findAll(pageable, search));
     }
 
     @GetMapping("/{id}")

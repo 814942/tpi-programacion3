@@ -1,6 +1,7 @@
 package com.foodstore.service;
 
 import com.foodstore.dto.request.PedidoRequest;
+import com.foodstore.dto.response.PaginatedResponse;
 import com.foodstore.dto.response.PedidoResponse;
 import com.foodstore.exception.BusinessException;
 import com.foodstore.exception.ResourceNotFoundException;
@@ -22,6 +23,9 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.AccessDeniedException;
 
 import java.math.BigDecimal;
@@ -243,21 +247,23 @@ class PedidoServiceTest {
 
         @Test
         void shouldReturnPedidosForUsuario() {
-            when(pedidoRepository.findByUsuarioId(1L)).thenReturn(List.of(pedido));
+            Page<Pedido> page = new PageImpl<>(List.of(pedido));
+            when(pedidoRepository.findByUsuarioIdPaginated(eq(1L), any(Pageable.class))).thenReturn(page);
 
-            List<PedidoResponse> result = pedidoService.findByUsuario(1L);
+            PaginatedResponse<PedidoResponse> result = pedidoService.findByUsuario(1L, Pageable.unpaged(), null);
 
-            assertThat(result).hasSize(1);
-            assertThat(result.get(0).id()).isEqualTo(1L);
+            assertThat(result.content()).hasSize(1);
+            assertThat(result.content().get(0).id()).isEqualTo(1L);
         }
 
         @Test
         void shouldReturnEmptyListWhenNoPedidos() {
-            when(pedidoRepository.findByUsuarioId(1L)).thenReturn(List.of());
+            Page<Pedido> page = new PageImpl<>(List.of());
+            when(pedidoRepository.findByUsuarioIdPaginated(eq(1L), any(Pageable.class))).thenReturn(page);
 
-            List<PedidoResponse> result = pedidoService.findByUsuario(1L);
+            PaginatedResponse<PedidoResponse> result = pedidoService.findByUsuario(1L, Pageable.unpaged(), null);
 
-            assertThat(result).isEmpty();
+            assertThat(result.content()).isEmpty();
         }
     }
 

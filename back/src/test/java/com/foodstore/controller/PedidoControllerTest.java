@@ -4,6 +4,7 @@ import com.foodstore.config.WithAuthenticatedUser;
 import com.foodstore.dto.request.EstadoRequest;
 import com.foodstore.dto.request.PedidoRequest;
 import com.foodstore.dto.response.DetallePedidoResponse;
+import com.foodstore.dto.response.PaginatedResponse;
 import com.foodstore.dto.response.PedidoResponse;
 import com.foodstore.dto.response.UsuarioResponse;
 import com.foodstore.exception.BusinessException;
@@ -19,6 +20,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
@@ -30,7 +34,10 @@ import java.util.List;
 import java.util.Map;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.isNull;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -173,23 +180,37 @@ class PedidoControllerTest {
         @Test
         @WithAuthenticatedUser(userId = 1L)
         void shouldReturn200WithPedidosList() throws Exception {
-            when(pedidoService.findByUsuario(1L)).thenReturn(List.of(pedidoResponse));
+            PaginatedResponse<PedidoResponse> paginatedResponse = new PaginatedResponse<>(
+                    List.of(pedidoResponse),
+                    0,
+                    20,
+                    1,
+                    1
+            );
+            when(pedidoService.findByUsuario(eq(1L), any(), isNull())).thenReturn(paginatedResponse);
 
             mockMvc.perform(get("/api/v1/pedidos/usuario"))
                     .andExpect(status().isOk())
-                    .andExpect(jsonPath("$[0].id").value(1))
-                    .andExpect(jsonPath("$[0].estado").value("PENDIENTE"))
-                    .andExpect(jsonPath("$[0].usuario.id").value(1));
+                    .andExpect(jsonPath("$.content[0].id").value(1))
+                    .andExpect(jsonPath("$.content[0].estado").value("PENDIENTE"))
+                    .andExpect(jsonPath("$.content[0].usuario.id").value(1));
         }
 
         @Test
         @WithAuthenticatedUser(userId = 1L)
         void shouldReturn200WithEmptyList() throws Exception {
-            when(pedidoService.findByUsuario(1L)).thenReturn(List.of());
+            PaginatedResponse<PedidoResponse> paginatedResponse = new PaginatedResponse<>(
+                    List.of(),
+                    0,
+                    20,
+                    0,
+                    0
+            );
+            when(pedidoService.findByUsuario(eq(1L), any(), isNull())).thenReturn(paginatedResponse);
 
             mockMvc.perform(get("/api/v1/pedidos/usuario"))
                     .andExpect(status().isOk())
-                    .andExpect(jsonPath("$").isEmpty());
+                    .andExpect(jsonPath("$.content").isEmpty());
         }
 
         @Test
@@ -205,22 +226,27 @@ class PedidoControllerTest {
         @Test
         @WithMockUser(roles = "ADMIN")
         void shouldReturn200WithPedidosList() throws Exception {
-            when(pedidoService.findAll()).thenReturn(List.of(pedidoResponse));
+            var page = new PageImpl<>(List.of(pedidoResponse), PageRequest.of(0, 20), 1);
+            var paginated = PaginatedResponse.from(page);
+            doReturn(paginated).when(pedidoService).findAll(any(Pageable.class), any());
 
             mockMvc.perform(get("/api/v1/pedidos"))
                     .andExpect(status().isOk())
-                    .andExpect(jsonPath("$[0].id").value(1))
-                    .andExpect(jsonPath("$[0].estado").value("PENDIENTE"));
+                    .andExpect(jsonPath("$.content[0].id").value(1))
+                    .andExpect(jsonPath("$.content[0].estado").value("PENDIENTE"))
+                    .andExpect(jsonPath("$.page").value(0));
         }
 
         @Test
         @WithMockUser(roles = "ADMIN")
         void shouldReturn200WithEmptyList() throws Exception {
-            when(pedidoService.findAll()).thenReturn(List.of());
+            var emptyPage = new PageImpl<>(List.of(), PageRequest.of(0, 20), 0);
+            var paginated = PaginatedResponse.from(emptyPage);
+            doReturn(paginated).when(pedidoService).findAll(any(Pageable.class), any());
 
             mockMvc.perform(get("/api/v1/pedidos"))
                     .andExpect(status().isOk())
-                    .andExpect(jsonPath("$").isEmpty());
+                    .andExpect(jsonPath("$.content").isEmpty());
         }
 
         @Test

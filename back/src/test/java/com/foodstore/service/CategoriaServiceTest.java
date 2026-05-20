@@ -3,6 +3,7 @@ package com.foodstore.service;
 import com.foodstore.dto.request.CategoriaRequest;
 import com.foodstore.dto.request.UpdateCategoriaRequest;
 import com.foodstore.dto.response.CategoriaResponse;
+import com.foodstore.dto.response.PaginatedResponse;
 import com.foodstore.exception.BusinessException;
 import com.foodstore.exception.ResourceNotFoundException;
 import com.foodstore.model.Categoria;
@@ -15,6 +16,9 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 
@@ -49,12 +53,13 @@ class CategoriaServiceTest {
 
         @Test
         void shouldReturnAllCategories() {
-            when(categoriaRepository.findAll()).thenReturn(List.of(categoria));
+            Page<Categoria> page = new PageImpl<>(List.of(categoria));
+            when(categoriaRepository.findAll(any(Pageable.class))).thenReturn(page);
 
-            List<CategoriaResponse> result = categoriaService.findAll();
+            PaginatedResponse<CategoriaResponse> result = categoriaService.findAll(Pageable.unpaged(), null);
 
-            assertThat(result).hasSize(1);
-            CategoriaResponse response = result.get(0);
+            assertThat(result.content()).hasSize(1);
+            CategoriaResponse response = result.content().get(0);
             assertThat(response.id()).isEqualTo(1L);
             assertThat(response.nombre()).isEqualTo("Hamburguesas");
             assertThat(response.descripcion()).isEqualTo("Hamburguesas clásicas");
@@ -63,11 +68,12 @@ class CategoriaServiceTest {
 
         @Test
         void shouldReturnEmptyListWhenNoCategories() {
-            when(categoriaRepository.findAll()).thenReturn(List.of());
+            Page<Categoria> page = new PageImpl<>(List.of());
+            when(categoriaRepository.findAll(any(Pageable.class))).thenReturn(page);
 
-            List<CategoriaResponse> result = categoriaService.findAll();
+            PaginatedResponse<CategoriaResponse> result = categoriaService.findAll(Pageable.unpaged(), null);
 
-            assertThat(result).isEmpty();
+            assertThat(result.content()).isEmpty();
         }
     }
 

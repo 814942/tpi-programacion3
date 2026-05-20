@@ -2,11 +2,14 @@ package com.foodstore.controller;
 
 import com.foodstore.dto.request.EstadoRequest;
 import com.foodstore.dto.request.PedidoRequest;
+import com.foodstore.dto.response.PaginatedResponse;
 import com.foodstore.dto.response.PedidoResponse;
 import com.foodstore.service.PedidoService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -24,12 +27,16 @@ public class PedidoController {
     private final PedidoService pedidoService;
 
     @GetMapping("/usuario")
-    public ResponseEntity<List<PedidoResponse>> findByUsuario(Authentication authentication) {
+    public ResponseEntity<PaginatedResponse<PedidoResponse>> findByUsuario(
+            @PageableDefault(size = 20, sort = "fecha") Pageable pageable,
+            @RequestParam(required = false) String search,
+            Authentication authentication) {
         Long currentUserId = extractCurrentUserId(authentication);
-        return ResponseEntity.ok(pedidoService.findByUsuario(currentUserId));
+        return ResponseEntity.ok(pedidoService.findByUsuario(currentUserId, pageable, search));
     }
 
     @PostMapping
+    @PreAuthorize("hasRole('USUARIO')")
     public ResponseEntity<PedidoResponse> create(@RequestBody @Valid PedidoRequest request,
                                                   Authentication authentication) {
         Long currentUserId = extractCurrentUserId(authentication);
@@ -39,8 +46,10 @@ public class PedidoController {
 
     @GetMapping
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<List<PedidoResponse>> findAll() {
-        return ResponseEntity.ok(pedidoService.findAll());
+    public ResponseEntity<PaginatedResponse<PedidoResponse>> findAll(
+            @PageableDefault(size = 20, sort = "fecha") Pageable pageable,
+            @RequestParam(required = false) String search) {
+        return ResponseEntity.ok(pedidoService.findAll(pageable, search));
     }
 
     @GetMapping("/{id}")

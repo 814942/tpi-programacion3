@@ -9,7 +9,7 @@
 | **Author** | Pablo Garay |
 | **Date** | 2026-05-16 |
 | **Stakeholders** | Equipo TPI |
-| **Version** | 0.1 |
+| **Version** | 0.2 |
 
 ---
 
@@ -45,30 +45,38 @@ Store completo con datos reales desde API, carrito persistente, detalle de produ
 
 ## 5. User Stories
 
-### US-01: Catálogo desde API
+### US-01: Catálogo desde API con Paginación
 **As a** Cliente
-**I want** ver productos y categorías cargados desde la API
-**So that** los datos sean reales y actualizados
+**I want** ver productos y categorías cargados desde la API con paginación
+**So that** los datos sean reales, actualizados y se carguen eficientemente
 
 **Acceptance Criteria:**
-- [ ] `GET /api/v1/categorias` carga el sidebar de categorías
-- [ ] `GET /api/v1/productos` carga el grid de productos
+- [ ] `GET /api/v1/categorias?page=0&size=20` carga el sidebar de categorías (paginado)
+- [ ] `GET /api/v1/productos?page=0&size=12` carga el grid de productos (paginado)
+- [ ] Response devuelve estructura `PaginatedResponse`: `content`, `page`, `size`, `totalElements`, `totalPages`
 - [ ] Cada producto muestra: imagen, nombre, descripción, precio, badge de disponibilidad
 - [ ] Si producto no está disponible, se muestra visualmente (opacidad, etiqueta)
-- [ ] Contador de productos encontrados
+- [ ] Contador de productos: "Mostrando X-Y de Z productos"
+- [ ] Controles de paginación: botones anterior/siguiente, selector de página
 - [ ] Badge del carrito con cantidad de items
 - [ ] Sidebar colapsable en mobile
 
-### US-02: Filtros y Búsqueda
+### US-02: Filtros, Búsqueda y Paginación
 **As a** Cliente
-**I want** filtrar productos por categoría y buscar por nombre
-**So that** encontrar productos rápidamente
+**I want** filtrar productos por categoría, buscar por nombre y navegar entre páginas
+**So that** encontrar productos rápidamente sin saturar la pantalla
 
 **Acceptance Criteria:**
-- [ ] Click en categoría filtra productos via `GET /api/v1/productos/categoria/{id}`
-- [ ] Búsqueda por texto filtra en frontend (o query param en API)
-- [ ] Ordenamiento: nombre A-Z, Z-A, precio ascendente, descendente
-- [ ] Al cambiar de categoría, se resetea el input de búsqueda
+- [ ] Click en categoría filtra productos via `GET /api/v1/productos/categoria/{id}?page=0&size=12`
+- [ ] Búsqueda por texto: `GET /api/v1/productos?search={texto}&page=0&size=12`
+- [ ] Búsqueda en categoría: `GET /api/v1/productos/categoria/{id}?search={texto}&page=0&size=12`
+- [ ] Ordenamiento vía query param: `sort=nombre,asc` o `sort=precio,desc`
+- [ ] Controles de paginación: botones ⬅️ Anterior / Siguiente ➡️
+- [ ] Selector de tamaño de página: 12, 24, 48 productos por página
+- [ ] Indicador "Página X de Y"
+- [ ] Al cambiar de categoría, se resetea búsqueda y vuelve a página 1
+- [ ] Al buscar, vuelve a página 1
+- [ ] Paginación deshabilitada si solo hay 1 página
 
 ### US-03: Detalle de Producto
 **As a** Cliente
@@ -185,25 +193,66 @@ flowchart TD
 
 ## 8. API / Interface Contracts
 
-### GET `/api/v1/productos`
+### GET `/api/v1/productos?page=0&size=12&search={query}&sort=nombre,asc`
+**Query Params:**
+- `page`: número de página (0-indexed, default: 0)
+- `size`: items por página (default: 20)
+- `search`: filtro LIKE en campo `nombre` (opcional)
+- `sort`: campo,dirección (ej: `nombre,asc`, `precio,desc`)
+
 **Response 200:**
 ```json
-[
-  {
-    "id": 1,
-    "nombre": "Hamburguesa Triple",
-    "precio": 25000.00,
-    "descripcion": "Triple carne, cheddar y bacon",
-    "stock": 50,
-    "imagen": "https://...",
-    "disponible": true,
-    "categoria": { "id": 1, "nombre": "Hamburguesas" }
-  }
-]
+{
+  "content": [
+    {
+      "id": 1,
+      "nombre": "Hamburguesa Triple",
+      "precio": 25000.00,
+      "descripcion": "Triple carne, cheddar y bacon",
+      "stock": 50,
+      "imagen": "https://...",
+      "disponible": true,
+      "categoria": { "id": 1, "nombre": "Hamburguesas" }
+    }
+  ],
+  "page": 0,
+  "size": 12,
+  "totalElements": 42,
+  "totalPages": 4
+}
+```
+
+### GET `/api/v1/productos/categoria/{id}?page=0&size=12&search={query}`
+**Response 200:** Mismo formato `PaginatedResponse` filtrado por categoría.
+
+### GET `/api/v1/categorias?page=0&size=20&search={query}`
+**Response 200:**
+```json
+{
+  "content": [
+    { "id": 1, "nombre": "Hamburguesas", "descripcion": "...", "imagen": "..." }
+  ],
+  "page": 0,
+  "size": 20,
+  "totalElements": 5,
+  "totalPages": 1
+}
 ```
 
 ### GET `/api/v1/productos/{id}`
-**Response 200:** Mismo formato individual.
+**Response 200:** Producto individual (sin paginación).
+```json
+{
+  "id": 1,
+  "nombre": "Hamburguesa Triple",
+  "precio": 25000.00,
+  "descripcion": "Triple carne, cheddar y bacon",
+  "stock": 50,
+  "imagen": "https://...",
+  "disponible": true,
+  "categoria": { "id": 1, "nombre": "Hamburguesas" }
+}
+```
 
 ### POST `/api/v1/pedidos`
 ```json
@@ -243,14 +292,38 @@ interface ProductResponse {
 }
 ```
 
+### PaginatedResponse<T> (estructura universal de la API)
+```typescript
+interface PaginatedResponse<T> {
+  content: T[];
+  page: number;          // 0-indexed
+  size: number;
+  totalElements: number;
+  totalPages: number;
+}
+```
+
+### Estado de Paginación (frontend)
+```typescript
+interface PaginationState {
+  currentPage: number;
+  pageSize: number;
+  totalPages: number;
+  totalItems: number;
+}
+```
+
 ---
 
 ## 10. DoD (Definition of Done)
 
 ### Testing
-- [ ] Catálogo carga productos desde API correctamente
-- [ ] Filtro por categoría funciona
-- [ ] Búsqueda filtra correctamente
+- [ ] Catálogo carga productos desde API con paginación correctamente
+- [ ] Controles de paginación (anterior/siguiente) funcionan
+- [ ] Selector de tamaño de página actualiza resultados
+- [ ] Contador "Mostrando X-Y de Z" es preciso
+- [ ] Filtro por categoría funciona con paginación
+- [ ] Búsqueda filtra correctamente y resetea a página 1
 - [ ] Detalle producto carga y muestra info completa
 - [ ] Selector de cantidad respeta stock máximo
 - [ ] Agregar al carrito persiste en localStorage
@@ -259,6 +332,8 @@ interface ProductResponse {
 - [ ] Checkout envía pedido y vacía carrito
 - [ ] Error de stock muestra mensaje adecuado
 - [ ] Estado vacío del carrito se muestra correctamente
+- [ ] Paginación se deshabilita cuando hay solo 1 página
+- [ ] Loading state mientras cargan datos paginados
 
 ### Código
 - [ ] `client.ts` refactorizado: datos desde API, no mockeados
@@ -296,4 +371,4 @@ interface ProductResponse {
 
 | Version | Date | Author | Changes |
 |---------|------|--------|---------|
-| 0.1 | 2026-05-16 | Pablo Garay | Initial draft |
+| 0.1 | 2026-05-16 | Pablo Garay | Initial draft || 0.2 | 2026-05-16 | Pablo Garay | Incorporación de paginación: contratos API actualizados a `PaginatedResponse`, agregados controles de paginación en UI, selector de tamaño de página, contador "Mostrando X-Y de Z" |

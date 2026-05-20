@@ -2,11 +2,14 @@ package com.foodstore.controller;
 
 import com.foodstore.dto.request.ProductoRequest;
 import com.foodstore.dto.request.UpdateProductoRequest;
+import com.foodstore.dto.response.PaginatedResponse;
 import com.foodstore.dto.response.ProductoResponse;
 import com.foodstore.service.ProductoService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -23,8 +26,10 @@ public class ProductoController {
     private final ProductoService productoService;
 
     @GetMapping
-    public ResponseEntity<List<ProductoResponse>> findAll() {
-        return ResponseEntity.ok(productoService.findAll());
+    public ResponseEntity<PaginatedResponse<ProductoResponse>> findAll(
+            @PageableDefault(size = 20, sort = "nombre") Pageable pageable,
+            @RequestParam(required = false) String search) {
+        return ResponseEntity.ok(productoService.findAll(pageable, search));
     }
 
     @GetMapping("/{id}")
@@ -33,8 +38,11 @@ public class ProductoController {
     }
 
     @GetMapping("/categoria/{id}")
-    public ResponseEntity<List<ProductoResponse>> findByCategoriaId(@PathVariable Long id) {
-        return ResponseEntity.ok(productoService.findByCategoriaId(id));
+    public ResponseEntity<PaginatedResponse<ProductoResponse>> findByCategoriaId(
+            @PathVariable Long id,
+            @PageableDefault(size = 20, sort = "nombre") Pageable pageable,
+            @RequestParam(required = false) String search) {
+        return ResponseEntity.ok(productoService.findByCategoriaId(id, pageable, search));
     }
 
     @PostMapping

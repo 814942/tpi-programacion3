@@ -2,6 +2,7 @@ package com.foodstore.service;
 
 import com.foodstore.dto.request.CreateUsuarioRequest;
 import com.foodstore.dto.request.UpdateUsuarioRequest;
+import com.foodstore.dto.response.PaginatedResponse;
 import com.foodstore.dto.response.UsuarioResponse;
 import com.foodstore.exception.BusinessException;
 import com.foodstore.model.Usuario;
@@ -9,6 +10,8 @@ import com.foodstore.repository.UsuarioRepository;
 import com.foodstore.util.EmailNormalizer;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -28,6 +31,16 @@ public class UsuarioService {
         return usuarioRepository.findAll().stream()
                 .map(this::toResponse)
                 .toList();
+    }
+
+    public PaginatedResponse<UsuarioResponse> findAll(Pageable pageable, String search) {
+        Page<Usuario> page;
+        if (search != null && !search.isBlank()) {
+            page = usuarioRepository.search(search, pageable);
+        } else {
+            page = usuarioRepository.findAll(pageable);
+        }
+        return PaginatedResponse.from(page.map(this::toResponse));
     }
 
     public UsuarioResponse findById(Long id) {
