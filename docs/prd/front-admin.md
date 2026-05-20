@@ -9,7 +9,7 @@
 | **Author** | Pablo Garay |
 | **Date** | 2026-05-16 |
 | **Stakeholders** | Equipo TPI |
-| **Version** | 0.1 |
+| **Version** | 0.2 |
 
 ---
 
@@ -31,7 +31,7 @@ El panel de administración actual es solo un placeholder con cards de navegaci�
 ## 3. Goals
 
 ### Primary Goal
-Panel administrativo completo con dashboard, CRUD de categorías y productos, y gestión de pedidos.
+Panel administrativo completo con dashboard, CRUD de categorías, productos y usuarios, y gestión de pedidos.
 
 ---
 
@@ -55,64 +55,82 @@ Panel administrativo completo con dashboard, CRUD de categorías y productos, y 
 - [ ] Enlaces directos a cada módulo
 - [ ] Header con info del admin + botón logout
 
-### US-02: CRUD Categorías
+### US-02: CRUD Categorías con Paginación y Búsqueda
 **As a** Administrador
-**I want** gestionar categorías desde el panel
-**So that** mantener el catálogo organizado
+**I want** gestionar categorías desde el panel con paginación y búsqueda
+**So that** mantener el catálogo organizado sin saturar la pantalla
 
 **Acceptance Criteria:**
-- [ ] Tabla con: ID, nombre, descripción, imagen (miniatura), acciones
+- [ ] `GET /api/v1/categorias?page=0&size=10&search={query}` carga tabla paginada
+- [ ] Tabla muestra: ID, nombre, descripción, imagen (miniatura), acciones
+- [ ] Controles de paginación: anterior/siguiente, selector de página, info "Mostrando X-Y de Z"
+- [ ] Campo de búsqueda: filtra por nombre (debounce 300ms)
+- [ ] Selector de items por página: 10, 20, 50
 - [ ] Botón "Nueva Categoría" → modal crear
 - [ ] Modal crear: nombre (req), descripción (req), URL imagen (req)
 - [ ] Modal editar: precargado con datos existentes
 - [ ] Botón eliminar: confirmación antes de borrar
 - [ ] DELETE lógico (soft delete)
 - [ ] Toast de éxito/error en cada operación
+- [ ] Al crear/editar/eliminar, recarga la página actual de la tabla
 
-### US-03: CRUD Productos
+### US-03: CRUD Productos con Paginación y Búsqueda
 **As a** Administrador
-**I want** gestionar productos desde el panel
-**So that** mantener el catálogo de productos
+**I want** gestionar productos desde el panel con paginación y búsqueda
+**So that** mantener el catálogo de productos sin saturar la pantalla
 
 **Acceptance Criteria:**
-- [ ] Tabla con: ID, imagen (mini), nombre, descripción, precio, stock, categoría, disponible, acciones
+- [ ] `GET /api/v1/productos?page=0&size=10&search={query}` carga tabla paginada
+- [ ] Tabla muestra: ID, imagen (mini), nombre, descripción, precio, stock, categoría, disponible, acciones
+- [ ] Controles de paginación: anterior/siguiente, selector de página, info "Mostrando X-Y de Z"
+- [ ] Campo de búsqueda: filtra por nombre (debounce 300ms)
+- [ ] Filtro por categoría: dropdown que actualiza query `GET /api/v1/productos/categoria/{id}?page=0&size=10`
+- [ ] Selector de items por página: 10, 20, 50
 - [ ] Botón "Nuevo Producto" → modal crear
 - [ ] Modal crear: nombre, descripción, precio (> 0), stock (>= 0), categoría (select), URL imagen, checkbox "Disponible"
-- [ ] Select de categorías cargado desde GET /api/v1/categorias
+- [ ] Select de categorías cargado desde `GET /api/v1/categorias?size=100` (sin paginar para dropdown)
 - [ ] Modal editar: precargado
 - [ ] Eliminar con confirmación (soft delete)
-- [ ] Filtro por categoría en la tabla
+- [ ] Al crear/editar/eliminar, recarga la página actual de la tabla
 
-### US-04: Gestión de Pedidos
+### US-04: Gestión de Pedidos con Paginación y Búsqueda
 **As a** Administrador
-**I want** gestionar pedidos desde el panel
-**So that** cambiar estados y dar seguimiento
+**I want** gestionar pedidos desde el panel con paginación y búsqueda
+**So that** cambiar estados, dar seguimiento y filtrar eficientemente
 
 **Acceptance Criteria:**
-- [ ] Lista de todos los pedidos (GET /api/v1/pedidos)
-- [ ] Cada pedido muestra: ID, cliente, fecha, estado (badge), items, total
-- [ ] Filtro por estado (PENDIENTE, CONFIRMADO, TERMINADO, CANCELADO)
+- [ ] `GET /api/v1/pedidos?page=0&size=10&search={query}` carga tabla paginada
+- [ ] Tabla muestra: ID, cliente, fecha, estado (badge color), items resumidos, total, acciones
+- [ ] Controles de paginación: anterior/siguiente, selector de página, info "Mostrando X-Y de Z"
+- [ ] Campo de búsqueda: filtra por estado, formaPago, fecha, nombre cliente, apellido cliente (debounce 300ms)
+- [ ] Filtro por estado: dropdown (TODOS, PENDIENTE, CONFIRMADO, TERMINADO, CANCELADO)
+- [ ] Selector de items por página: 10, 20, 50
+- [ ] Ordenados por fecha descendente (sort=fecha,desc)
 - [ ] Click en pedido → modal detalle:
-  - Datos del cliente (nombre, email, celular)
-  - Lista de productos con snapshot
+  - Datos del cliente (nombre, apellido, email, celular)
+  - Lista de productos con snapshot (nombre, precio, cantidad, subtotal)
   - Total y forma de pago
-  - Estado actual
-- [ ] Select para cambiar estado + botón "Actualizar Estado" (PATCH)
-- [ ] Ordenados por fecha descendente
+  - Estado actual con badge
+- [ ] Select para cambiar estado + botón "Actualizar Estado" (PATCH /api/v1/pedidos/{id}/estado)
+- [ ] Al cambiar estado, recarga la página actual de la tabla
 - [ ] Estado vacío si no hay pedidos
 
-### US-05: Gestión de Usuarios
+### US-05: Gestión de Usuarios con Paginación y Búsqueda
 **As a** Administrador
-**I want** ver y gestionar usuarios desde el panel
-**So that** administrar la base de usuarios
+**I want** ver y gestionar usuarios desde el panel con paginación y búsqueda
+**So that** administrar la base de usuarios eficientemente
 
 **Acceptance Criteria:**
-- [ ] Tabla de usuarios (GET /api/v1/usuarios):
-  - ID, nombre, apellido, email, celular, rol, fecha registro
-  - Sin mostrar contraseña
+- [ ] `GET /api/v1/usuarios?page=0&size=10&search={query}` carga tabla paginada
+- [ ] Tabla muestra: ID, nombre, apellido, email, celular, rol (badge), fecha registro, acciones
+- [ ] Controles de paginación: anterior/siguiente, selector de página, info "Mostrando X-Y de Z"
+- [ ] Campo de búsqueda: filtra por nombre, apellido, email, rol (debounce 300ms)
+- [ ] Filtro por rol: dropdown (TODOS, ADMIN, USUARIO)
+- [ ] Selector de items por página: 10, 20, 50
+- [ ] Sin mostrar contraseña
 - [ ] Editar usuario: modal con campos editables (nombre, apellido, email, celular, rol)
 - [ ] Eliminar usuario: confirmación + soft delete
-- [ ] Filtro por rol (ADMIN/USUARIO)
+- [ ] Al editar/eliminar, recarga la página actual de la tabla
 
 ---
 
@@ -177,20 +195,60 @@ flowchart TD
 
 ## 8. API / Interface Contracts
 
-### GET `/api/v1/productos`
+### GET `/api/v1/productos?page=0&size=10&search={query}`
+**Query Params:**
+- `page`: número de página (0-indexed, default: 0)
+- `size`: items por página (default: 20)
+- `search`: filtro LIKE en campo `nombre` (opcional)
+- `sort`: campo,dirección (default: `nombre,asc`)
+
 **Response 200:**
 ```json
-[
-  {
-    "id": 1,
-    "nombre": "Hamburguesa Triple",
-    "precio": 25000.00,
-    "stock": 50,
-    "disponible": true,
-    "categoria": { "id": 1, "nombre": "Hamburguesas" }
-  }
-]
+{
+  "content": [
+    {
+      "id": 1,
+      "nombre": "Hamburguesa Triple",
+      "precio": 25000.00,
+      "stock": 50,
+      "disponible": true,
+      "categoria": { "id": 1, "nombre": "Hamburguesas" }
+    }
+  ],
+  "page": 0,
+  "size": 10,
+  "totalElements": 42,
+  "totalPages": 5
+}
 ```
+
+### GET `/api/v1/categorias?page=0&size=10&search={query}`
+**Response 200:** Mismo formato `PaginatedResponse<CategoriaResponse>`
+
+### GET `/api/v1/pedidos?page=0&size=10&search={query}`
+**Response 200:**
+```json
+{
+  "content": [
+    {
+      "id": 1,
+      "fecha": "2026-05-16T12:00:00",
+      "estado": "PENDIENTE",
+      "formaPago": "TARJETA",
+      "total": 70000.00,
+      "usuario": { "id": 2, "nombre": "Juan", "apellido": "Pérez", "email": "juan@email.com" },
+      "detalles": [...]
+    }
+  ],
+  "page": 0,
+  "size": 10,
+  "totalElements": 128,
+  "totalPages": 13
+}
+```
+
+### GET `/api/v1/usuarios?page=0&size=10&search={query}`
+**Response 200:** Mismo formato `PaginatedResponse<UsuarioResponse>`
 
 ### POST `/api/v1/productos`
 **Request:**
@@ -206,22 +264,6 @@ flowchart TD
 }
 ```
 
-### GET `/api/v1/pedidos`
-**Response 200:**
-```json
-[
-  {
-    "id": 1,
-    "fecha": "2026-05-16T12:00:00",
-    "estado": "PENDIENTE",
-    "formaPago": "TARJETA",
-    "total": 70000.00,
-    "usuario": { "id": 2, "nombre": "Juan", "email": "juan@email.com" },
-    "detalles": [...]
-  }
-]
-```
-
 ### PATCH `/api/v1/pedidos/{id}/estado`
 **Request:**
 ```json
@@ -235,6 +277,14 @@ flowchart TD
 ## 9. Data Model (Frontend)
 
 ```typescript
+interface PaginatedResponse<T> {
+  content: T[];
+  page: number;          // 0-indexed
+  size: number;
+  totalElements: number;
+  totalPages: number;
+}
+
 interface CategoriaResponse {
   id: number;
   nombre: string;
@@ -270,11 +320,23 @@ interface PedidoResponse {
 
 ### Testing
 - [ ] Dashboard carga stats correctamente
-- [ ] CRUD categorías: crear, listar, editar, eliminar funcionan
-- [ ] CRUD productos: crear con categoría, listar, editar, eliminar
+- [ ] CRUD categorías: crear, listar, editar, eliminar funcionan con paginación
+- [ ] Paginación categorías: navegación entre páginas funciona
+- [ ] Búsqueda en categorías filtra correctamente (debounce funciona)
+- [ ] Selector de items por página en categorías actualiza resultados
+- [ ] CRUD productos: crear con categoría, listar, editar, eliminar con paginación
+- [ ] Paginación productos: navegación entre páginas funciona
+- [ ] Búsqueda en productos filtra correctamente
+- [ ] Filtro por categoría en productos funciona con paginación
 - [ ] Select de categorías se carga correctamente en modal de producto
-- [ ] Gestión pedidos: lista, filtrar, ver detalle, cambiar estado
-- [ ] Gestión usuarios: listar, editar, eliminar
+- [ ] Gestión pedidos: lista, filtrar, ver detalle, cambiar estado con paginación
+- [ ] Paginación pedidos: navegación entre páginas funciona
+- [ ] Búsqueda en pedidos filtra por estado, formaPago, fecha, cliente
+- [ ] Gestión usuarios: listar, editar, eliminar con paginación
+- [ ] Paginación usuarios: navegación entre páginas funciona
+- [ ] Búsqueda en usuarios filtra por nombre, apellido, email, rol
+- [ ] Contador "Mostrando X-Y de Z" es preciso en todas las tablas
+- [ ] Al crear/editar/eliminar, recarga la página actual correctamente
 - [ ] Sidebar navegación cambia de sección correctamente
 - [ ] Modal de confirmación antes de eliminar
 - [ ] Estados: loading, empty, error en cada sección
@@ -283,13 +345,14 @@ interface PedidoResponse {
 ### Código
 - [ ] Layout admin: sidebar + header + content area unificado
 - [ ] Página dashboard con stats cards
-- [ ] Página CRUD categorías
-- [ ] Página CRUD productos
-- [ ] Página gestión pedidos
-- [ ] Página gestión usuarios
+- [ ] Página CRUD categorías con paginación + búsqueda
+- [ ] Página CRUD productos con paginación + búsqueda + filtro categoría
+- [ ] Página gestión pedidos con paginación + búsqueda + filtro estado
+- [ ] Página gestión usuarios con paginación + búsqueda + filtro rol
+- [ ] Componente reutilizable de paginación (botones, selector, contador)
+- [ ] Componente de búsqueda con debounce
 - [ ] Modales reutilizables para crear/editar
 - [ ] Confirmación de eliminación
-- [ ] Filtros en pedidos (por estado)
 - [ ] Consumo de API via api.ts con JWT
 - [ ] Sin `alert()`
 - [ ] Loading, empty y error states
@@ -321,4 +384,4 @@ interface PedidoResponse {
 
 | Version | Date | Author | Changes |
 |---------|------|--------|---------|
-| 0.1 | 2026-05-16 | Pablo Garay | Initial draft |
+| 0.1 | 2026-05-16 | Pablo Garay | Initial draft || 0.2 | 2026-05-16 | Pablo Garay | Incorporación de paginación universal: todas las tablas (categorías, productos, pedidos, usuarios) ahora usan `PaginatedResponse` con controles de navegación, búsqueda con debounce, selectores de items por página |

@@ -9,7 +9,7 @@
 | **Author** | Pablo Garay |
 | **Date** | 2026-05-16 |
 | **Stakeholders** | Equipo TPI |
-| **Version** | 0.1 |
+| **Version** | 0.2 |
 
 ---
 
@@ -44,17 +44,21 @@ Página de historial de pedidos con listado, detalle y cancelación.
 
 ## 5. User Stories
 
-### US-01: Listar Mis Pedidos
+### US-01: Listar Mis Pedidos con Paginación
 **As a** Cliente
-**I want** ver el historial de todos mis pedidos
-**So that** hacer seguimiento de mis compras
+**I want** ver el historial de todos mis pedidos con paginación
+**So that** hacer seguimiento de mis compras sin saturar la pantalla
 
 **Acceptance Criteria:**
-- [ ] `GET /api/v1/pedidos/usuario` → lista de pedidos del usuario logueado
+- [ ] `GET /api/v1/pedidos/usuario?page=0&size=10` → lista paginada de pedidos del usuario logueado
 - [ ] Cada pedido muestra: número, fecha, estado con badge de color, resumen productos (primeros 3 + "y N más"), total
-- [ ] Ordenados por fecha descendente (más reciente primero)
+- [ ] Ordenados por fecha descendente (sort=fecha,desc)
+- [ ] Controles de paginación: botones anterior/siguiente, selector de página
+- [ ] Contador "Mostrando X-Y de Z pedidos"
+- [ ] Selector de items por página: 5, 10, 20
 - [ ] Estado vacío: mensaje "No tenés pedidos aún" + botón "Ir a la tienda"
 - [ ] Loading spinner mientras carga
+- [ ] Paginación deshabilitada si solo hay 1 página
 
 **Colores de estado:**
 
@@ -137,26 +141,37 @@ flowchart TD
 
 ## 8. API / Interface Contracts
 
-### GET `/api/v1/pedidos/usuario`
+### GET `/api/v1/pedidos/usuario?page=0&size=10`
+**Query Params:**
+- `page`: número de página (0-indexed, default: 0)
+- `size`: items por página (default: 20)
+- `sort`: campo,dirección (default: `fecha,desc`)
+
 **Response 200:**
 ```json
-[
-  {
-    "id": 1,
-    "fecha": "2026-05-16T12:00:00",
-    "estado": "PENDIENTE",
-    "formaPago": "TARJETA",
-    "total": 70000.00,
-    "detalles": [
-      {
-        "productoNombre": "Hamburguesa Triple",
-        "productoPrecio": 25000.00,
-        "cantidad": 2,
-        "subtotal": 50000.00
-      }
-    ]
-  }
-]
+{
+  "content": [
+    {
+      "id": 1,
+      "fecha": "2026-05-16T12:00:00",
+      "estado": "PENDIENTE",
+      "formaPago": "TARJETA",
+      "total": 70000.00,
+      "detalles": [
+        {
+          "productoNombre": "Hamburguesa Triple",
+          "productoPrecio": 25000.00,
+          "cantidad": 2,
+          "subtotal": 50000.00
+        }
+      ]
+    }
+  ],
+  "page": 0,
+  "size": 10,
+  "totalElements": 23,
+  "totalPages": 3
+}
 ```
 
 ### PATCH `/api/v1/pedidos/{id}/cancelar`
@@ -172,21 +187,27 @@ flowchart TD
 
 ## 9. DoD (Definition of Done)
 
+## 9. DoD (Definition of Done)
+
 ### Testing
-- [ ] Lista carga y muestra pedidos correctamente
+- [ ] Lista carga y muestra pedidos correctamente con paginación
+- [ ] Paginación: navegación entre páginas funciona
+- [ ] Contador "Mostrando X-Y de Z pedidos" es preciso
+- [ ] Selector de items por página (5, 10, 20) actualiza resultados
+- [ ] Paginación se deshabilita si solo hay 1 página
 - [ ] Estado vacío se muestra cuando no hay pedidos
 - [ ] Modal detalle carga datos completos
 - [ ] Cancelación funciona solo en estado PENDIENTE
-- [ ] Cancelación exitosa actualiza la lista
+- [ ] Cancelación exitosa actualiza la lista y mantiene la página actual
 - [ ] Cancelación fallida muestra error
 - [ ] Badge de color correcto para cada estado
-- [ ] Loading state mientras carga
+- [ ] Loading state mientras carga datos paginados
 
 ### Código
 - [ ] Página `/src/pages/client/orders/` creada (index.html + orders.ts)
 - [ ] Ruta protegida en navigate.ts
-- [ ] Componentes: tarjeta de pedido, modal detalle, badge estado
-- [ ] Consumo de API via api.ts
+- [ ] Componentes: tarjeta de pedido, modal detalle, badge estado, controles de paginación
+- [ ] Consumo de API via api.ts con parámetros de paginación
 - [ ] Manejo de estados: loading, empty, error
 - [ ] Sin `alert()`
 
@@ -194,8 +215,7 @@ flowchart TD
 
 ## 10. Out of Scope
 
-- Filtros por estado en frontend
-- Paginación de historial
+- Filtros por estado (la API soporta búsqueda, pero el frontend no lo expone)
 - Descarga de factura/comprobante
 
 ---
@@ -213,4 +233,4 @@ flowchart TD
 
 | Version | Date | Author | Changes |
 |---------|------|--------|---------|
-| 0.1 | 2026-05-16 | Pablo Garay | Initial draft |
+| 0.1 | 2026-05-16 | Pablo Garay | Initial draft || 0.2 | 2026-05-16 | Pablo Garay | Incorporación de paginación: historial de pedidos ahora usa `PaginatedResponse`, agregados controles de navegación, selector de items por página (5/10/20), contador "Mostrando X-Y de Z pedidos" |
