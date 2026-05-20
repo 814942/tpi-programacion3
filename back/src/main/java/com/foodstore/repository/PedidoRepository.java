@@ -20,8 +20,8 @@ public interface PedidoRepository extends BaseRepository<Pedido, Long> {
     @Override
     Page<Pedido> findAll(Pageable pageable);
 
-    @Query(value = "SELECT DISTINCT p FROM Pedido p JOIN FETCH p.usuario LEFT JOIN FETCH p.detalles WHERE p.eliminado = false AND (LOWER(p.estado) LIKE LOWER(CONCAT('%', :search, '%')) OR LOWER(p.usuario.nombre) LIKE LOWER(CONCAT('%', :search, '%')) OR LOWER(p.usuario.apellido) LIKE LOWER(CONCAT('%', :search, '%'))) ORDER BY p.fecha DESC",
-           countQuery = "SELECT COUNT(DISTINCT p) FROM Pedido p LEFT JOIN p.usuario u WHERE p.eliminado = false AND (LOWER(p.estado) LIKE LOWER(CONCAT('%', :search, '%')) OR LOWER(u.nombre) LIKE LOWER(CONCAT('%', :search, '%')) OR LOWER(u.apellido) LIKE LOWER(CONCAT('%', :search, '%')))")
+    @Query(value = "SELECT DISTINCT p FROM Pedido p JOIN FETCH p.usuario LEFT JOIN FETCH p.detalles WHERE p.eliminado = false AND (LOWER(CONCAT('', p.estado)) LIKE LOWER(CONCAT('%', :search, '%')) OR LOWER(p.usuario.nombre) LIKE LOWER(CONCAT('%', :search, '%')) OR LOWER(p.usuario.apellido) LIKE LOWER(CONCAT('%', :search, '%'))) ORDER BY p.fecha DESC",
+           countQuery = "SELECT COUNT(DISTINCT p) FROM Pedido p LEFT JOIN p.usuario u WHERE p.eliminado = false AND (LOWER(CONCAT('', p.estado)) LIKE LOWER(CONCAT('%', :search, '%')) OR LOWER(u.nombre) LIKE LOWER(CONCAT('%', :search, '%')) OR LOWER(u.apellido) LIKE LOWER(CONCAT('%', :search, '%')))")
     Page<Pedido> search(@Param("search") String search, Pageable pageable);
 
     @Query("SELECT p FROM Pedido p JOIN FETCH p.usuario LEFT JOIN FETCH p.detalles WHERE p.id = :id AND p.eliminado = false")
