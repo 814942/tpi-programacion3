@@ -30,6 +30,7 @@ import java.util.Map;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
@@ -152,28 +153,42 @@ class ProductoControllerTest {
         @Test
         @WithMockUser
         void shouldReturn200WhenCategoriaExists() throws Exception {
-            when(productoService.findByCategoriaId(1L)).thenReturn(List.of(response));
+            PaginatedResponse<ProductoResponse> paginatedResponse = new PaginatedResponse<>(
+                    List.of(response),
+                    0,
+                    20,
+                    1,
+                    1
+            );
+            when(productoService.findByCategoriaId(eq(1L), any(), isNull())).thenReturn(paginatedResponse);
 
             mockMvc.perform(get("/api/v1/productos/categoria/1"))
                     .andExpect(status().isOk())
-                    .andExpect(jsonPath("$[0].id").value(1))
-                    .andExpect(jsonPath("$[0].nombre").value("Clásica"));
+                    .andExpect(jsonPath("$.content[0].id").value(1))
+                    .andExpect(jsonPath("$.content[0].nombre").value("Clásica"));
         }
 
         @Test
         @WithMockUser
         void shouldReturn200WithEmptyListWhenCategoriaHasNoProducts() throws Exception {
-            when(productoService.findByCategoriaId(1L)).thenReturn(List.of());
+            PaginatedResponse<ProductoResponse> paginatedResponse = new PaginatedResponse<>(
+                    List.of(),
+                    0,
+                    20,
+                    0,
+                    0
+            );
+            when(productoService.findByCategoriaId(eq(1L), any(), isNull())).thenReturn(paginatedResponse);
 
             mockMvc.perform(get("/api/v1/productos/categoria/1"))
                     .andExpect(status().isOk())
-                    .andExpect(jsonPath("$").isEmpty());
+                    .andExpect(jsonPath("$.content").isEmpty());
         }
 
         @Test
         @WithMockUser
         void shouldReturn404WhenCategoriaNotFound() throws Exception {
-            when(productoService.findByCategoriaId(999L))
+            when(productoService.findByCategoriaId(eq(999L), any(), isNull()))
                     .thenThrow(new ResourceNotFoundException("Categoria", "id", "999"));
 
             mockMvc.perform(get("/api/v1/productos/categoria/999"))

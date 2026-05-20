@@ -3,6 +3,7 @@ package com.foodstore.service;
 import com.foodstore.dto.request.ProductoRequest;
 import com.foodstore.dto.request.UpdateProductoRequest;
 import com.foodstore.dto.response.CategoriaResponse;
+import com.foodstore.dto.response.PaginatedResponse;
 import com.foodstore.dto.response.ProductoResponse;
 import com.foodstore.exception.BusinessException;
 import com.foodstore.exception.ResourceNotFoundException;
@@ -18,6 +19,9 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -134,12 +138,13 @@ class ProductoServiceTest {
         @Test
         void shouldReturnProductsWhenCategoriaExists() {
             when(categoriaRepository.findByIdOrThrow(1L)).thenReturn(categoria);
-            when(productoRepository.findByCategoriaId(1L)).thenReturn(List.of(producto));
+            Page<Producto> page = new PageImpl<>(List.of(producto));
+            when(productoRepository.findByCategoriaIdPaginated(eq(1L), any(Pageable.class))).thenReturn(page);
 
-            List<ProductoResponse> result = productoService.findByCategoriaId(1L);
+            PaginatedResponse<ProductoResponse> result = productoService.findByCategoriaId(1L, Pageable.unpaged(), null);
 
-            assertThat(result).hasSize(1);
-            assertThat(result.get(0).nombre()).isEqualTo("Clásica");
+            assertThat(result.content()).hasSize(1);
+            assertThat(result.content().get(0).nombre()).isEqualTo("Clásica");
         }
 
         @Test
@@ -147,7 +152,7 @@ class ProductoServiceTest {
             when(categoriaRepository.findByIdOrThrow(999L))
                     .thenThrow(new ResourceNotFoundException("Categoria", "id", "999"));
 
-            assertThatThrownBy(() -> productoService.findByCategoriaId(999L))
+            assertThatThrownBy(() -> productoService.findByCategoriaId(999L, Pageable.unpaged(), null))
                     .isInstanceOf(ResourceNotFoundException.class)
                     .hasMessageContaining("Categoria");
         }
@@ -155,11 +160,12 @@ class ProductoServiceTest {
         @Test
         void shouldReturnEmptyListWhenCategoriaHasNoProducts() {
             when(categoriaRepository.findByIdOrThrow(1L)).thenReturn(categoria);
-            when(productoRepository.findByCategoriaId(1L)).thenReturn(List.of());
+            Page<Producto> page = new PageImpl<>(List.of());
+            when(productoRepository.findByCategoriaIdPaginated(eq(1L), any(Pageable.class))).thenReturn(page);
 
-            List<ProductoResponse> result = productoService.findByCategoriaId(1L);
+            PaginatedResponse<ProductoResponse> result = productoService.findByCategoriaId(1L, Pageable.unpaged(), null);
 
-            assertThat(result).isEmpty();
+            assertThat(result.content()).isEmpty();
         }
     }
 

@@ -77,10 +77,14 @@ public class PedidoService {
     }
 
     @Transactional(readOnly = true)
-    public List<PedidoResponse> findByUsuario(Long currentUserId) {
-        return pedidoRepository.findByUsuarioId(currentUserId).stream()
-                .map(this::toResponse)
-                .toList();
+    public PaginatedResponse<PedidoResponse> findByUsuario(Long currentUserId, Pageable pageable, String search) {
+        Page<Pedido> page;
+        if (search != null && !search.isBlank()) {
+            page = pedidoRepository.searchByUsuarioId(currentUserId, search, pageable);
+        } else {
+            page = pedidoRepository.findByUsuarioIdPaginated(currentUserId, pageable);
+        }
+        return PaginatedResponse.from(page.map(this::toResponse));
     }
 
     @Transactional

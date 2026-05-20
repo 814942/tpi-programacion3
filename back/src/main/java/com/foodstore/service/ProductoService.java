@@ -53,11 +53,15 @@ public class ProductoService {
     }
 
     @Transactional(readOnly = true)
-    public List<ProductoResponse> findByCategoriaId(Long categoriaId) {
+    public PaginatedResponse<ProductoResponse> findByCategoriaId(Long categoriaId, Pageable pageable, String search) {
         categoriaRepository.findByIdOrThrow(categoriaId);
-        return productoRepository.findByCategoriaId(categoriaId).stream()
-                .map(this::toResponse)
-                .toList();
+        Page<Producto> page;
+        if (search != null && !search.isBlank()) {
+            page = productoRepository.searchByCategoriaId(categoriaId, search, pageable);
+        } else {
+            page = productoRepository.findByCategoriaIdPaginated(categoriaId, pageable);
+        }
+        return PaginatedResponse.from(page.map(this::toResponse));
     }
 
     @Transactional

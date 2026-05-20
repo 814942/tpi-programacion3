@@ -36,6 +36,7 @@ import java.util.Map;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -179,23 +180,37 @@ class PedidoControllerTest {
         @Test
         @WithAuthenticatedUser(userId = 1L)
         void shouldReturn200WithPedidosList() throws Exception {
-            when(pedidoService.findByUsuario(1L)).thenReturn(List.of(pedidoResponse));
+            PaginatedResponse<PedidoResponse> paginatedResponse = new PaginatedResponse<>(
+                    List.of(pedidoResponse),
+                    0,
+                    20,
+                    1,
+                    1
+            );
+            when(pedidoService.findByUsuario(eq(1L), any(), isNull())).thenReturn(paginatedResponse);
 
             mockMvc.perform(get("/api/v1/pedidos/usuario"))
                     .andExpect(status().isOk())
-                    .andExpect(jsonPath("$[0].id").value(1))
-                    .andExpect(jsonPath("$[0].estado").value("PENDIENTE"))
-                    .andExpect(jsonPath("$[0].usuario.id").value(1));
+                    .andExpect(jsonPath("$.content[0].id").value(1))
+                    .andExpect(jsonPath("$.content[0].estado").value("PENDIENTE"))
+                    .andExpect(jsonPath("$.content[0].usuario.id").value(1));
         }
 
         @Test
         @WithAuthenticatedUser(userId = 1L)
         void shouldReturn200WithEmptyList() throws Exception {
-            when(pedidoService.findByUsuario(1L)).thenReturn(List.of());
+            PaginatedResponse<PedidoResponse> paginatedResponse = new PaginatedResponse<>(
+                    List.of(),
+                    0,
+                    20,
+                    0,
+                    0
+            );
+            when(pedidoService.findByUsuario(eq(1L), any(), isNull())).thenReturn(paginatedResponse);
 
             mockMvc.perform(get("/api/v1/pedidos/usuario"))
                     .andExpect(status().isOk())
-                    .andExpect(jsonPath("$").isEmpty());
+                    .andExpect(jsonPath("$.content").isEmpty());
         }
 
         @Test

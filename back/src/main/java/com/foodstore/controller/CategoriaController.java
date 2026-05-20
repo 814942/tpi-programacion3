@@ -26,15 +26,10 @@ public class CategoriaController {
     private final CategoriaService categoriaService;
 
     @GetMapping
-    public ResponseEntity<?> findAll(
+    public ResponseEntity<PaginatedResponse<CategoriaResponse>> findAll(
             @PageableDefault(size = 20, sort = "nombre") Pageable pageable,
-            @RequestParam(required = false) Integer page,
-            @RequestParam(required = false) Integer size,
-            @RequestParam(required = false) List<String> sort) {
-        if (page != null || size != null || (sort != null && !sort.isEmpty())) {
-            return ResponseEntity.ok(categoriaService.findAll(pageable));
-        }
-        return ResponseEntity.ok(categoriaService.findAll());
+            @RequestParam(required = false) String search) {
+        return ResponseEntity.ok(categoriaService.findAll(pageable, search));
     }
 
     @GetMapping("/{id}")

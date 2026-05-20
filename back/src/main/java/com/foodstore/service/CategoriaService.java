@@ -23,15 +23,14 @@ public class CategoriaService {
 
     private final CategoriaRepository categoriaRepository;
 
-    public List<CategoriaResponse> findAll() {
-        return categoriaRepository.findAll().stream()
-                .map(this::toResponse)
-                .toList();
-    }
-
-    public PaginatedResponse<CategoriaResponse> findAll(Pageable pageable) {
-        Page<CategoriaResponse> page = categoriaRepository.findAll(pageable)
-                .map(this::toResponse);
+    @Transactional(readOnly = true)
+    public PaginatedResponse<CategoriaResponse> findAll(Pageable pageable, String search) {
+        Page<CategoriaResponse> page;
+        if (search != null && !search.isBlank()) {
+            page = categoriaRepository.search(search, pageable).map(this::toResponse);
+        } else {
+            page = categoriaRepository.findAll(pageable).map(this::toResponse);
+        }
         return PaginatedResponse.from(page);
     }
 

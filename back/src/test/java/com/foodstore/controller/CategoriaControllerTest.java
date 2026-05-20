@@ -24,6 +24,7 @@ import java.util.Map;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
@@ -57,23 +58,37 @@ class CategoriaControllerTest {
         @Test
         @WithMockUser
         void shouldReturn200WithCategoryList() throws Exception {
-            when(categoriaService.findAll()).thenReturn(List.of(response));
+            PaginatedResponse<CategoriaResponse> paginatedResponse = new PaginatedResponse<>(
+                    List.of(response),
+                    0,
+                    20,
+                    1,
+                    1
+            );
+            when(categoriaService.findAll(any(), isNull())).thenReturn(paginatedResponse);
 
             mockMvc.perform(get("/api/v1/categorias"))
                     .andExpect(status().isOk())
-                    .andExpect(jsonPath("$[0].id").value(1))
-                    .andExpect(jsonPath("$[0].nombre").value("Hamburguesas"))
-                    .andExpect(jsonPath("$[0].descripcion").value("Hamburguesas clásicas"));
+                    .andExpect(jsonPath("$.content[0].id").value(1))
+                    .andExpect(jsonPath("$.content[0].nombre").value("Hamburguesas"))
+                    .andExpect(jsonPath("$.content[0].descripcion").value("Hamburguesas clásicas"));
         }
 
         @Test
         @WithMockUser
         void shouldReturn200WithEmptyList() throws Exception {
-            when(categoriaService.findAll()).thenReturn(List.of());
+            PaginatedResponse<CategoriaResponse> paginatedResponse = new PaginatedResponse<>(
+                    List.of(),
+                    0,
+                    20,
+                    0,
+                    0
+            );
+            when(categoriaService.findAll(any(), isNull())).thenReturn(paginatedResponse);
 
             mockMvc.perform(get("/api/v1/categorias"))
                     .andExpect(status().isOk())
-                    .andExpect(jsonPath("$").isEmpty());
+                    .andExpect(jsonPath("$.content").isEmpty());
         }
 
         @Test
@@ -86,7 +101,7 @@ class CategoriaControllerTest {
                     1,
                     1
             );
-            when(categoriaService.findAll(any())).thenReturn(paginatedResponse);
+            when(categoriaService.findAll(any(), isNull())).thenReturn(paginatedResponse);
 
             mockMvc.perform(get("/api/v1/categorias?page=0"))
                     .andExpect(status().isOk())

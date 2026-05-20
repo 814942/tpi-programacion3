@@ -27,9 +27,12 @@ public class PedidoController {
     private final PedidoService pedidoService;
 
     @GetMapping("/usuario")
-    public ResponseEntity<List<PedidoResponse>> findByUsuario(Authentication authentication) {
+    public ResponseEntity<PaginatedResponse<PedidoResponse>> findByUsuario(
+            @PageableDefault(size = 20, sort = "fecha") Pageable pageable,
+            @RequestParam(required = false) String search,
+            Authentication authentication) {
         Long currentUserId = extractCurrentUserId(authentication);
-        return ResponseEntity.ok(pedidoService.findByUsuario(currentUserId));
+        return ResponseEntity.ok(pedidoService.findByUsuario(currentUserId, pageable, search));
     }
 
     @PostMapping

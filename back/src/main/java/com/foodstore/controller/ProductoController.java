@@ -38,8 +38,11 @@ public class ProductoController {
     }
 
     @GetMapping("/categoria/{id}")
-    public ResponseEntity<List<ProductoResponse>> findByCategoriaId(@PathVariable Long id) {
-        return ResponseEntity.ok(productoService.findByCategoriaId(id));
+    public ResponseEntity<PaginatedResponse<ProductoResponse>> findByCategoriaId(
+            @PathVariable Long id,
+            @PageableDefault(size = 20, sort = "nombre") Pageable pageable,
+            @RequestParam(required = false) String search) {
+        return ResponseEntity.ok(productoService.findByCategoriaId(id, pageable, search));
     }
 
     @PostMapping
