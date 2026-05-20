@@ -49,7 +49,7 @@ class AuthControllerTest {
             LoginRequest request = new LoginRequest("juan@test.com", "Pass1234!");
             when(authService.login(any(LoginRequest.class))).thenReturn(authResponse);
 
-            mockMvc.perform(post("/api/auth/login")
+            mockMvc.perform(post("/api/v1/auth/login")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(request)))
                     .andExpect(status().isOk())
@@ -69,7 +69,7 @@ class AuthControllerTest {
             when(authService.login(any(LoginRequest.class)))
                     .thenThrow(new BusinessException("Email o contraseña inválidos"));
 
-            mockMvc.perform(post("/api/auth/login")
+            mockMvc.perform(post("/api/v1/auth/login")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(request)))
                     .andExpect(status().isBadRequest())
@@ -83,7 +83,7 @@ class AuthControllerTest {
             when(authService.login(any(LoginRequest.class)))
                     .thenThrow(new BusinessException("Email o contraseña inválidos"));
 
-            mockMvc.perform(post("/api/auth/login")
+            mockMvc.perform(post("/api/v1/auth/login")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(request)))
                     .andExpect(status().isBadRequest())
@@ -95,7 +95,7 @@ class AuthControllerTest {
         void shouldReturn400WhenEmailIsEmpty() throws Exception {
             LoginRequest request = new LoginRequest("", "Pass1234!");
 
-            mockMvc.perform(post("/api/auth/login")
+            mockMvc.perform(post("/api/v1/auth/login")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(request)))
                     .andExpect(status().isBadRequest())
@@ -106,7 +106,7 @@ class AuthControllerTest {
         void shouldReturn400WhenPasswordIsEmpty() throws Exception {
             LoginRequest request = new LoginRequest("juan@test.com", "");
 
-            mockMvc.perform(post("/api/auth/login")
+            mockMvc.perform(post("/api/v1/auth/login")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(request)))
                     .andExpect(status().isBadRequest())
@@ -117,7 +117,7 @@ class AuthControllerTest {
         void shouldReturn400WhenEmailIsInvalid() throws Exception {
             LoginRequest request = new LoginRequest("email-invalido", "Pass1234!");
 
-            mockMvc.perform(post("/api/auth/login")
+            mockMvc.perform(post("/api/v1/auth/login")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(request)))
                     .andExpect(status().isBadRequest())
@@ -135,7 +135,7 @@ class AuthControllerTest {
             );
             when(authService.register(any(RegisterRequest.class))).thenReturn(authResponse);
 
-            mockMvc.perform(post("/api/auth/register")
+            mockMvc.perform(post("/api/v1/auth/register")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(request)))
                     .andExpect(status().isCreated())
@@ -157,7 +157,7 @@ class AuthControllerTest {
             when(authService.register(any(RegisterRequest.class)))
                     .thenThrow(new BusinessException("El email ya está registrado"));
 
-            mockMvc.perform(post("/api/auth/register")
+            mockMvc.perform(post("/api/v1/auth/register")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(request)))
                     .andExpect(status().isBadRequest())
@@ -171,7 +171,7 @@ class AuthControllerTest {
                     "", "Perez", "nuevo@test.com", "1234567890", "Pass1234!"
             );
 
-            mockMvc.perform(post("/api/auth/register")
+            mockMvc.perform(post("/api/v1/auth/register")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(request)))
                     .andExpect(status().isBadRequest())
@@ -184,7 +184,7 @@ class AuthControllerTest {
                     "Juan", "", "nuevo@test.com", null, "Pass1234!"
             );
 
-            mockMvc.perform(post("/api/auth/register")
+            mockMvc.perform(post("/api/v1/auth/register")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(request)))
                     .andExpect(status().isBadRequest())
@@ -197,7 +197,7 @@ class AuthControllerTest {
                     "Juan", "Perez", "nuevo@test.com", null, "12345"
             );
 
-            mockMvc.perform(post("/api/auth/register")
+            mockMvc.perform(post("/api/v1/auth/register")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(request)))
                     .andExpect(status().isBadRequest())
@@ -210,7 +210,7 @@ class AuthControllerTest {
                     "Juan", "Perez", "email-invalido", null, "Pass1234!"
             );
 
-            mockMvc.perform(post("/api/auth/register")
+            mockMvc.perform(post("/api/v1/auth/register")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(request)))
                     .andExpect(status().isBadRequest())
@@ -224,7 +224,7 @@ class AuthControllerTest {
             );
             when(authService.register(any(RegisterRequest.class))).thenReturn(authResponse);
 
-            mockMvc.perform(post("/api/auth/register")
+            mockMvc.perform(post("/api/v1/auth/register")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(request)))
                     .andExpect(status().isCreated());

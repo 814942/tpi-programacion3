@@ -78,7 +78,7 @@ class SecurityConfigTest {
 
     @Test
     void corsPreflight_ShouldReturnAllowedOrigin() throws Exception {
-        mockMvc.perform(options("/api/auth/login")
+        mockMvc.perform(options("/api/v1/auth/login")
                         .header("Origin", "http://localhost:5173")
                         .header("Access-Control-Request-Method", "POST")
                         .header("Access-Control-Request-Headers", "Content-Type"))
@@ -90,7 +90,7 @@ class SecurityConfigTest {
 
     @Test
     void corsPreflight_ShouldRejectDisallowedOrigin() throws Exception {
-        mockMvc.perform(options("/api/auth/login")
+        mockMvc.perform(options("/api/v1/auth/login")
                         .header("Origin", "https://evil-site.com")
                         .header("Access-Control-Request-Method", "POST")
                         .header("Access-Control-Request-Headers", "Content-Type"))
