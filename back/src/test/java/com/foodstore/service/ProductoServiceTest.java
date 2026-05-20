@@ -2,7 +2,6 @@ package com.foodstore.service;
 
 import com.foodstore.dto.request.ProductoRequest;
 import com.foodstore.dto.request.UpdateProductoRequest;
-import com.foodstore.dto.response.CategoriaResponse;
 import com.foodstore.dto.response.PaginatedResponse;
 import com.foodstore.dto.response.ProductoResponse;
 import com.foodstore.exception.BusinessException;
