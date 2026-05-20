@@ -3,6 +3,7 @@ package com.foodstore.controller;
 import com.foodstore.dto.request.CategoriaRequest;
 import com.foodstore.dto.request.UpdateCategoriaRequest;
 import com.foodstore.dto.response.CategoriaResponse;
+import com.foodstore.dto.response.PaginatedResponse;
 import com.foodstore.exception.BusinessException;
 import com.foodstore.exception.ResourceNotFoundException;
 import com.foodstore.service.CategoriaService;
@@ -73,6 +74,25 @@ class CategoriaControllerTest {
             mockMvc.perform(get("/api/v1/categorias"))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$").isEmpty());
+        }
+
+        @Test
+        @WithMockUser
+        void shouldReturn200WithPaginatedResponseWhenPageParamPresent() throws Exception {
+            PaginatedResponse<CategoriaResponse> paginatedResponse = new PaginatedResponse<>(
+                    List.of(response),
+                    0,
+                    20,
+                    1,
+                    1
+            );
+            when(categoriaService.findAll(any())).thenReturn(paginatedResponse);
+
+            mockMvc.perform(get("/api/v1/categorias?page=0"))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.content[0].id").value(1))
+                    .andExpect(jsonPath("$.page").value(0))
+                    .andExpect(jsonPath("$.size").value(20));
         }
 
         @Test
