@@ -1,247 +1,40 @@
 // client.ts — Client panel logic (catalog, cart, search)
 
-import '../../main';
 import { getUserSession, logout } from '../../utils/auth';
+import { api } from '../../utils/api';
+import type { CategoriaResponse, ProductoResponse, PaginatedResponse } from '../../types';
 
-// ==================== DATA ====================
-
-interface Product {
-  id: number;
-  name: string;
-  description: string;
-  price: number;
-  image: string;
-  category: string;
-}
-
-const categories: string[] = ['Hamburguesas', 'Pizzas', 'Papas Fritas', 'Bebidas'];
-
-const products: Product[] = [
-  {
-    id: 1,
-    name: 'Hamburguesa Triple',
-    description: 'Triple carne, cheddar y bacon',
-    price: 25000,
-    image: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=300&h=200&fit=crop',
-    category: 'Hamburguesas'
-  },
-  {
-    id: 2,
-    name: 'Pizza Muzzarella',
-    description: 'Salsa casera y orégano',
-    price: 18000,
-    image: 'https://images.unsplash.com/photo-1513104890138-7c749659a591?w=300&h=200&fit=crop',
-    category: 'Pizzas'
-  },
-  {
-    id: 3,
-    name: 'Hamburguesa Doble',
-    description: 'Doble carne con lechuga y tomate',
-    price: 20000,
-    image: 'https://images.unsplash.com/photo-1550547660-d9450f859349?w=300&h=200&fit=crop',
-    category: 'Hamburguesas'
-  },
-  {
-    id: 4,
-    name: 'Pizza Especial',
-    description: 'Jamón, morrón y aceitunas',
-    price: 22000,
-    image: 'https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=300&h=200&fit=crop',
-    category: 'Pizzas'
-  },
-  {
-    id: 5,
-    name: 'Pizza Pepperoni',
-    description: 'Pepperoni extra con queso',
-    price: 24000,
-    image: 'https://images.unsplash.com/photo-1628840042765-356cda07504e?w=300&h=200&fit=crop',
-    category: 'Pizzas'
-  },
-  {
-    id: 6,
-    name: 'Papas Fritas',
-    description: 'Papas crocantes con sal gruesa',
-    price: 8000,
-    image: 'https://images.unsplash.com/photo-1573080496219-bb080dd4f877?w=300&h=200&fit=crop',
-    category: 'Papas Fritas'
-  },
-  {
-    id: 7,
-    name: 'Papas con Cheddar',
-    description: 'Papas fritas con salsa cheddar',
-    price: 10000,
-    image: 'https://images.unsplash.com/photo-1630384060421-cb20d0e0649d?w=300&h=200&fit=crop',
-    category: 'Papas Fritas'
-  },
-  {
-    id: 8,
-    name: 'Coca Cola',
-    description: 'Lata 350ml bien fría',
-    price: 3500,
-    image: 'https://images.unsplash.com/photo-1622483767028-3f66f32aef97?w=300&h=200&fit=crop',
-    category: 'Bebidas'
-  },
-  {
-    id: 9,
-    name: 'Agua Mineral',
-    description: 'Agua sin gas 500ml',
-    price: 2500,
-    image: 'https://images.unsplash.com/photo-1548839140-29a749e1cf4d?w=300&h=200&fit=crop',
-    category: 'Bebidas'
-  }
-];
+// DOM refs
+const contenedorProductos = document.getElementById('contenedor-productos')!;
+const listaCategorias = document.getElementById('lista-categorias')!;
+const carritoBody = document.getElementById('carrito-body')!;
+const carritoTotal = document.getElementById('carrito-total')!;
+const productosContador = document.getElementById('productos-contador')!;
+const btnAnterior = document.getElementById('btn-anterior') as HTMLButtonElement;
+const btnSiguiente = document.getElementById('btn-siguiente') as HTMLButtonElement;
+const spinner = document.getElementById('loading-spinner')!;
+const errorMessage = document.getElementById('error-message')!;
 
 // ==================== CART ====================
 
 interface CartItem {
-  product: Product;
+  product: ProductoResponse;
   quantity: number;
 }
 
 let cart: CartItem[] = [];
 
-// ==================== FUNCTIONS ====================
-
-/**
- * Load categories in the aside
- */
-function loadCategories(): void {
-  const listaCategorias = document.getElementById('lista-categorias');
-  if (!listaCategorias) return;
-
-  listaCategorias.innerHTML = '';
-  
-  // "All" option first
-  const liAll = document.createElement('li');
-  liAll.innerHTML = '<a href="#" data-category="all">Todas</a>';
-  listaCategorias.appendChild(liAll);
-
-  // Each category
-  categories.forEach(cat => {
-    const li = document.createElement('li');
-    li.innerHTML = `<a href="#" data-category="${cat}">${cat}</a>`;
-    listaCategorias.appendChild(li);
-  });
-
-  // Event listeners to filter
-  listaCategorias.querySelectorAll('a').forEach(link => {
-    link.addEventListener('click', (e) => {
-      e.preventDefault();
-      const category = (e.target as HTMLElement).dataset.category;
-      filterByCategory(category || 'all');
-    });
-  });
-}
-
-/**
- * Filter products by category
- */
-function filterByCategory(category: string): void {
-  if (category === 'all') {
-    loadProducts(products);
-  } else {
-    const filtered = products.filter(p => p.category === category);
-    loadProducts(filtered);
-  }
-}
-
-/**
- * Load products in the container
- */
-function loadProducts(productsToShow: Product[]): void {
-  const container = document.getElementById('contenedor-productos');
-  if (!container) return;
-
-  container.innerHTML = '';
-
-  productsToShow.forEach(product => {
-    const article = document.createElement('article');
-    article.className = 'producto';
-    article.innerHTML = `
-      <img src="${product.image}" alt="${product.name}">
-      <h3>${product.name}</h3>
-      <p class="descripcion">${product.description}</p>
-      <p class="precio">$${product.price.toLocaleString('es-AR')}</p>
-      <button class="btn-agregar" data-id="${product.id}">Agregar al Carrito</button>
-    `;
-    container.appendChild(article);
-  });
-
-  // Add event listeners to buttons
-  container.querySelectorAll('.btn-agregar').forEach(btn => {
-    btn.addEventListener('click', (e) => {
-      const id = parseInt((e.target as HTMLElement).dataset.id || '0');
-      const product = products.find(p => p.id === id);
-      if (product) {
-        addToCart(product);
-      }
-    });
-  });
-}
-
-/**
- * Add product to cart
- */
-function addToCart(product: Product): void {
-  const existingItem = cart.find(item => item.product.id === product.id);
-  
-  if (existingItem) {
-    existingItem.quantity++;
+function addToCart(product: ProductoResponse): void {
+  const existing = cart.find(item => item.product.id === product.id);
+  if (existing) {
+    existing.quantity++;
   } else {
     cart.push({ product, quantity: 1 });
   }
-  
   updateCart();
   alert('Producto agregado al carrito.');
 }
 
-/**
- * Update cart display
- */
-function updateCart(): void {
-  const tbody = document.getElementById('carrito-body');
-  const totalEl = document.getElementById('carrito-total');
-  
-  if (!tbody || !totalEl) return;
-
-  if (cart.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="5" style="text-align: center;">El carrito está vacío</td></tr>';
-    totalEl.textContent = '$0';
-    return;
-  }
-
-  let total = 0;
-  tbody.innerHTML = '';
-
-  cart.forEach((item, index) => {
-    const subtotal = item.product.price * item.quantity;
-    total += subtotal;
-
-    const tr = document.createElement('tr');
-    tr.innerHTML = `
-      <td>${item.product.name}</td>
-      <td>$${item.product.price.toLocaleString('es-AR')}</td>
-      <td>${item.quantity}</td>
-      <td>$${subtotal.toLocaleString('es-AR')}</td>
-      <td><button class="eliminar" data-index="${index}">Eliminar</button></td>
-    `;
-    tbody.appendChild(tr);
-  });
-
-  totalEl.textContent = `$${total.toLocaleString('es-AR')}`;
-
-  // Event listeners for delete
-  tbody.querySelectorAll('.eliminar').forEach(btn => {
-    btn.addEventListener('click', (e) => {
-      const index = parseInt((e.target as HTMLElement).dataset.index || '0');
-      removeFromCart(index);
-    });
-  });
-}
-
-/**
- * Remove product from cart
- */
 function removeFromCart(index: number): void {
   if (index >= 0 && index < cart.length) {
     if (cart[index].quantity > 1) {
@@ -253,62 +46,256 @@ function removeFromCart(index: number): void {
   }
 }
 
-/**
- * Configure search
- */
-function configureSearch(): void {
-  const formSearch = document.getElementById('form-busqueda');
-  const inputSearch = document.getElementById('input-busqueda') as HTMLInputElement;
-
-  if (!formSearch || !inputSearch) return;
-
-  formSearch.addEventListener('submit', (e) => {
-    e.preventDefault();
-    const query = inputSearch.value.toLowerCase().trim();
-    
-    if (!query) {
-      loadProducts(products);
-      return;
-    }
-
-    const results = products.filter(p => 
-      p.name.toLowerCase().includes(query) ||
-      p.description.toLowerCase().includes(query) ||
-      p.category.toLowerCase().includes(query)
-    );
-
-    loadProducts(results);
+function updateCart(): void {
+  if (!carritoBody || !carritoTotal) return;
+  if (cart.length === 0) {
+    carritoBody.innerHTML = '<tr><td colspan="5" style="text-align:center;">El carrito está vacío</td></tr>';
+    carritoTotal.textContent = '$0';
+    return;
+  }
+  let total = 0;
+  carritoBody.innerHTML = '';
+  cart.forEach((item, index) => {
+    const subtotal = item.product.precio * item.quantity;
+    total += subtotal;
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${item.product.nombre}</td>
+      <td>$${item.product.precio.toLocaleString('es-AR')}</td>
+      <td>${item.quantity}</td>
+      <td>$${subtotal.toLocaleString('es-AR')}</td>
+      <td><button class="eliminar" data-index="${index}">Eliminar</button></td>
+    `;
+    carritoBody.appendChild(tr);
+  });
+  carritoTotal.textContent = `$${total.toLocaleString('es-AR')}`;
+  carritoBody.querySelectorAll('.eliminar').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      const index = parseInt((e.target as HTMLElement).dataset.index || '0');
+      removeFromCart(index);
+    });
   });
 }
 
-/**
- * Display user info in header
- */
+// ==================== PAGINATION STATE ====================
+
+let currentPage = 0;
+let totalPages = 0;
+let totalItems = 0;
+const PAGE_SIZE = 12;
+
+function renderPagination(): void {
+  if (btnAnterior) btnAnterior.disabled = currentPage <= 0;
+  if (btnSiguiente) btnSiguiente.disabled = currentPage >= totalPages - 1;
+  const pageSpan = document.getElementById('pagina-actual');
+  if (pageSpan) {
+    pageSpan.textContent = `Página ${currentPage + 1} de ${totalPages}`;
+  }
+}
+
+function updateProductCounter(): void {
+  const start = currentPage * PAGE_SIZE + 1;
+  const end = Math.min((currentPage + 1) * PAGE_SIZE, totalItems);
+  if (productosContador) {
+    if (totalItems === 0) {
+      productosContador.textContent = 'No hay productos';
+    } else {
+      productosContador.textContent = `Mostrando ${start}-${end} de ${totalItems} productos`;
+    }
+  }
+}
+
+// ==================== UI HELPERS ====================
+
+function showLoading(): void {
+  if (spinner) spinner.classList.remove('hidden');
+  if (errorMessage) errorMessage.classList.add('hidden');
+  if (contenedorProductos) contenedorProductos.innerHTML = '';
+}
+
+function hideLoading(): void {
+  if (spinner) spinner.classList.add('hidden');
+}
+
+function showError(msg: string): void {
+  hideLoading();
+  if (errorMessage) {
+    errorMessage.textContent = msg;
+    errorMessage.classList.remove('hidden');
+  }
+  if (productosContador) productosContador.textContent = 'Error al cargar productos';
+}
+
+// ==================== API CALLS ====================
+
+async function fetchCategories(): Promise<void> {
+  try {
+    const response = await api.get<PaginatedResponse<CategoriaResponse>>('/categorias?page=0&size=100');
+    if (!listaCategorias) return;
+    listaCategorias.innerHTML = '';
+    const liAll = document.createElement('li');
+    liAll.innerHTML = '<a href="#" data-categoria-id="all">Todas</a>';
+    listaCategorias.appendChild(liAll);
+    response.content.forEach(cat => {
+      const li = document.createElement('li');
+      li.innerHTML = `<a href="#" data-categoria-id="${cat.id}">${cat.nombre}</a>`;
+      listaCategorias.appendChild(li);
+    });
+    listaCategorias.querySelectorAll('a').forEach(link => {
+      link.addEventListener('click', (e) => {
+        e.preventDefault();
+        const id = (e.target as HTMLElement).dataset.categoriaId;
+        if (id === 'all') {
+          fetchProducts(0);
+        } else if (id) {
+          fetchProductsByCategoria(parseInt(id), 0);
+        }
+      });
+    });
+  } catch (err: unknown) {
+    console.error('Error loading categories:', err);
+  }
+}
+
+async function fetchProducts(page: number): Promise<void> {
+  showLoading();
+  currentPage = page;
+  try {
+    const response = await api.get<PaginatedResponse<ProductoResponse>>(`/productos?page=${page}&size=${PAGE_SIZE}`);
+    totalPages = response.totalPages;
+    totalItems = response.totalElements;
+    renderProducts(response.content);
+    renderPagination();
+    updateProductCounter();
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : 'Error al cargar productos';
+    showError(msg);
+  } finally {
+    hideLoading();
+  }
+}
+
+async function fetchProductsByCategoria(categoriaId: number, page: number): Promise<void> {
+  showLoading();
+  currentPage = page;
+  try {
+    const response = await api.get<PaginatedResponse<ProductoResponse>>(`/productos/categoria/${categoriaId}?page=${page}&size=${PAGE_SIZE}`);
+    totalPages = response.totalPages;
+    totalItems = response.totalElements;
+    renderProducts(response.content);
+    renderPagination();
+    updateProductCounter();
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : 'Error al cargar productos';
+    showError(msg);
+  } finally {
+    hideLoading();
+  }
+}
+
+function renderProducts(products: ProductoResponse[]): void {
+  if (!contenedorProductos) return;
+  if (products.length === 0) {
+    contenedorProductos.innerHTML = '<p style="text-align:center;padding:40px;color:#666;">No hay productos disponibles</p>';
+    return;
+  }
+  contenedorProductos.innerHTML = '';
+  products.forEach(product => {
+    const article = document.createElement('article');
+    article.className = `producto${!product.disponible ? ' no-disponible' : ''}`;
+    article.innerHTML = `
+      <img src="${product.imagen}" alt="${product.nombre}" loading="lazy">
+      <h3>${product.nombre}</h3>
+      <p class="descripcion">${product.descripcion}</p>
+      <p class="precio">$${product.precio.toLocaleString('es-AR')}</p>
+      ${!product.disponible ? '<span class="badge-no-disponible">No disponible</span>' : ''}
+      <button class="btn-agregar" data-id="${product.id}" ${!product.disponible ? 'disabled' : ''}>
+        ${product.disponible ? 'Agregar al Carrito' : 'Sin stock'}
+      </button>
+    `;
+    contenedorProductos.appendChild(article);
+  });
+  contenedorProductos.querySelectorAll('.btn-agregar').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      const id = parseInt((e.target as HTMLElement).dataset.id || '0');
+      const product = products.find(p => p.id === id);
+      if (product && product.disponible) {
+        addToCart(product);
+      }
+    });
+  });
+}
+
+// ==================== SEARCH ====================
+
+function configureSearch(): void {
+  const formSearch = document.getElementById('form-busqueda');
+  const inputSearch = document.getElementById('input-busqueda') as HTMLInputElement;
+  if (!formSearch || !inputSearch) return;
+  formSearch.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const query = inputSearch.value.trim();
+    if (query) {
+      fetchProductsBySearch(query, 0);
+    } else {
+      fetchProducts(0);
+    }
+  });
+}
+
+async function fetchProductsBySearch(query: string, page: number): Promise<void> {
+  showLoading();
+  currentPage = page;
+  try {
+    const response = await api.get<PaginatedResponse<ProductoResponse>>(`/productos?search=${encodeURIComponent(query)}&page=${page}&size=${PAGE_SIZE}`);
+    totalPages = response.totalPages;
+    totalItems = response.totalElements;
+    renderProducts(response.content);
+    renderPagination();
+    updateProductCounter();
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : 'Error al buscar productos';
+    showError(msg);
+  } finally {
+    hideLoading();
+  }
+}
+
+// ==================== USER INFO ====================
+
 function displayUserInfo(): void {
   const user = getUserSession();
   const userInfo = document.getElementById('user-info');
   const btnLogout = document.getElementById('btn-logout');
-
   if (userInfo && user) {
-    userInfo.textContent = `Hola, ${user.email}`;
+    userInfo.textContent = `Hola, ${user.nombre || user.email}`;
   }
-
   if (btnLogout) {
     btnLogout.addEventListener('click', () => {
       logout();
-      alert('Sesión cerrada correctamente.');
       window.location.href = '/';
     });
   }
 }
 
-/**
- * Initialize client page
- */
+// ==================== PAGINATION EVENTS ====================
+
+if (btnAnterior) {
+  btnAnterior.addEventListener('click', () => {
+    if (currentPage > 0) fetchProducts(currentPage - 1);
+  });
+}
+
+if (btnSiguiente) {
+  btnSiguiente.addEventListener('click', () => {
+    if (currentPage < totalPages - 1) fetchProducts(currentPage + 1);
+  });
+}
+
+// ==================== INIT ====================
+
 function initClient(): void {
   const user = getUserSession();
-  
-  // Check if user is authenticated and is client (route guard should handle this)
   if (!user || user.role !== 'USUARIO') {
     document.body.innerHTML = `
       <div style="display:flex;justify-content:center;align-items:center;min-height:100vh;font-family:Arial,sans-serif;">
@@ -321,14 +308,11 @@ function initClient(): void {
     `;
     return;
   }
-
-  // Initialize components
   displayUserInfo();
-  loadCategories();
-  loadProducts(products);
+  fetchCategories();
+  fetchProducts(0);
   configureSearch();
   updateCart();
 }
 
-// Run when DOM is ready
 document.addEventListener('DOMContentLoaded', initClient);
