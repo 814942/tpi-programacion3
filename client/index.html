@@ -83,30 +83,5 @@
   </div>
   
   <script type="module" src="/src/main.ts"></script>
-  <script type="module">
-    // Check authentication status
-    const userData = localStorage.getItem('userData');
-    const statusEl = document.getElementById('auth-status');
-    
-    if (userData) {
-      try {
-        const user = JSON.parse(userData);
-        statusEl.textContent = `Sesión activa como: ${user.email} (${user.role})`;
-        statusEl.className = 'auth-status logged-in';
-        statusEl.classList.remove('hidden');
-        
-        // Auto redirect based on role
-        setTimeout(() => {
-          if (user.role === 'admin') {
-            window.location.href = '/src/pages/admin/index.html';
-          } else {
-            window.location.href = '/src/pages/client/index.html';
-          }
-        }, 1500);
-      } catch (e) {
-        statusEl.classList.add('hidden');
-      }
-    }
-  </script>
 </body>
 </html>

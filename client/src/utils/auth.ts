@@ -3,6 +3,10 @@ import { api } from './api';
 
 export const SESSION_KEY = 'foodstore_session';
 
+// Cleanup old localStorage keys from previous mock auth
+const OLD_KEYS = ['userData', 'users'];
+OLD_KEYS.forEach(key => localStorage.removeItem(key));
+
 interface Session {
   token: string;
   user: IUser;

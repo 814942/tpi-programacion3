@@ -1,6 +1,6 @@
 /// <reference types="vite/client" />
 
-import { clearSession, getToken, SESSION_KEY, logout } from "./auth";
+import { getToken, logout } from './auth';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api/v1';
 
