@@ -9,7 +9,7 @@ function initAdmin(): void {
   const user = getUserSession();
   
   // Check if user is authenticated and is admin
-  if (!user || user.role !== 'admin') {
+  if (!user || user.role !== 'ADMIN') {
     // Route guard should have handled this, but just in case show message
     document.body.innerHTML = `
       <div style="display:flex;justify-content:center;align-items:center;min-height:100vh;font-family:Arial,sans-serif;">
