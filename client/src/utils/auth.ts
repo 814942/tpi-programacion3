@@ -38,20 +38,18 @@ export function getToken(): string | null {
   return getSession()?.token ?? null;
 }
 
-function decodeBase64UrlUtf8(value: string): string {
-   const base64 = value.replace(/-/g, '+').replace(/_/g, '/');
-   const padding = '='.repeat((4 - (base64.length % 4)) % 4);
-   const normalized = base64 + padding;
-   const binary = atob(normalized);
-   const bytes = Uint8Array.from(binary, (char) => char.charCodeAt(0));
-   return new TextDecoder().decode(bytes);
- }
-
 export function decodeToken(token: string): JwtPayload | null {
   try {
     const base64Url = token.split('.')[1];
     if (!base64Url) return null;
-    return JSON.parse(decodeBase64UrlUtf8(base64Url)) as JwtPayload;
+
+    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+    const paddedBase64 = base64.padEnd(Math.ceil(base64.length / 4) * 4, '=');
+    const binaryPayload = atob(paddedBase64);
+    const bytes = Uint8Array.from(binaryPayload, (char) => char.charCodeAt(0));
+    const jsonPayload = new TextDecoder().decode(bytes);
+
+    return JSON.parse(jsonPayload);
   } catch {
     return null;
   }
@@ -112,5 +110,15 @@ export function getUserRole(): Role | null {
 }
 
 export function getUserSession(): IUser | null {
-  return getSession()?.user ?? null;
+  const session = getSession();
+  if (!session) return null;
+
+  // Only return user if token is still valid
+  const payload = decodeToken(session.token);
+  if (!payload) return null;
+
+  const expired = payload.exp * 1000 < Date.now();
+  if (expired) return null;
+
+  return session.user;
 }

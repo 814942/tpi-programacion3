@@ -1,6 +1,6 @@
 /// <reference types="vite/client" />
 
-import { clearSession, getToken, SESSION_KEY } from "./auth";
+import { clearSession, getToken, SESSION_KEY, logout } from "./auth";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api/v1';
 
@@ -26,10 +26,16 @@ async function request<T>(method: string, endpoint: string, body?: unknown): Pro
     body: body ? JSON.stringify(body) : undefined,
   });
 
+  // Handle 401: redirect to login only if session expired (token was sent)
   if (response.status === 401) {
-    clearSession();
-    window.location.href = '/src/pages/auth/login/index.html';
-    throw new Error('Sesión expirada');
+    if (token) {
+      // Session expired — clear and redirect
+      logout();
+      window.location.href = '/src/pages/auth/login/index.html';
+      throw new Error('Sesión expirada');
+    }
+    // No token was sent — just throw the API error (e.g. invalid credentials)
+    throw new Error('Credenciales inválidas');
   }
 
   if (!response.ok) {
@@ -40,12 +46,22 @@ async function request<T>(method: string, endpoint: string, body?: unknown): Pro
         errorMessage = errorData.message;
       }
     } catch {
-      // ignore
+      // Could not parse error body
     }
     throw new Error(errorMessage);
   }
 
-  return response.json();
+  // Handle 204 No Content (e.g. DELETE responses)
+  if (response.status === 204) {
+    return undefined as T;
+  }
+
+  // Handle empty response body
+  const text = await response.text();
+  if (!text) {
+    return undefined as T;
+  }
+  return JSON.parse(text) as T;
 }
 
 export const api = {

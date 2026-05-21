@@ -1,5 +1,6 @@
 // admin.ts — Admin panel logic
 
+import '../../main';
 import { getUserSession, logout } from '../../utils/auth';
 
 /**
