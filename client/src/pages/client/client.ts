@@ -1,5 +1,6 @@
 // client.ts — Client panel logic (catalog, cart, search)
 
+import '../../main';
 import { getUserSession, logout } from '../../utils/auth';
 
 // ==================== DATA ====================
@@ -308,7 +309,7 @@ function initClient(): void {
   const user = getUserSession();
   
   // Check if user is authenticated and is client (route guard should handle this)
-  if (!user || user.role !== 'client') {
+  if (!user || user.role !== 'USUARIO') {
     document.body.innerHTML = `
       <div style="display:flex;justify-content:center;align-items:center;min-height:100vh;font-family:Arial,sans-serif;">
         <div style="text-align:center;">

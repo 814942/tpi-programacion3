@@ -110,6 +110,48 @@
     .auth-link a:hover {
       text-decoration: underline;
     }
+
+    .btn-primary:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    .error-message {
+      color: #c33;
+      background: #fff0f0;
+      border: 1px solid #fcc;
+      border-radius: 4px;
+      padding: 10px 12px;
+      margin-bottom: 20px;
+      font-size: 14px;
+    }
+
+    .error-message.hidden {
+      display: none;
+    }
+
+    .loading-spinner {
+      display: flex;
+      justify-content: center;
+      padding: 16px;
+    }
+
+    .loading-spinner.hidden {
+      display: none;
+    }
+
+    .spinner {
+      width: 24px;
+      height: 24px;
+      border: 3px solid var(--border);
+      border-top-color: var(--primary);
+      border-radius: 50%;
+      animation: spin 0.6s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
   </style>
 </head>
 <body>
@@ -118,6 +160,8 @@
     <h2>Iniciar Sesión</h2>
     
     <form id="form-login">
+      <div id="error-message" class="error-message hidden" role="alert"></div>
+
       <div class="form-group">
         <label for="email">Email:</label>
         <input type="email" id="email" name="email" placeholder="tu@email.com" required>
@@ -129,6 +173,10 @@
       </div>
       
       <button type="submit" class="btn-primary">Iniciar Sesión</button>
+
+      <div id="loading-spinner" class="loading-spinner hidden">
+        <div class="spinner"></div>
+      </div>
     </form>
     
     <p class="auth-link">
@@ -136,6 +184,7 @@
     </p>
   </main>
   
+  <script type="module" src="/src/main.ts"></script>
   <script type="module" src="./login.ts"></script>
 </body>
 </html>

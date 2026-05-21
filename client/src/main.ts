@@ -1,13 +1,35 @@
-// main.ts — Punto de entrada y protector de rutas
-
 import { initRouteGuard } from './utils/navigate';
+import { getSession, decodeToken, logout } from './utils/auth';
 
-// Inicializar el protector de rutas al cargar la página
+const LOGIN_PAGE = '/src/pages/auth/login/index.html';
+const ADMIN_PAGE = '/src/pages/admin/index.html';
+const CLIENT_PAGE = '/src/pages/client/index.html';
+
+function getDashboardByRole(role: string): string {
+  return role === 'ADMIN' ? ADMIN_PAGE : CLIENT_PAGE;
+}
+
 document.addEventListener('DOMContentLoaded', () => {
-  initRouteGuard();
-});
+  const session = getSession();
+  if (session) {
+    const payload = decodeToken(session.token);
+    if (payload) {
+      const expired = payload.exp * 1000 < Date.now();
+      if (expired) {
+        logout();
+        window.location.href = LOGIN_PAGE;
+        return;
+      }
 
-// También ejecutar en cada navegación (SPA)
-window.addEventListener('popstate', () => {
+      const path = window.location.pathname;
+      if (path.includes('/login/') || path.includes('/registro/')) {
+        window.location.href = getDashboardByRole(payload.role);
+        return;
+      }
+    } else {
+      logout();
+    }
+  }
+
   initRouteGuard();
 });

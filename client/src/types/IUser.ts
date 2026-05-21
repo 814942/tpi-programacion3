@@ -1,20 +1,12 @@
-// IUser.ts — Interfaz de usuario con tipado fuerte
-
-import { Role } from './Role';
+import type { Role } from './Role';
 
 export interface IUser {
-  id: string;
+  id: number;
   email: string;
-  password: string;
+  nombre: string;
+  apellido: string;
+  celular: string | null;
   role: Role;
-  createdAt: string;
-}
-
-export interface IUserWithoutPassword {
-  id: string;
-  email: string;
-  role: Role;
-  createdAt: string;
 }
 
 export interface ILoginCredentials {
@@ -23,7 +15,20 @@ export interface ILoginCredentials {
 }
 
 export interface IRegisterData {
+  nombre: string;
+  apellido: string;
   email: string;
+  celular?: string;
   password: string;
+}
+
+export interface IAuthResponse {
+  token: string;
+  type: string;
+  id: number;
+  email: string;
+  nombre: string;
+  apellido: string;
+  celular: string | null;
   role: Role;
 }

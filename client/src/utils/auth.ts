@@ -1,197 +1,128 @@
-// auth.ts — Authentication functions with localStorage
+import type { IAuthResponse, IUser, ILoginCredentials, IRegisterData, Role } from '../types';
+import { api } from './api';
 
-import type { IUser, IUserWithoutPassword, ILoginCredentials, IRegisterData, Role } from '../types';
+export const SESSION_KEY = 'foodstore_session';
 
-// localStorage keys
-const USERS_KEY = 'users';
-const USER_DATA_KEY = 'userData';
+// Cleanup old localStorage keys from previous mock auth
+const OLD_KEYS = ['userData', 'users'];
+OLD_KEYS.forEach(key => localStorage.removeItem(key));
 
-// Admin credentials for testing
-const ADMIN_EMAIL = 'admin@foodstore.com';
-const ADMIN_PASSWORD = 'admin123';
-
-/**
- * Seed admin user if not exists
- */
-export function seedAdminUser(): void {
-  const users = getUsers();
-  const adminExists = users.some(u => u.email === ADMIN_EMAIL);
-  
-  if (!adminExists) {
-    const adminUser: IUser = {
-      id: 'admin-001',
-      email: ADMIN_EMAIL,
-      password: ADMIN_PASSWORD,
-      role: 'admin',
-      createdAt: new Date().toISOString(),
-    };
-    users.push(adminUser);
-    saveUsers(users);
-    console.log('Admin user seeded: admin@foodstore.com / admin123');
-  }
+interface Session {
+  token: string;
+  user: IUser;
 }
 
-// Initialize admin on module load
-seedAdminUser();
-
-/**
- * Generate unique ID for new users
- */
-function generateId(): string {
-  return Date.now().toString(36) + Math.random().toString(36).substring(2);
+interface JwtPayload {
+  sub: string;
+  email: string;
+  role: string;
+  exp: number;
+  iat: number;
 }
 
-/**
- * Get all registered users
- */
-export function getUsers(): IUser[] {
-  const stored = localStorage.getItem(USERS_KEY);
-  if (!stored) return [];
+export function getSession(): Session | null {
   try {
-    return JSON.parse(stored);
-  } catch {
-    return [];
-  }
-}
-
-/**
- * Save users array to localStorage
- */
-function saveUsers(users: IUser[]): void {
-  localStorage.setItem(USERS_KEY, JSON.stringify(users));
-}
-
-/**
- * Find user by email
- */
-export function findUserByEmail(email: string): IUser | undefined {
-  const users = getUsers();
-  return users.find(u => u.email.toLowerCase() === email.toLowerCase());
-}
-
-/**
- * Check if email is already registered
- */
-export function isEmailRegistered(email: string): boolean {
-  return findUserByEmail(email) !== undefined;
-}
-
-/**
- * Register a new user
- */
-export function register(data: IRegisterData): { success: boolean; message: string; user?: IUserWithoutPassword } {
-  // Validate email not already registered
-  if (isEmailRegistered(data.email)) {
-    return { success: false, message: 'El email ya está registrado' };
-  }
-
-  // Validate basic data
-  if (!data.email || !data.password) {
-    return { success: false, message: 'Email y contraseña son requeridos' };
-  }
-
-  if (data.password.length < 6) {
-    return { success: false, message: 'La contraseña debe tener al menos 6 caracteres' };
-  }
-
-  // Create new user
-  const newUser: IUser = {
-    id: generateId(),
-    email: data.email.toLowerCase(),
-    password: data.password, // Note: In production, use hash (bcrypt)
-    role: data.role || 'client',
-    createdAt: new Date().toISOString(),
-  };
-
-  // Save to localStorage
-  const users = getUsers();
-  users.push(newUser);
-  saveUsers(users);
-
-  // Return user without password
-  const { password, ...userWithoutPassword } = newUser;
-  return { success: true, message: 'Usuario registrado correctamente', user: userWithoutPassword };
-}
-
-/**
- * User login
- */
-export function login(credentials: ILoginCredentials): { success: boolean; message: string; user?: IUserWithoutPassword } {
-  const { email, password } = credentials;
-
-  // Find user
-  const user = findUserByEmail(email);
-
-  if (!user) {
-    return { success: false, message: 'Email o contraseña incorrectos' };
-  }
-
-  // Verify password (direct comparison - in production use hash)
-  if (user.password !== password) {
-    return { success: false, message: 'Email o contraseña incorrectos' };
-  }
-
-  // Save session
-  const { password: _, ...userWithoutPassword } = user;
-  setUserSession(userWithoutPassword);
-
-  return { success: true, message: 'Login exitoso', user: userWithoutPassword };
-}
-
-/**
- * Logout user
- */
-export function logout(): void {
-  localStorage.removeItem(USER_DATA_KEY);
-}
-
-/**
- * Save user session
- */
-export function setUserSession(user: IUserWithoutPassword): void {
-  localStorage.setItem(USER_DATA_KEY, JSON.stringify(user));
-}
-
-/**
- * Get current user session
- */
-export function getUserSession(): IUserWithoutPassword | null {
-  const stored = localStorage.getItem(USER_DATA_KEY);
-  if (!stored) return null;
-  try {
-    return JSON.parse(stored);
+    const stored = localStorage.getItem(SESSION_KEY);
+    if (!stored) return null;
+    return JSON.parse(stored) as Session;
   } catch {
     return null;
   }
 }
 
-/**
- * Check if user is authenticated
- */
+function setSession(token: string, user: IUser): void {
+  localStorage.setItem(SESSION_KEY, JSON.stringify({ token, user }));
+}
+
+export function clearSession(): void {
+  localStorage.removeItem(SESSION_KEY);
+}
+
+export function getToken(): string | null {
+  return getSession()?.token ?? null;
+}
+
+export function decodeToken(token: string): JwtPayload | null {
+  try {
+    const base64Url = token.split('.')[1];
+    if (!base64Url) return null;
+
+    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+    const paddedBase64 = base64.padEnd(Math.ceil(base64.length / 4) * 4, '=');
+    const binaryPayload = atob(paddedBase64);
+    const bytes = Uint8Array.from(binaryPayload, (char) => char.charCodeAt(0));
+    const jsonPayload = new TextDecoder().decode(bytes);
+
+    return JSON.parse(jsonPayload);
+  } catch {
+    return null;
+  }
+}
+
+export async function login(credentials: ILoginCredentials): Promise<IUser> {
+  const response = await api.post<IAuthResponse>('/auth/login', credentials);
+  const user: IUser = {
+    id: response.id,
+    email: response.email,
+    nombre: response.nombre,
+    apellido: response.apellido,
+    celular: response.celular || null,
+    role: response.role,
+  };
+  setSession(response.token, user);
+  return user;
+}
+
+export async function register(data: IRegisterData): Promise<IUser> {
+  const response = await api.post<IAuthResponse>('/auth/register', data);
+  const user: IUser = {
+    id: response.id,
+    email: response.email,
+    nombre: response.nombre,
+    apellido: response.apellido,
+    celular: response.celular || null,
+    role: response.role,
+  };
+  setSession(response.token, user);
+  return user;
+}
+
+export function logout(): void {
+  clearSession();
+}
+
 export function isAuthenticated(): boolean {
-  return getUserSession() !== null;
+  const session = getSession();
+  if (!session) return false;
+
+  const payload = decodeToken(session.token);
+  if (!payload) return false;
+
+  return payload.exp * 1000 > Date.now();
 }
 
-/**
- * Check if current user is admin
- */
 export function isAdmin(): boolean {
-  const user = getUserSession();
-  return user?.role === 'admin';
+  return getSession()?.user.role === 'ADMIN';
 }
 
-/**
- * Check if current user is client
- */
-export function isClient(): boolean {
-  const user = getUserSession();
-  return user?.role === 'client';
+export function isUsuario(): boolean {
+  return getSession()?.user.role === 'USUARIO';
 }
 
-/**
- * Get current user role
- */
 export function getUserRole(): Role | null {
-  const user = getUserSession();
-  return user?.role || null;
+  return getSession()?.user.role ?? null;
+}
+
+export function getUserSession(): IUser | null {
+  const session = getSession();
+  if (!session) return null;
+
+  // Only return user if token is still valid
+  const payload = decodeToken(session.token);
+  if (!payload) return null;
+
+  const expired = payload.exp * 1000 < Date.now();
+  if (expired) return null;
+
+  return session.user;
 }

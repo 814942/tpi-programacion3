@@ -1,8 +1,5 @@
-// Role.ts — Definición de roles de usuario
-
-export type Role = 'admin' | 'client';
-
+export type Role = 'ADMIN' | 'USUARIO';
 export const ROLES = {
-  ADMIN: 'admin' as Role,
-  CLIENT: 'client' as Role,
+  ADMIN: 'ADMIN',
+  USUARIO: 'USUARIO',
 } as const;
