@@ -110,5 +110,15 @@ export function getUserRole(): Role | null {
 }
 
 export function getUserSession(): IUser | null {
-  return getSession()?.user ?? null;
+  const session = getSession();
+  if (!session) return null;
+
+  // Only return user if token is still valid
+  const payload = decodeToken(session.token);
+  if (!payload) return null;
+
+  const expired = payload.exp * 1000 < Date.now();
+  if (expired) return null;
+
+  return session.user;
 }
