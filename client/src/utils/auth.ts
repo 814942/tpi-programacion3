@@ -1,7 +1,7 @@
 import type { IAuthResponse, IUser, ILoginCredentials, IRegisterData, Role } from '../types';
 import { api } from './api';
 
-const SESSION_KEY = 'foodstore_session';
+export const SESSION_KEY = 'foodstore_session';
 
 interface Session {
   token: string;
@@ -30,7 +30,7 @@ function setSession(token: string, user: IUser): void {
   localStorage.setItem(SESSION_KEY, JSON.stringify({ token, user }));
 }
 
-function clearSession(): void {
+export function clearSession(): void {
   localStorage.removeItem(SESSION_KEY);
 }
 
@@ -38,11 +38,20 @@ export function getToken(): string | null {
   return getSession()?.token ?? null;
 }
 
+function decodeBase64UrlUtf8(value: string): string {
+   const base64 = value.replace(/-/g, '+').replace(/_/g, '/');
+   const padding = '='.repeat((4 - (base64.length % 4)) % 4);
+   const normalized = base64 + padding;
+   const binary = atob(normalized);
+   const bytes = Uint8Array.from(binary, (char) => char.charCodeAt(0));
+   return new TextDecoder().decode(bytes);
+ }
+
 export function decodeToken(token: string): JwtPayload | null {
   try {
     const base64Url = token.split('.')[1];
-    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-    return JSON.parse(atob(base64));
+    if (!base64Url) return null;
+    return JSON.parse(decodeBase64UrlUtf8(base64Url)) as JwtPayload;
   } catch {
     return null;
   }
