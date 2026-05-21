@@ -41,8 +41,15 @@ export function getToken(): string | null {
 export function decodeToken(token: string): JwtPayload | null {
   try {
     const base64Url = token.split('.')[1];
+    if (!base64Url) return null;
+
     const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-    return JSON.parse(atob(base64));
+    const paddedBase64 = base64.padEnd(Math.ceil(base64.length / 4) * 4, '=');
+    const binaryPayload = atob(paddedBase64);
+    const bytes = Uint8Array.from(binaryPayload, (char) => char.charCodeAt(0));
+    const jsonPayload = new TextDecoder().decode(bytes);
+
+    return JSON.parse(jsonPayload);
   } catch {
     return null;
   }

@@ -1,3 +1,4 @@
+import '../../../main';
 import { login, isAuthenticated, getSession } from '../../../utils/auth';
 import { getDashboardByRole } from '../../../utils/navigate';
 

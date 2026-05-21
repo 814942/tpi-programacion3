@@ -1,5 +1,6 @@
 // client.ts — Client panel logic (catalog, cart, search)
 
+import '../../main';
 import { getUserSession, logout } from '../../utils/auth';
 
 // ==================== DATA ====================

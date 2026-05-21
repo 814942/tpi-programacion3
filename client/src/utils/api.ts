@@ -1,5 +1,7 @@
 /// <reference types="vite/client" />
 
+import { getToken, logout } from './auth';
+
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api/v1';
 
 interface ApiError {
@@ -8,13 +10,7 @@ interface ApiError {
 }
 
 async function request<T>(method: string, endpoint: string, body?: unknown): Promise<T> {
-  let token: string | null = null;
-  try {
-    const session = JSON.parse(localStorage.getItem('foodstore_session') || 'null');
-    token = session?.token || null;
-  } catch {
-    token = null;
-  }
+  const token = getToken();
 
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
@@ -31,7 +27,7 @@ async function request<T>(method: string, endpoint: string, body?: unknown): Pro
   });
 
   if (response.status === 401) {
-    localStorage.removeItem('foodstore_session');
+    logout();
     window.location.href = '/src/pages/auth/login/index.html';
     throw new Error('Sesión expirada');
   }

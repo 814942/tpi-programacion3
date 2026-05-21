@@ -1,3 +1,4 @@
+import '../../../main';
 import { register, isAuthenticated, getUserSession } from '../../../utils/auth';
 import { ROUTES } from '../../../utils/navigate';
 
