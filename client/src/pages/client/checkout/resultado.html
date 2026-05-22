@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Resultado - Food Store</title>
+  <style>
+    :root {
+      --primary: #ff4500;
+      --primary-hover: #e03e00;
+      --white: #ffffff;
+      --text: #333333;
+      --text-light: #666666;
+      --bg: #f5f5f5;
+      --border: #ddd;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: Arial, sans-serif;
+      background: var(--bg);
+      min-height: 100vh;
+    }
+
+    .site-header {
+      background: var(--primary);
+      color: var(--white);
+      padding: 16px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .site-header h1 { font-size: 28px; }
+    .site-header h1 a { color: var(--white); text-decoration: none; }
+    .site-header nav { display: flex; align-items: center; gap: 20px; }
+    .user-menu { position: relative; }
+    .icon-btn { background: none; border: none; cursor: pointer; font-size: 22px; padding: 4px; line-height: 1; }
+    .dropdown {
+      position: absolute; top: 100%; right: 0; margin-top: 8px;
+      background: var(--white); border-radius: 8px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+      min-width: 180px; z-index: 100; overflow: hidden;
+    }
+    .dropdown-item {
+      display: block; width: 100%; padding: 12px 16px;
+      color: var(--text); text-decoration: none;
+      background: none; border: none; cursor: pointer;
+      font-size: 14px; text-align: left;
+    }
+    .dropdown-item:hover { background: #f5f5f5; }
+    .cart-link { position: relative; text-decoration: none; font-size: 22px; }
+    .cart-badge {
+      position: absolute; top: -8px; right: -10px;
+      background: #c33; color: white;
+      font-size: 11px; font-weight: bold;
+      min-width: 18px; height: 18px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      padding: 0 4px;
+    }
+    .hidden { display: none !important; }
+
+    .resultado-wrapper {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: calc(100vh - 80px);
+      padding: 24px;
+    }
+    .result-card {
+      background: white;
+      border-radius: 12px;
+      padding: 48px 32px;
+      text-align: center;
+      max-width: 420px;
+      width: 100%;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.1);
+    }
+    .result-card .icon { font-size: 64px; margin-bottom: 16px; }
+    .result-card h2 { font-size: 24px; margin-bottom: 12px; color: #333; }
+    .result-card p { font-size: 14px; color: #666; margin-bottom: 24px; }
+    .result-card .btn {
+      display: inline-block; padding: 12px 32px;
+      border-radius: 6px; font-size: 16px; font-weight: bold;
+      text-decoration: none; margin: 4px;
+    }
+    .result-card .btn-success { background: #16a34a; color: white; }
+    .result-card .btn-error { background: #dc2626; color: white; }
+    .result-card.success { border: 2px solid #16a34a; }
+    .result-card.error { border: 2px solid #dc2626; }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <h1><a href="/">Food Store</a></h1>
+    <nav>
+      <div class="user-menu">
+        <button id="btn-user-menu" class="icon-btn" title="Menú de usuario">👤</button>
+        <div id="user-dropdown" class="dropdown hidden">
+          <a href="/src/pages/client/orders/" class="dropdown-item">Mis Pedidos</a>
+          <button id="btn-logout-header" class="dropdown-item">Cerrar Sesión</button>
+        </div>
+      </div>
+      <a href="/src/pages/client/cart/" class="cart-link">
+        🛒<span id="cart-badge" class="cart-badge hidden">0</span>
+      </a>
+    </nav>
+  </header>
+
+  <div class="resultado-wrapper">
+    <div id="result-card" class="result-card"></div>
+  </div>
+
+  <script type="module" src="/src/main.ts"></script>
+  <script type="module" src="/src/utils/header.ts"></script>
+  <script type="module" src="./resultado.ts"></script>
+</body>
+</html>
