@@ -359,13 +359,13 @@
     <h1><a href="/">Food Store</a></h1>
     <nav>
       <div class="user-menu">
-        <button id="btn-user-menu" class="icon-btn" title="Menú de usuario">👤</button>
+        <button id="btn-user-menu" type="button" class="icon-btn" title="Menú de usuario" aria-label="Menú de usuario">👤</button>
         <div id="user-dropdown" class="dropdown hidden">
           <a href="/src/pages/client/orders/" class="dropdown-item">Mis Pedidos</a>
           <button id="btn-logout-header" class="dropdown-item">Cerrar Sesión</button>
         </div>
       </div>
-      <a href="/src/pages/client/cart/" class="cart-link">
+      <a href="/src/pages/client/cart/" class="cart-link" aria-label="Carrito">
         🛒
         <span id="cart-badge" class="cart-badge hidden">0</span>
       </a>
@@ -418,7 +418,6 @@
   </footer>
   
   <script type="module" src="/src/main.ts"></script>
-  <script type="module" src="/src/utils/header.ts"></script>
   <script type="module" src="./client.ts"></script>
 </body>
 </html>

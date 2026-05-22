@@ -1,4 +1,30 @@
 import { logout } from './auth';
+import { ROUTES } from './navigate';
+
+interface CartItem {
+  quantity?: unknown;
+}
+
+export function updateCartBadge(cartBadge: HTMLElement | null = document.getElementById('cart-badge')): void {
+  if (!cartBadge) return;
+
+  cartBadge.textContent = '0';
+  cartBadge.classList.add('hidden');
+
+  try {
+    const cart = JSON.parse(localStorage.getItem('cart') || '[]');
+    const total = Array.isArray(cart)
+      ? cart.reduce((sum: number, item: CartItem) => sum + (Number(item.quantity) || 0), 0)
+      : 0;
+
+    if (total > 0) {
+      cartBadge.textContent = String(total);
+      cartBadge.classList.remove('hidden');
+    }
+  } catch {
+    // Invalid cart data — ignore
+  }
+}
 
 export function initHeader(): void {
   const userBtn = document.getElementById('btn-user-menu');
@@ -24,20 +50,9 @@ export function initHeader(): void {
   if (logoutBtn) {
     logoutBtn.addEventListener('click', () => {
       logout();
-      window.location.href = '/src/pages/auth/login/index.html';
+      window.location.href = ROUTES.LOGIN;
     });
   }
 
-  if (cartBadge) {
-    try {
-      const cart = JSON.parse(localStorage.getItem('cart') || '[]');
-      const total = Array.isArray(cart) ? cart.reduce((sum: number, item: any) => sum + (item.quantity || 0), 0) : 0;
-      if (total > 0) {
-        cartBadge.textContent = String(total);
-        cartBadge.classList.remove('hidden');
-      }
-    } catch {
-      // Invalid cart data — ignore
-    }
-  }
+  updateCartBadge(cartBadge);
 }

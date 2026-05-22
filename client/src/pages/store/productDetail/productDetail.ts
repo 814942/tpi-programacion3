@@ -1,7 +1,7 @@
 // productDetail.ts — Product detail page
 
 import { getUserSession } from '../../../utils/auth';
-import { initHeader } from '../../../utils/header';
+import { initHeader, updateCartBadge } from '../../../utils/header';
 import { api } from '../../../utils/api';
 import type { ProductoResponse } from '../../../types';
 
@@ -90,6 +90,7 @@ function addToCart(): void {
   }
 
   localStorage.setItem(CART_KEY, JSON.stringify(cart));
+  updateCartBadge();
   showToast(`${producto.nombre} agregado al carrito`, 'success');
 }
 
