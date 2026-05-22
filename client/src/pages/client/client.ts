@@ -72,10 +72,14 @@ function updateProductCounter(): void {
 
 // ==================== UI HELPERS ====================
 
+function clearElement(el: HTMLElement): void {
+  while (el.firstChild) el.removeChild(el.firstChild);
+}
+
 function showLoading(): void {
   spinner.classList.remove('hidden');
   errorMessage.classList.add('hidden');
-  contenedorProductos.innerHTML = '';
+  clearElement(contenedorProductos);
 }
 
 function hideLoading(): void {
@@ -110,7 +114,7 @@ async function fetchCategories(): Promise<void> {
   spinner.classList.remove('hidden');
   try {
     const response = await api.get<PaginatedResponse<CategoriaResponse>>('/categorias?page=0&size=100');
-    listaCategorias.innerHTML = '';
+    clearElement(listaCategorias);
 
     const liAll = document.createElement('li');
     const allLink = document.createElement('a');
@@ -389,15 +393,23 @@ btnSiguiente.addEventListener('click', () => {
 function initClient(): void {
   const user = getUserSession();
   if (!user || user.role !== 'USUARIO') {
-    document.body.innerHTML = `
-      <div style="display:flex;justify-content:center;align-items:center;min-height:100vh;font-family:Arial,sans-serif;">
-        <div style="text-align:center;">
-          <h1 style="color:#c33;">Acceso Denegado</h1>
-          <p>No tenés permisos para ver esta página.</p>
-          <a href="/" style="color:#ff4500;">Volver al inicio</a>
-        </div>
-      </div>
-    `;
+    while (document.body.firstChild) document.body.removeChild(document.body.firstChild);
+    const outerDiv = document.createElement('div');
+    outerDiv.style.cssText = 'display:flex;justify-content:center;align-items:center;min-height:100vh;font-family:Arial,sans-serif;';
+    const innerDiv = document.createElement('div');
+    innerDiv.style.textAlign = 'center';
+    const h1 = document.createElement('h1');
+    h1.style.color = '#c33';
+    h1.textContent = 'Acceso Denegado';
+    const p = document.createElement('p');
+    p.textContent = 'No tenés permisos para ver esta página.';
+    const a = document.createElement('a');
+    a.href = '/';
+    a.style.color = '#ff4500';
+    a.textContent = 'Volver al inicio';
+    innerDiv.append(h1, p, a);
+    outerDiv.appendChild(innerDiv);
+    document.body.appendChild(outerDiv);
     return;
   }
   displayUserInfo();

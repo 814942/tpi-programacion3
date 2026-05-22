@@ -11,16 +11,23 @@ function initAdmin(): void {
   
   // Check if user is authenticated and is admin
   if (!user || user.role !== 'ADMIN') {
-    // Route guard should have handled this, but just in case show message
-    document.body.innerHTML = `
-      <div style="display:flex;justify-content:center;align-items:center;min-height:100vh;font-family:Arial,sans-serif;">
-        <div style="text-align:center;">
-          <h1 style="color:#c33;">Acceso Denegado</h1>
-          <p>No tenés permisos para ver esta página.</p>
-          <a href="/" style="color:#ff4500;">Volver al inicio</a>
-        </div>
-      </div>
-    `;
+    while (document.body.firstChild) document.body.removeChild(document.body.firstChild);
+    const outerDiv = document.createElement('div');
+    outerDiv.style.cssText = 'display:flex;justify-content:center;align-items:center;min-height:100vh;font-family:Arial,sans-serif;';
+    const innerDiv = document.createElement('div');
+    innerDiv.style.textAlign = 'center';
+    const h1 = document.createElement('h1');
+    h1.style.color = '#c33';
+    h1.textContent = 'Acceso Denegado';
+    const p = document.createElement('p');
+    p.textContent = 'No tenés permisos para ver esta página.';
+    const a = document.createElement('a');
+    a.href = '/';
+    a.style.color = '#ff4500';
+    a.textContent = 'Volver al inicio';
+    innerDiv.append(h1, p, a);
+    outerDiv.appendChild(innerDiv);
+    document.body.appendChild(outerDiv);
     return;
   }
 

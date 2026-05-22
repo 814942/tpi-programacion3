@@ -437,7 +437,7 @@ async function loadProducts(): Promise<void> {
 - ❌ `any` en TypeScript (usar `unknown` + type guards)
 - ❌ Inline styles
 - ❌ `var`, usar siempre `const`/`let`
-- ❌ `innerHTML` con datos del usuario (XSS)
+- ❌ `innerHTML` — ANTIPATTERN. Siempre usar métodos DOM (`document.createElement`, `textContent`, `appendChild`, `removeChild`). Incluso para limpiar contenedores usar `while(el.firstChild) el.removeChild(el.firstChild)`
 - ❌ `alert()` / `prompt()`
 - ❌ jQuery, Lodash, o cualquier lib externa
 - ❌ `!important` en CSS

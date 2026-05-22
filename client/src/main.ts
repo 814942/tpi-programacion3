@@ -22,7 +22,7 @@ document.addEventListener('DOMContentLoaded', () => {
       }
 
       const path = window.location.pathname;
-      if (path.includes('/login/') || path.includes('/registro/')) {
+      if (path === '/' || path === '/index.html' || path.includes('/login/') || path.includes('/registro/')) {
         window.location.href = getDashboardByRole(payload.role);
         return;
       }
