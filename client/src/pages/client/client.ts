@@ -59,13 +59,21 @@ function updateCart(): void {
     const subtotal = item.product.precio * item.quantity;
     total += subtotal;
     const tr = document.createElement('tr');
-    tr.innerHTML = `
-      <td>${item.product.nombre}</td>
-      <td>$${item.product.precio.toLocaleString('es-AR')}</td>
-      <td>${item.quantity}</td>
-      <td>$${subtotal.toLocaleString('es-AR')}</td>
-      <td><button class="eliminar" data-index="${index}">Eliminar</button></td>
-    `;
+    const nombreTd = document.createElement('td');
+    nombreTd.textContent = item.product.nombre;
+    const precioTd = document.createElement('td');
+    precioTd.textContent = `$${item.product.precio.toLocaleString('es-AR')}`;
+    const cantidadTd = document.createElement('td');
+    cantidadTd.textContent = String(item.quantity);
+    const subtotalTd = document.createElement('td');
+    subtotalTd.textContent = `$${subtotal.toLocaleString('es-AR')}`;
+    const actionTd = document.createElement('td');
+    const eliminarBtn = document.createElement('button');
+    eliminarBtn.className = 'eliminar';
+    eliminarBtn.dataset.index = String(index);
+    eliminarBtn.textContent = 'Eliminar';
+    actionTd.appendChild(eliminarBtn);
+    tr.append(nombreTd, precioTd, cantidadTd, subtotalTd, actionTd);
     carritoBody.appendChild(tr);
   });
   carritoTotal.textContent = `$${total.toLocaleString('es-AR')}`;
@@ -83,6 +91,11 @@ let currentPage = 0;
 let totalPages = 0;
 let totalItems = 0;
 const PAGE_SIZE = 12;
+type ProductViewMode =
+  | { type: 'all' }
+  | { type: 'category'; categoriaId: number }
+  | { type: 'search'; query: string };
+let currentProductView: ProductViewMode = { type: 'all' };
 
 function renderPagination(): void {
   if (btnAnterior) btnAnterior.disabled = currentPage <= 0;
@@ -134,11 +147,19 @@ async function fetchCategories(): Promise<void> {
     if (!listaCategorias) return;
     listaCategorias.innerHTML = '';
     const liAll = document.createElement('li');
-    liAll.innerHTML = '<a href="#" data-categoria-id="all">Todas</a>';
+    const allLink = document.createElement('a');
+    allLink.href = '#';
+    allLink.dataset.categoriaId = 'all';
+    allLink.textContent = 'Todas';
+    liAll.appendChild(allLink);
     listaCategorias.appendChild(liAll);
     response.content.forEach(cat => {
       const li = document.createElement('li');
-      li.innerHTML = `<a href="#" data-categoria-id="${cat.id}">${cat.nombre}</a>`;
+      const link = document.createElement('a');
+      link.href = '#';
+      link.dataset.categoriaId = String(cat.id);
+      link.textContent = cat.nombre;
+      li.appendChild(link);
       listaCategorias.appendChild(li);
     });
     listaCategorias.querySelectorAll('a').forEach(link => {
@@ -146,8 +167,10 @@ async function fetchCategories(): Promise<void> {
         e.preventDefault();
         const id = (e.target as HTMLElement).dataset.categoriaId;
         if (id === 'all') {
+          currentProductView = { type: 'all' };
           fetchProducts(0);
         } else if (id) {
+          currentProductView = { type: 'category', categoriaId: parseInt(id) };
           fetchProductsByCategoria(parseInt(id), 0);
         }
       });
@@ -203,16 +226,33 @@ function renderProducts(products: ProductoResponse[]): void {
   products.forEach(product => {
     const article = document.createElement('article');
     article.className = `producto${!product.disponible ? ' no-disponible' : ''}`;
-    article.innerHTML = `
-      <img src="${product.imagen}" alt="${product.nombre}" loading="lazy">
-      <h3>${product.nombre}</h3>
-      <p class="descripcion">${product.descripcion}</p>
-      <p class="precio">$${product.precio.toLocaleString('es-AR')}</p>
-      ${!product.disponible ? '<span class="badge-no-disponible">No disponible</span>' : ''}
-      <button class="btn-agregar" data-id="${product.id}" ${!product.disponible ? 'disabled' : ''}>
-        ${product.disponible ? 'Agregar al Carrito' : 'Sin stock'}
-      </button>
-    `;
+    const img = document.createElement('img');
+    img.setAttribute('src', String(product.imagen ?? ''));
+    img.setAttribute('alt', product.nombre);
+    img.setAttribute('loading', 'lazy');
+    const title = document.createElement('h3');
+    title.textContent = product.nombre;
+    const description = document.createElement('p');
+    description.className = 'descripcion';
+    description.textContent = String(product.descripcion ?? '');
+    const price = document.createElement('p');
+    price.className = 'precio';
+    price.textContent = `$${product.precio.toLocaleString('es-AR')}`;
+    article.append(img, title, description, price);
+    if (!product.disponible) {
+      const badge = document.createElement('span');
+      badge.className = 'badge-no-disponible';
+      badge.textContent = 'No disponible';
+      article.appendChild(badge);
+    }
+    const button = document.createElement('button');
+    button.className = 'btn-agregar';
+    button.dataset.id = String(product.id);
+    button.textContent = product.disponible ? 'Agregar al Carrito' : 'Sin stock';
+    if (!product.disponible) {
+      button.disabled = true;
+    }
+    article.appendChild(button);
     contenedorProductos.appendChild(article);
   });
   contenedorProductos.querySelectorAll('.btn-agregar').forEach(btn => {
@@ -236,11 +276,23 @@ function configureSearch(): void {
     e.preventDefault();
     const query = inputSearch.value.trim();
     if (query) {
+      currentProductView = { type: 'search', query };
       fetchProductsBySearch(query, 0);
     } else {
+      currentProductView = { type: 'all' };
       fetchProducts(0);
     }
   });
+}
+
+function fetchCurrentProducts(page: number): void {
+  if (currentProductView.type === 'category') {
+    fetchProductsByCategoria(currentProductView.categoriaId, page);
+  } else if (currentProductView.type === 'search') {
+    fetchProductsBySearch(currentProductView.query, page);
+  } else {
+    fetchProducts(page);
+  }
 }
 
 async function fetchProductsBySearch(query: string, page: number): Promise<void> {
@@ -282,13 +334,13 @@ function displayUserInfo(): void {
 
 if (btnAnterior) {
   btnAnterior.addEventListener('click', () => {
-    if (currentPage > 0) fetchProducts(currentPage - 1);
+    if (currentPage > 0) fetchCurrentProducts(currentPage - 1);
   });
 }
 
 if (btnSiguiente) {
   btnSiguiente.addEventListener('click', () => {
-    if (currentPage < totalPages - 1) fetchProducts(currentPage + 1);
+    if (currentPage < totalPages - 1) fetchCurrentProducts(currentPage + 1);
   });
 }
 
@@ -310,6 +362,7 @@ function initClient(): void {
   }
   displayUserInfo();
   fetchCategories();
+  currentProductView = { type: 'all' };
   fetchProducts(0);
   configureSearch();
   updateCart();
