@@ -1,6 +1,7 @@
 // productDetail.ts — Product detail page
 
-import { getUserSession, logout } from '../../../utils/auth';
+import { getUserSession } from '../../../utils/auth';
+import { initHeader } from '../../../utils/header';
 import { api } from '../../../utils/api';
 import type { ProductoResponse } from '../../../types';
 
@@ -163,23 +164,6 @@ btnRestar.addEventListener('click', () => cambiarCantidad(-1));
 btnSumar.addEventListener('click', () => cambiarCantidad(1));
 btnAgregar.addEventListener('click', addToCart);
 
-// ==================== USER INFO ====================
-
-function displayUserInfo(): void {
-  const user = getUserSession();
-  const userInfo = document.getElementById('user-info');
-  const btnLogout = document.getElementById('btn-logout');
-  if (userInfo && user) {
-    userInfo.textContent = `Hola, ${user.nombre || user.email}`;
-  }
-  if (btnLogout) {
-    btnLogout.addEventListener('click', () => {
-      logout();
-      window.location.href = '/';
-    });
-  }
-}
-
 // ==================== INIT ====================
 
 function init(): void {
@@ -196,7 +180,7 @@ function init(): void {
     `;
     return;
   }
-  displayUserInfo();
+  initHeader();
   loadProduct();
 }
 

@@ -26,41 +26,47 @@
       background: var(--bg);
     }
     
-    .admin-header {
+    .site-header {
       background: var(--primary);
       color: var(--white);
-      padding: 20px;
+      padding: 16px 24px;
       display: flex;
       justify-content: space-between;
       align-items: center;
     }
-    
-    .admin-header h1 {
-      font-size: 24px;
+    .site-header h1 { font-size: 28px; }
+    .site-header h1 a { color: var(--white); text-decoration: none; }
+    .site-header nav { display: flex; align-items: center; gap: 20px; }
+
+    .user-menu { position: relative; }
+    .icon-btn {
+      background: none; border: none; cursor: pointer;
+      font-size: 22px; padding: 4px; line-height: 1;
     }
-    
-    .admin-header nav {
-      display: flex;
-      align-items: center;
-      gap: 20px;
+
+    .dropdown {
+      position: absolute; top: 100%; right: 0; margin-top: 8px;
+      background: var(--white); border-radius: 8px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+      min-width: 180px; z-index: 100; overflow: hidden;
     }
-    
-    #user-info {
-      font-size: 14px;
+    .dropdown-item {
+      display: block; width: 100%; padding: 12px 16px;
+      color: var(--text); text-decoration: none;
+      background: none; border: none; cursor: pointer;
+      font-size: 14px; text-align: left; font-family: inherit;
     }
-    
-    .btn-logout {
-      padding: 8px 16px;
-      background: var(--white);
-      color: var(--primary);
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
-      font-weight: bold;
-    }
-    
-    .btn-logout:hover {
-      background: #f0f0f0;
+    .dropdown-item:hover { background: #f5f5f5; }
+
+    .cart-link { position: relative; text-decoration: none; font-size: 22px; }
+    .cart-badge {
+      position: absolute; top: -8px; right: -10px;
+      background: #c33; color: white;
+      font-size: 11px; font-weight: bold;
+      min-width: 18px; height: 18px;
+      border-radius: 50%; display: flex;
+      align-items: center; justify-content: center;
+      padding: 0 4px;
     }
     
     .admin-main {
@@ -103,11 +109,19 @@
   </style>
 </head>
 <body>
-  <header class="admin-header">
-    <h1>Food Store - Panel de Administración</h1>
+  <header class="site-header">
+    <h1><a href="/">Food Store</a></h1>
     <nav>
-      <span id="user-info"></span>
-      <button id="btn-logout" class="btn-logout">Cerrar Sesión</button>
+      <div class="user-menu">
+        <button id="btn-user-menu" class="icon-btn" title="Menú de usuario">👤</button>
+        <div id="user-dropdown" class="dropdown hidden">
+          <button id="btn-logout-header" class="dropdown-item">Cerrar Sesión</button>
+        </div>
+      </div>
+      <a href="/src/pages/client/cart/" class="cart-link">
+        🛒
+        <span id="cart-badge" class="cart-badge hidden">0</span>
+      </a>
     </nav>
   </header>
   
@@ -134,6 +148,7 @@
   </main>
   
   <script type="module" src="/src/main.ts"></script>
+  <script type="module" src="/src/utils/header.ts"></script>
   <script type="module" src="./admin.ts"></script>
 </body>
 </html>

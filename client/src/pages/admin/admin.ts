@@ -1,7 +1,8 @@
 // admin.ts — Admin panel logic
 
 import '../../main';
-import { getUserSession, logout } from '../../utils/auth';
+import { getUserSession } from '../../utils/auth';
+import { initHeader } from '../../utils/header';
 
 /**
  * Initialize admin page
@@ -31,21 +32,7 @@ function initAdmin(): void {
     return;
   }
 
-  // Display user info
-  const userInfo = document.getElementById('user-info');
-  if (userInfo) {
-    userInfo.textContent = `Sesión: ${user.email} (${user.role})`;
-  }
-
-  // Configure logout button
-  const btnLogout = document.getElementById('btn-logout');
-  if (btnLogout) {
-    btnLogout.addEventListener('click', () => {
-      logout();
-      alert('Sesión cerrada correctamente.');
-      window.location.href = '/';
-    });
-  }
+  initHeader();
 }
 
 // Run when DOM is ready
