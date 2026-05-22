@@ -1,6 +1,7 @@
 // client.ts — Store page logic (catalog, search, categories)
 
-import { getUserSession, logout } from '../../utils/auth';
+import { getUserSession } from '../../utils/auth';
+import { initHeader } from '../../utils/header';
 import { api } from '../../utils/api';
 import type { CategoriaResponse, ProductoResponse, PaginatedResponse } from '../../types';
 
@@ -361,23 +362,6 @@ function configureSearch(): void {
   });
 }
 
-// ==================== USER INFO ====================
-
-function displayUserInfo(): void {
-  const user = getUserSession();
-  const userInfo = document.getElementById('user-info');
-  const btnLogout = document.getElementById('btn-logout');
-  if (userInfo && user) {
-    userInfo.textContent = `Hola, ${user.nombre || user.email}`;
-  }
-  if (btnLogout) {
-    btnLogout.addEventListener('click', () => {
-      logout();
-      window.location.href = '/';
-    });
-  }
-}
-
 // ==================== PAGINATION EVENTS ====================
 
 btnAnterior.addEventListener('click', () => {
@@ -412,7 +396,7 @@ function initClient(): void {
     document.body.appendChild(outerDiv);
     return;
   }
-  displayUserInfo();
+  initHeader();
   currentProductView = { type: 'all' };
   fetchCategories();
   fetchProducts(0);
