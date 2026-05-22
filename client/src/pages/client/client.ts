@@ -299,7 +299,11 @@ function renderProducts(products: ProductoResponse[]): void {
       button.addEventListener('click', (e) => {
         e.stopPropagation();
         try {
-          const cart = JSON.parse(localStorage.getItem('cart') || '[]');
+          const parsedCart = JSON.parse(localStorage.getItem('cart') || '[]');
+          const cart = Array.isArray(parsedCart) ? parsedCart : [];
+          if (!Array.isArray(parsedCart)) {
+            localStorage.setItem('cart', '[]');
+          }
           const existing = cart.find((item: any) => item.product.id === product.id);
           if (existing) {
             existing.quantity += 1;

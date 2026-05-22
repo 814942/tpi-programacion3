@@ -27,6 +27,7 @@ interface PedidoRequest {
 
 let cartItems: CartItem[] = [];
 let validaciones: Map<number, ProductoValidacionResponse> = new Map();
+let hasValidationError = false;
 let isSubmitting = false;
 
 const contenedorProductos = document.getElementById('contenedor-productos')!;
@@ -73,19 +74,20 @@ function hideLoading(): void {
   spinner.classList.add('hidden');
 }
 
-async function fetchValidaciones(ids: number[]): Promise<Map<number, ProductoValidacionResponse>> {
-  if (ids.length === 0) return new Map();
+async function fetchValidaciones(ids: number[]): Promise<{ map: Map<number, ProductoValidacionResponse>; failed: boolean }> {
+  if (ids.length === 0) return { map: new Map(), failed: false };
   try {
     const result = await api.post<ProductoValidacionResponse[]>('/productos/validate', { ids });
     const map = new Map<number, ProductoValidacionResponse>();
     result.forEach(v => map.set(v.id, v));
-    return map;
+    return { map, failed: false };
   } catch {
-    return new Map();
+    return { map: new Map(), failed: true };
   }
 }
 
 function hasInvalidProducts(): boolean {
+  if (hasValidationError) return false;
   return cartItems.some(item => {
     const v = validaciones.get(item.product.id);
     return !v || !v.existe || !v.disponible || v.stock < item.quantity;
@@ -195,8 +197,9 @@ function renderSummary(): HTMLElement {
   let subtotal = 0;
   cartItems.forEach(item => {
     const v = validaciones.get(item.product.id);
-    const precio = (v && v.existe && v.disponible) ? item.product.precio : 0;
-    const qty = (v && v.existe && v.disponible && v.stock >= item.quantity) ? item.quantity : 0;
+    const isValid = !v || (v.existe && v.disponible && v.stock >= item.quantity);
+    const precio = isValid ? item.product.precio : 0;
+    const qty = isValid ? item.quantity : 0;
     subtotal += precio * qty;
   });
 
@@ -269,7 +272,7 @@ function openCheckoutModal(): void {
     let total = 0;
     cartItems.forEach(item => {
       const v = validaciones.get(item.product.id);
-      if (v && v.existe && v.disponible) {
+      if (!v || (v.existe && v.disponible && v.stock >= item.quantity)) {
         total += item.product.precio * item.quantity;
       }
     });
@@ -293,10 +296,30 @@ async function submitCheckout(): Promise<void> {
     return;
   }
 
+  const ids = cartItems.map(item => item.product.id);
+  const { map, failed } = await fetchValidaciones(ids);
+  if (!failed) {
+    hasValidationError = false;
+    validaciones = map;
+    const changed = cartItems.some(item => {
+      const v = validaciones.get(item.product.id);
+      return !v || !v.existe || !v.disponible || v.stock < item.quantity;
+    });
+    if (changed) {
+      render();
+      closeCheckoutModal();
+      showToast('Algunos productos cambiaron. Revisá el carrito antes de confirmar.', 'error');
+      return;
+    }
+  } else {
+    hasValidationError = true;
+    validaciones = new Map();
+  }
+
   const detalles: DetallePedido[] = cartItems
     .filter(item => {
       const v = validaciones.get(item.product.id);
-      return v && v.existe && v.disponible;
+      return !v || (v.existe && v.disponible && v.stock >= item.quantity);
     })
     .map(item => ({ idProducto: item.product.id, cantidad: item.quantity }));
 
@@ -339,11 +362,14 @@ function initCart(): void {
   showLoading();
   const ids = cartItems.map(i => i.product.id);
 
-  fetchValidaciones(ids).then(map => {
+  fetchValidaciones(ids).then(({ map, failed }) => {
     validaciones = map;
+    hasValidationError = failed;
     hideLoading();
     render();
   }).catch(() => {
+    hasValidationError = true;
+    validaciones = new Map();
     hideLoading();
     render();
   });

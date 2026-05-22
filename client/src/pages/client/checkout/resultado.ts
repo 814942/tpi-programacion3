@@ -13,16 +13,20 @@ function initResultado(): void {
       <div class="icon">✅</div>
       <h2>¡Pedido confirmado!</h2>
       <p>Tu pedido fue procesado correctamente.</p>
-      <a href="/src/pages/client/orders/" class="btn btn-success">Mis Pedidos</a>
+      <a href="/src/pages/client/index.html" class="btn btn-success">Volver a la tienda</a>
     `;
   } else {
     card.className = 'result-card error';
     card.innerHTML = `
       <div class="icon">❌</div>
       <h2>Error al procesar el pedido</h2>
-      <p>${message ? `Motivo: ${message}` : 'Ocurrió un error inesperado.'}</p>
+      <p id="error-message-detail"></p>
       <a href="/src/pages/client/cart/" class="btn btn-error">Volver al carrito</a>
     `;
+    const messageDetail = card.querySelector('#error-message-detail');
+    if (messageDetail) {
+      messageDetail.textContent = message ? `Motivo: ${message}` : 'Ocurrió un error inesperado.';
+    }
   }
 }
 
