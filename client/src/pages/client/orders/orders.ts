@@ -8,6 +8,7 @@ interface DetallePedido {
   productoPrecio: number;
   cantidad: number;
   subtotal: number;
+  productoImagen: string;
 }
 
 interface PedidoResumen {
@@ -34,14 +35,22 @@ const STATUS_LABELS: Record<string, string> = {
   CANCELADO: 'Cancelado',
 };
 
-function formatDate(iso: string): string {
+function formatDateShort(iso: string): string {
+  const d = new Date(iso);
+  const now = new Date();
+  const opts: Intl.DateTimeFormatOptions = { day: 'numeric', month: 'long' };
+  if (d.getFullYear() !== now.getFullYear()) {
+    opts.year = 'numeric';
+  }
+  return d.toLocaleDateString('es-AR', opts);
+}
+
+function formatDateDetail(iso: string): string {
   const d = new Date(iso);
   return d.toLocaleDateString('es-AR', {
-    year: 'numeric',
-    month: 'long',
     day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
+    month: 'long',
+    year: 'numeric',
   });
 }
 
@@ -53,16 +62,6 @@ function getStatusBadgeClass(estado: string): string {
   return `status-${estado.toLowerCase()}`;
 }
 
-function getStatusIcon(estado: string): string {
-  switch (estado) {
-    case 'PENDIENTE': return '⏳';
-    case 'CONFIRMADO': return '✅';
-    case 'TERMINADO': return '🎉';
-    case 'CANCELADO': return '❌';
-    default: return '❓';
-  }
-}
-
 function showToast(message: string, type: 'success' | 'error' = 'success'): void {
   const container = document.getElementById('toast-container');
   if (!container) return;
@@ -71,9 +70,7 @@ function showToast(message: string, type: 'success' | 'error' = 'success'): void
   toast.textContent = message;
   container.appendChild(toast);
   setTimeout(() => {
-    if (toast.parentNode) {
-      toast.parentNode.removeChild(toast);
-    }
+    if (toast.parentNode) toast.parentNode.removeChild(toast);
   }, 2500);
 }
 
@@ -87,9 +84,27 @@ function hideLoading(): void {
   if (spinner) spinner.classList.add('hidden');
 }
 
+function clearElement(el: HTMLElement): void {
+  while (el.firstChild) el.removeChild(el.firstChild);
+}
+
 async function fetchOrders(page: number, size: number): Promise<PaginatedResponse<PedidoResumen>> {
   return api.get<PaginatedResponse<PedidoResumen>>(`/pedidos/usuario?page=${page}&size=${size}`);
 }
+
+// ==================== GROUP BY DATE ====================
+
+function groupByDate(orders: PedidoResumen[]): Map<string, PedidoResumen[]> {
+  const groups = new Map<string, PedidoResumen[]>();
+  orders.forEach(order => {
+    const key = formatDateShort(order.fecha);
+    if (!groups.has(key)) groups.set(key, []);
+    groups.get(key)!.push(order);
+  });
+  return groups;
+}
+
+// ==================== RENDER ====================
 
 function renderOrders(response: PaginatedResponse<PedidoResumen>): void {
   const container = document.getElementById('orders-list');
@@ -98,7 +113,7 @@ function renderOrders(response: PaginatedResponse<PedidoResumen>): void {
   const pageSizeSelector = document.getElementById('page-size-selector');
   if (!container || !emptyEl || !paginationEl || !pageSizeSelector) return;
 
-  container.innerHTML = '';
+  clearElement(container);
 
   if (response.content.length === 0) {
     emptyEl.classList.remove('hidden');
@@ -108,56 +123,53 @@ function renderOrders(response: PaginatedResponse<PedidoResumen>): void {
   }
 
   emptyEl.classList.add('hidden');
-
-  response.content.forEach(order => {
-    const card = document.createElement('div');
-    card.className = 'order-card';
-
-    const info = document.createElement('div');
-    info.className = 'order-info';
-
-    const idEl = document.createElement('div');
-    idEl.className = 'order-id';
-    idEl.textContent = `#${order.id}`;
-
-    const dateEl = document.createElement('div');
-    dateEl.className = 'order-date';
-    dateEl.textContent = formatDate(order.fecha);
-
-    const summaryItems = order.detalles.slice(0, 3).map(d => d.productoNombre);
-    const restCount = order.detalles.length - 3;
-    let summaryText = summaryItems.join(', ');
-    if (restCount > 0) {
-      summaryText += ` y ${restCount} más`;
-    }
-
-    const summaryEl = document.createElement('div');
-    summaryEl.className = 'order-summary';
-    summaryEl.textContent = summaryText;
-
-    info.append(idEl, dateEl, summaryEl);
-
-    const right = document.createElement('div');
-    right.className = 'order-right';
-
-    const totalEl = document.createElement('div');
-    totalEl.className = 'order-total';
-    totalEl.textContent = formatPeso(order.total);
-
-    const badge = document.createElement('span');
-    badge.className = `status-badge ${getStatusBadgeClass(order.estado)}`;
-    badge.textContent = STATUS_LABELS[order.estado] || order.estado;
-
-    right.append(totalEl, badge);
-    card.append(info, right);
-
-    card.addEventListener('click', () => openDetail(order.id));
-
-    container.appendChild(card);
-  });
-
   paginationEl.classList.remove('hidden');
   pageSizeSelector.classList.remove('hidden');
+
+  const groups = groupByDate(response.content);
+
+  groups.forEach((orders, dateLabel) => {
+    // Date header
+    const dateHeader = document.createElement('div');
+    dateHeader.className = 'orders-date-header';
+    dateHeader.textContent = dateLabel;
+    container.appendChild(dateHeader);
+
+    // Product rows for each order
+    orders.forEach(order => {
+      order.detalles.forEach(d => {
+        const row = document.createElement('div');
+        row.className = 'order-row';
+
+        const img = document.createElement('img');
+        img.className = 'order-row-img';
+        img.src = d.productoImagen || '';
+        img.alt = d.productoNombre;
+
+        const nameEl = document.createElement('span');
+        nameEl.className = 'order-row-name';
+        nameEl.textContent = d.productoNombre;
+        nameEl.addEventListener('click', () => openDetail(order.id));
+
+        const qtyEl = document.createElement('span');
+        qtyEl.className = 'order-row-qty';
+        qtyEl.textContent = `x${d.cantidad}`;
+
+        const badge = document.createElement('span');
+        badge.className = `status-badge ${getStatusBadgeClass(order.estado)}`;
+        badge.textContent = STATUS_LABELS[order.estado] || order.estado;
+
+        row.append(img, nameEl, qtyEl, badge);
+        container.appendChild(row);
+      });
+
+      // Total line for each order
+      const totalLine = document.createElement('div');
+      totalLine.className = 'order-total-line';
+      totalLine.textContent = `Total: ${formatPeso(order.total)}`;
+      container.appendChild(totalLine);
+    });
+  });
 
   renderPagination();
 }
@@ -179,118 +191,103 @@ function renderPagination(): void {
   pageInfo.textContent = label;
 }
 
+// ==================== DETAIL MODAL ====================
+
 async function openDetail(orderId: number): Promise<void> {
   const modal = document.getElementById('order-detail-modal');
   const body = document.getElementById('modal-body');
   const actions = document.getElementById('modal-actions');
   if (!modal || !body || !actions) return;
 
-  body.innerHTML = '';
-  const loadingWrapper = document.createElement('div');
-  loadingWrapper.className = 'loading-spinner';
-  const loadingSpinner = document.createElement('div');
-  loadingSpinner.className = 'spinner';
-  loadingWrapper.appendChild(loadingSpinner);
-  body.appendChild(loadingWrapper);
+  clearElement(body);
+  const spinnerDiv = document.createElement('div');
+  spinnerDiv.className = 'loading-spinner';
+  spinnerDiv.innerHTML = '<div class="spinner"></div>';
+  body.appendChild(spinnerDiv);
   modal.classList.remove('hidden');
 
   try {
     const order = await api.get<PedidoDetalle>(`/pedidos/${orderId}`);
+    clearElement(body);
 
-    body.innerHTML = '';
+    // Header: date | #number
+    const header = document.createElement('div');
+    header.className = 'detail-header';
+    header.innerHTML = `
+      <span>${formatDateDetail(order.fecha)}</span>
+      <span class="detail-order-num"># ${order.id}</span>
+    `;
+    body.appendChild(header);
 
-    const statusDiv = document.createElement('div');
-    statusDiv.className = 'detail-status';
-    const statusIcon = document.createElement('span');
-    statusIcon.style.fontSize = '24px';
-    statusIcon.textContent = getStatusIcon(order.estado);
-    const statusLabel = document.createElement('span');
-    statusLabel.className = `status-badge ${getStatusBadgeClass(order.estado)}`;
-    statusLabel.style.fontSize = '14px';
-    statusLabel.textContent = STATUS_LABELS[order.estado] || order.estado;
-    statusDiv.append(statusIcon, statusLabel);
-    body.appendChild(statusDiv);
+    // Status badge
+    const badgeRow = document.createElement('div');
+    badgeRow.style.cssText = 'margin-bottom:16px;';
+    const badge = document.createElement('span');
+    badge.className = `status-badge ${getStatusBadgeClass(order.estado)}`;
+    badge.style.fontSize = '14px';
+    badge.textContent = STATUS_LABELS[order.estado] || order.estado;
+    badgeRow.appendChild(badge);
+    body.appendChild(badgeRow);
 
-    const dateRow = document.createElement('div');
-    dateRow.className = 'detail-row';
-    const dateKey = document.createElement('span');
-    dateKey.textContent = 'Fecha';
-    const dateValue = document.createElement('span');
-    dateValue.textContent = formatDate(order.fecha);
-    dateRow.append(dateKey, dateValue);
-    body.appendChild(dateRow);
-
-    const payRow = document.createElement('div');
-    payRow.className = 'detail-row';
-    const payLabel = order.formaPago === 'TARJETA' ? 'Tarjeta'
-      : order.formaPago === 'EFECTIVO' ? 'Efectivo'
-      : order.formaPago === 'TRANSFERENCIA' ? 'Transferencia'
-      : order.formaPago;
-    const payKey = document.createElement('span');
-    payKey.textContent = 'Forma de pago';
-    const payValue = document.createElement('span');
-    payValue.textContent = payLabel;
-    payRow.append(payKey, payValue);
-    body.appendChild(payRow);
-
-    if (order.telefono) {
-      const telRow = document.createElement('div');
-      telRow.className = 'detail-row';
-      const telKey = document.createElement('span');
-      telKey.textContent = 'Teléfono';
-      const telValue = document.createElement('span');
-      telValue.textContent = order.telefono;
-      telRow.append(telKey, telValue);
-      body.appendChild(telRow);
-    }
-
+    // Products list
     const productsTitle = document.createElement('div');
     productsTitle.className = 'detail-row detail-row-header';
-    const productsKey = document.createElement('span');
-    productsKey.textContent = 'Producto';
-    const productsValue = document.createElement('span');
-    productsValue.style.textAlign = 'right';
-    productsValue.textContent = 'Precio × Cant = Subtotal';
-    productsTitle.append(productsKey, productsValue);
+    productsTitle.innerHTML = '<span>Producto</span><span style="text-align:right">Precio x Cant = Subtotal</span>';
     body.appendChild(productsTitle);
 
     order.detalles.forEach(d => {
       const row = document.createElement('div');
       row.className = 'detail-row';
-      const productName = document.createElement('span');
-      productName.textContent = d.productoNombre;
-      const productValues = document.createElement('span');
-      productValues.textContent = `${formatPeso(d.productoPrecio)} × ${d.cantidad} = ${formatPeso(d.subtotal)}`;
-      row.append(productName, productValues);
+      row.innerHTML = `
+        <span>${d.productoNombre}</span>
+        <span>${formatPeso(d.productoPrecio)} x ${d.cantidad} = ${formatPeso(d.subtotal)}</span>
+      `;
       body.appendChild(row);
     });
 
+    // Total
     const totalDiv = document.createElement('div');
     totalDiv.className = 'detail-total';
     totalDiv.textContent = `Total: ${formatPeso(order.total)}`;
     body.appendChild(totalDiv);
 
+    // Payment method
+    const payLabels: Record<string, string> = { TARJETA: 'Tarjeta', EFECTIVO: 'Efectivo', TRANSFERENCIA: 'Transferencia' };
+    const payRow = document.createElement('div');
+    payRow.className = 'detail-row';
+    payRow.innerHTML = `<span>Forma de pago</span><span>${payLabels[order.formaPago] || order.formaPago}</span>`;
+    body.appendChild(payRow);
+
+    if (order.telefono) {
+      const telRow = document.createElement('div');
+      telRow.className = 'detail-row';
+      telRow.innerHTML = `<span>Telefono</span><span>${order.telefono}</span>`;
+      body.appendChild(telRow);
+    }
+
+    // Buttons - centered
     actions.innerHTML = '';
+    const btnContainer = document.createElement('div');
+    btnContainer.style.cssText = 'display:flex;justify-content:center;gap:8px;margin-top:16px;';
+
     const btnClose = document.createElement('button');
     btnClose.className = 'btn-cerrar';
     btnClose.textContent = 'Cerrar';
     btnClose.addEventListener('click', closeDetail);
-    actions.appendChild(btnClose);
+    btnContainer.appendChild(btnClose);
 
     if (order.estado === 'PENDIENTE') {
       const btnCancel = document.createElement('button');
       btnCancel.className = 'btn-cancelar';
       btnCancel.textContent = 'Cancelar Pedido';
-      btnCancel.addEventListener('click', () => cancelOrder(order.id));
-      actions.appendChild(btnCancel);
+      btnCancel.addEventListener('click', () => handleCancelClick(orderId, btnCancel, btnContainer));
+      btnContainer.appendChild(btnCancel);
     }
+
+    actions.appendChild(btnContainer);
   } catch {
-    body.innerHTML = '';
-    const error = document.createElement('p');
-    error.style.color = '#dc2626';
-    error.style.textAlign = 'center';
-    error.textContent = 'Error al cargar el detalle del pedido';
-    body.appendChild(error);
+    clearElement(body);
+    body.innerHTML = '<p style="color:#dc2626;text-align:center">Error al cargar el detalle del pedido</p>';
   }
 }
 
@@ -299,33 +296,54 @@ function closeDetail(): void {
   if (modal) modal.classList.add('hidden');
 }
 
-async function cancelOrder(orderId: number): Promise<void> {
-  if (!confirm('¿Estás seguro de que querés cancelar este pedido?')) return;
+// ==================== CANCEL WITH CONFIRMATION (NO alert()) ====================
 
-  try {
-    await api.patch<{ id: number; estado: string }>(`/pedidos/${orderId}/cancelar`);
-    showToast('Pedido cancelado con éxito', 'success');
-    closeDetail();
-    await loadPage(currentPage);
-  } catch (err: unknown) {
-    const msg = err instanceof Error ? err.message : 'Error al cancelar el pedido';
-    if (msg.includes('ya no se puede') || msg.includes('PENDIENTE')) {
-      showToast('El pedido ya no se puede cancelar', 'error');
-    } else {
-      showToast(msg, 'error');
+function handleCancelClick(orderId: number, btn: HTMLButtonElement, container: HTMLElement): void {
+  // Change button to confirmation
+  btn.textContent = 'Seguro?';
+  btn.style.background = '#c33';
+
+  const btnNo = document.createElement('button');
+  btnNo.className = 'btn-cerrar';
+  btnNo.textContent = 'No';
+  btnNo.addEventListener('click', () => {
+    btn.textContent = 'Cancelar Pedido';
+    btn.style.background = '';
+    if (btnNo.parentNode) btnNo.parentNode.removeChild(btnNo);
+  });
+  container.insertBefore(btnNo, btn.nextSibling);
+
+  // Remove previous listeners by replacing with new one
+  const newBtn = btn.cloneNode(true) as HTMLButtonElement;
+  btn.parentNode?.replaceChild(newBtn, btn);
+
+  newBtn.addEventListener('click', async () => {
+    try {
+      await api.patch<{ id: number; estado: string }>(`/pedidos/${orderId}/cancelar`);
+      showToast('Pedido cancelado con exito', 'success');
+      closeDetail();
+      await loadPage(currentPage);
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Error al cancelar el pedido';
+      if (msg.includes('ya no se puede') || msg.includes('PENDIENTE')) {
+        showToast('El pedido ya no se puede cancelar', 'error');
+      } else {
+        showToast(msg, 'error');
+      }
+      closeDetail();
     }
-    closeDetail();
-  }
+  });
 }
+
+// ==================== LOAD PAGE ====================
 
 async function loadPage(page: number): Promise<void> {
   showLoading();
-
   const container = document.getElementById('orders-list');
   const emptyEl = document.getElementById('orders-empty');
   const paginationEl = document.getElementById('orders-paginacion');
   const pageSizeSelector = document.getElementById('page-size-selector');
-  if (container) container.innerHTML = '';
+  if (container) clearElement(container);
   if (emptyEl) emptyEl.classList.add('hidden');
   if (paginationEl) paginationEl.classList.add('hidden');
   if (pageSizeSelector) pageSizeSelector.classList.add('hidden');
@@ -339,46 +357,36 @@ async function loadPage(page: number): Promise<void> {
   } catch {
     const containerEl = document.getElementById('orders-list');
     if (containerEl) {
-      containerEl.innerHTML = '';
-      const error = document.createElement('p');
-      error.style.color = '#dc2626';
-      error.style.textAlign = 'center';
-      error.textContent = 'Error al cargar los pedidos. Intentá de nuevo.';
-      containerEl.appendChild(error);
+      containerEl.innerHTML = '<p style="color:#dc2626;text-align:center">Error al cargar los pedidos. Intentá de nuevo.</p>';
     }
   } finally {
     hideLoading();
   }
 }
 
+// ==================== INIT ====================
+
 function initOrders(): void {
   if (!protectRoute()) return;
-
   initHeader();
-
   loadPage(0);
 
-  const btnPrev = document.getElementById('btn-prev');
-  const btnNext = document.getElementById('btn-next');
-  const pageSizeSelect = document.getElementById('page-size') as HTMLSelectElement;
-  const cerrarBtn = document.getElementById('btn-cerrar-detalle');
-  const modal = document.getElementById('order-detail-modal');
-
-  btnPrev?.addEventListener('click', () => {
+  document.getElementById('btn-prev')?.addEventListener('click', () => {
     if (currentPage > 0) loadPage(currentPage - 1);
   });
 
-  btnNext?.addEventListener('click', () => {
+  document.getElementById('btn-next')?.addEventListener('click', () => {
     if (currentPage < totalPages - 1) loadPage(currentPage + 1);
   });
 
-  pageSizeSelect?.addEventListener('change', () => {
-    PAGE_SIZE = Number(pageSizeSelect.value);
+  document.getElementById('page-size')?.addEventListener('change', (e) => {
+    PAGE_SIZE = Number((e.target as HTMLSelectElement).value);
     loadPage(0);
   });
 
-  cerrarBtn?.addEventListener('click', closeDetail);
+  document.getElementById('btn-cerrar-detalle')?.addEventListener('click', closeDetail);
 
+  const modal = document.getElementById('order-detail-modal');
   modal?.addEventListener('click', (e) => {
     if (e.target === modal) closeDetail();
   });
