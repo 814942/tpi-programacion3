@@ -243,8 +243,11 @@ function renderProducts(products: ProductoResponse[]): void {
   }
 
   products.forEach(product => {
+    const sinStock = product.stock === 0;
+    const noDisponible = !product.disponible || sinStock;
+
     const article = document.createElement('article');
-    article.className = `producto${!product.disponible ? ' no-disponible' : ''}`;
+    article.className = `producto${noDisponible ? ' no-disponible' : ''}`;
 
     const img = document.createElement('img');
     img.src = product.imagen || '';
@@ -264,20 +267,20 @@ function renderProducts(products: ProductoResponse[]): void {
 
     article.append(img, title, description, price);
 
-    if (!product.disponible) {
+    if (noDisponible) {
       const badge = document.createElement('span');
       badge.className = 'badge-no-disponible';
-      badge.textContent = 'No disponible';
+      badge.textContent = sinStock ? 'Sin stock' : 'No disponible';
       article.appendChild(badge);
     }
 
     const button = document.createElement('button');
     button.className = 'btn-agregar';
     button.dataset.id = String(product.id);
-    button.textContent = product.disponible ? 'Agregar al Carrito' : 'Sin stock';
-    if (!product.disponible) button.disabled = true;
+    button.textContent = noDisponible ? 'Sin stock' : 'Agregar al Carrito';
+    if (noDisponible) button.disabled = true;
 
-    if (product.disponible) {
+    if (!noDisponible) {
       button.addEventListener('click', () => {
         showToast(`${product.nombre} agregado al carrito`, 'success');
       });
