@@ -17,8 +17,11 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.foodstore.dto.response.ProductoValidacionResponse;
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -129,6 +132,26 @@ public class ProductoService {
         productoRepository.findByIdOrThrow(id);
         productoRepository.deleteById(id);
         log.info("Producto {} eliminado (soft delete)", id);
+    }
+
+    @Transactional(readOnly = true)
+    public List<ProductoValidacionResponse> validarProductos(List<Long> ids) {
+        List<Producto> productos = productoRepository.findAllById(ids);
+        Set<Long> encontrados = productos.stream()
+            .map(Producto::getId)
+            .collect(Collectors.toSet());
+
+        return ids.stream().map(id -> {
+            if (!encontrados.contains(id)) {
+                return new ProductoValidacionResponse(id, false, false, 0);
+            }
+            Producto p = productoRepository.findById(id).orElse(null);
+            if (p == null) {
+                return new ProductoValidacionResponse(id, false, false, 0);
+            }
+            boolean disponible = p.getDisponible() != null && p.getDisponible() && !p.isEliminado();
+            return new ProductoValidacionResponse(id, true, disponible, disponible ? p.getStock() : 0);
+        }).collect(Collectors.toList());
     }
 
     private ProductoResponse toResponse(Producto producto) {

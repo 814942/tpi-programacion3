@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Resultado - Food Store</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: Arial, sans-serif;
+      background: #f5f5f5;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+    }
+    .result-card {
+      background: white;
+      border-radius: 12px;
+      padding: 48px 32px;
+      text-align: center;
+      max-width: 420px;
+      width: 100%;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.1);
+    }
+    .result-card .icon { font-size: 64px; margin-bottom: 16px; }
+    .result-card h2 { font-size: 24px; margin-bottom: 12px; color: #333; }
+    .result-card p { font-size: 14px; color: #666; margin-bottom: 24px; }
+    .result-card .btn {
+      display: inline-block; padding: 12px 32px;
+      border-radius: 6px; font-size: 16px; font-weight: bold;
+      text-decoration: none; margin: 4px;
+    }
+    .result-card .btn-success { background: #16a34a; color: white; }
+    .result-card .btn-error { background: #dc2626; color: white; }
+    .result-card.success { border: 2px solid #16a34a; }
+    .result-card.error { border: 2px solid #dc2626; }
+  </style>
+</head>
+<body>
+  <div id="result-card" class="result-card"></div>
+  <script type="module" src="./resultado.ts"></script>
+</body>
+</html>

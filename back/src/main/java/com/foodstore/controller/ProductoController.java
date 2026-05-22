@@ -1,10 +1,13 @@
 package com.foodstore.controller;
 
 import com.foodstore.dto.request.ProductoRequest;
+import com.foodstore.dto.request.ProductoValidarRequest;
 import com.foodstore.dto.request.UpdateProductoRequest;
 import com.foodstore.dto.response.PaginatedResponse;
 import com.foodstore.dto.response.ProductoResponse;
+import com.foodstore.dto.response.ProductoValidacionResponse;
 import com.foodstore.service.ProductoService;
+import java.util.List;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -28,6 +31,12 @@ public class ProductoController {
             @PageableDefault(size = 20, sort = "nombre") Pageable pageable,
             @RequestParam(required = false) String search) {
         return ResponseEntity.ok(productoService.findAll(pageable, search));
+    }
+
+    @PostMapping("/validate")
+    public ResponseEntity<List<ProductoValidacionResponse>> validarProductos(
+        @RequestBody @Valid ProductoValidarRequest request) {
+        return ResponseEntity.ok(productoService.validarProductos(request.ids()));
     }
 
     @GetMapping("/{id}")

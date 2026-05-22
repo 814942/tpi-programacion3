@@ -1,7 +1,7 @@
 // client.ts — Store page logic (catalog, search, categories)
 
 import { getUserSession } from '../../utils/auth';
-import { initHeader } from '../../utils/header';
+import { initHeader, updateCartBadge } from '../../utils/header';
 import { api } from '../../utils/api';
 import type { CategoriaResponse, ProductoResponse, PaginatedResponse } from '../../types';
 
@@ -298,7 +298,20 @@ function renderProducts(products: ProductoResponse[]): void {
     if (!noDisponible) {
       button.addEventListener('click', (e) => {
         e.stopPropagation();
-        showToast(`${product.nombre} agregado al carrito`, 'success');
+        try {
+          const cart = JSON.parse(localStorage.getItem('cart') || '[]');
+          const existing = cart.find((item: any) => item.product.id === product.id);
+          if (existing) {
+            existing.quantity += 1;
+          } else {
+            cart.push({ product, quantity: 1 });
+          }
+          localStorage.setItem('cart', JSON.stringify(cart));
+          updateCartBadge();
+          showToast(`${product.nombre} agregado al carrito`, 'success');
+        } catch {
+          showToast('Error al agregar al carrito', 'error');
+        }
       });
     }
 
