@@ -23,11 +23,13 @@ async function loadStats(): Promise<void> {
 
     spinner.classList.add('hidden');
     statsGrid.classList.remove('hidden');
-  } catch {
+  } catch (err) {
     spinner.classList.add('hidden');
     const errMsg = document.createElement('p');
     errMsg.style.cssText = 'color:#dc2626;text-align:center;padding:40px;';
-    errMsg.textContent = 'Error al cargar las estadisticas. Verifica que el backend este corriendo.';
+    errMsg.textContent = err instanceof Error && err.message
+      ? err.message
+      : 'Error al cargar las estadísticas. Verificá que el backend esté corriendo.';
     statsGrid.parentNode?.insertBefore(errMsg, statsGrid);
   }
 }
@@ -44,7 +46,7 @@ function initAdmin(): void {
     h1.style.color = '#c33';
     h1.textContent = 'Acceso Denegado';
     const p = document.createElement('p');
-    p.textContent = 'No tenes permisos para ver esta pagina.';
+    p.textContent = 'No tenés permisos para ver esta página.';
     const a = document.createElement('a');
     a.href = '/';
     a.style.color = '#ff4500';

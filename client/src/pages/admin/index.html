@@ -44,6 +44,11 @@
       padding: 12px 20px; color: #ccc; text-decoration: none;
       font-size: 14px; transition: all 0.15s;
     }
+    .admin-sidebar span {
+      display: flex; align-items: center; gap: 10px;
+      padding: 12px 20px; color: #888;
+      font-size: 14px;
+    }
     .admin-sidebar a:hover { background: #3d3d3d; color: var(--white); }
     .admin-sidebar a.active { background: var(--primary); color: var(--white); font-weight: bold; }
 
@@ -86,17 +91,17 @@
     <h1>Food Store Admin</h1>
     <nav>
       <span id="user-info"></span>
-      <button id="btn-logout" class="btn-logout">Cerrar Sesion</button>
+      <button id="btn-logout" class="btn-logout" type="button">Cerrar Sesión</button>
     </nav>
   </header>
 
   <div class="admin-layout">
     <nav class="admin-sidebar">
       <a href="/src/pages/admin/index.html" class="active">Dashboard</a>
-      <a href="/src/pages/admin/categories/">Categorias</a>
-      <a href="/src/pages/admin/products/">Productos</a>
-      <a href="/src/pages/admin/orders/">Pedidos</a>
-      <a href="/src/pages/admin/users/">Usuarios</a>
+      <span>Categorías</span>
+      <span>Productos</span>
+      <span>Pedidos</span>
+      <span>Usuarios</span>
     </nav>
 
     <main class="admin-content">
@@ -108,9 +113,9 @@
 
       <div id="stats-grid" class="stats-grid hidden">
         <div class="stat-card stat-categories">
-          <span class="stat-label">Categorias</span>
+          <span class="stat-label">Categorías</span>
           <span class="stat-value" id="stat-categorias">-</span>
-          <a href="/src/pages/admin/categories/" class="stat-link">Gestionar categorias</a>
+          <a href="/src/pages/admin/categories/" class="stat-link">Gestionar categorías</a>
         </div>
         <div class="stat-card stat-products">
           <span class="stat-label">Productos</span>
@@ -123,9 +128,9 @@
           <a href="/src/pages/admin/orders/" class="stat-link">Gestionar pedidos</a>
         </div>
         <div class="stat-card stat-available">
-          <span class="stat-label">Productos Disponibles</span>
+          <span class="stat-label">Total de productos</span>
           <span class="stat-value" id="stat-disponibles">-</span>
-          <a href="/src/pages/admin/products/" class="stat-link">Ver productos</a>
+          <a href="/src/pages/admin/products/" class="stat-link">Ver total de productos</a>
         </div>
       </div>
     </main>
