@@ -1,6 +1,6 @@
 // productDetail.ts — Product detail page
 
-import { getUserSession } from '../../../utils/auth';
+import { getUserSession, logout } from '../../../utils/auth';
 import { api } from '../../../utils/api';
 import type { ProductoResponse } from '../../../types';
 
@@ -77,7 +77,13 @@ function addToCart(): void {
 
   const existing = cart.find(item => item.product.id === producto!.id);
   if (existing) {
-    existing.quantity += cantidad;
+    const newQuantity = existing.quantity + cantidad;
+    if (newQuantity > producto!.stock) {
+      showToast('No hay suficiente stock disponible', 'error');
+      existing.quantity = producto!.stock;
+    } else {
+      existing.quantity = newQuantity;
+    }
   } else {
     cart.push({ product: producto, quantity: cantidad });
   }
@@ -94,7 +100,14 @@ async function loadProduct(): Promise<void> {
   if (!id) {
     spinner.classList.add('hidden');
     errorMsg.classList.remove('hidden');
-    errorMsg.innerHTML = '<p>ID de producto no válido.</p><button onclick="history.back()" class="btn-volver">Volver</button>';
+    const p = document.createElement('p');
+    p.textContent = 'ID de producto no válido.';
+    const btn = document.createElement('button');
+    btn.className = 'btn-volver';
+    btn.textContent = 'Volver';
+    btn.addEventListener('click', () => history.back());
+    errorMsg.innerHTML = '';
+    errorMsg.append(p, btn);
     return;
   }
 
@@ -106,7 +119,14 @@ async function loadProduct(): Promise<void> {
     spinner.classList.add('hidden');
     errorMsg.classList.remove('hidden');
     const msg = err instanceof Error ? err.message : 'Error al cargar el producto';
-    errorMsg.innerHTML = `<p>${msg}</p><button onclick="history.back()" class="btn-volver">Volver</button>`;
+    const p = document.createElement('p');
+    p.textContent = msg;
+    const btn = document.createElement('button');
+    btn.className = 'btn-volver';
+    btn.textContent = 'Volver';
+    btn.addEventListener('click', () => history.back());
+    errorMsg.innerHTML = '';
+    errorMsg.append(p, btn);
   }
 }
 
@@ -143,6 +163,23 @@ btnRestar.addEventListener('click', () => cambiarCantidad(-1));
 btnSumar.addEventListener('click', () => cambiarCantidad(1));
 btnAgregar.addEventListener('click', addToCart);
 
+// ==================== USER INFO ====================
+
+function displayUserInfo(): void {
+  const user = getUserSession();
+  const userInfo = document.getElementById('user-info');
+  const btnLogout = document.getElementById('btn-logout');
+  if (userInfo && user) {
+    userInfo.textContent = `Hola, ${user.nombre || user.email}`;
+  }
+  if (btnLogout) {
+    btnLogout.addEventListener('click', () => {
+      logout();
+      window.location.href = '/';
+    });
+  }
+}
+
 // ==================== INIT ====================
 
 function init(): void {
@@ -159,6 +196,7 @@ function init(): void {
     `;
     return;
   }
+  displayUserInfo();
   loadProduct();
 }
 
