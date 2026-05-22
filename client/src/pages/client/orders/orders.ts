@@ -185,7 +185,13 @@ async function openDetail(orderId: number): Promise<void> {
   const actions = document.getElementById('modal-actions');
   if (!modal || !body || !actions) return;
 
-  body.innerHTML = '<div class="loading-spinner"><div class="spinner"></div></div>';
+  body.innerHTML = '';
+  const loadingWrapper = document.createElement('div');
+  loadingWrapper.className = 'loading-spinner';
+  const loadingSpinner = document.createElement('div');
+  loadingSpinner.className = 'spinner';
+  loadingWrapper.appendChild(loadingSpinner);
+  body.appendChild(loadingWrapper);
   modal.classList.remove('hidden');
 
   try {
@@ -207,7 +213,11 @@ async function openDetail(orderId: number): Promise<void> {
 
     const dateRow = document.createElement('div');
     dateRow.className = 'detail-row';
-    dateRow.innerHTML = `<span>Fecha</span><span>${formatDate(order.fecha)}</span>`;
+    const dateKey = document.createElement('span');
+    dateKey.textContent = 'Fecha';
+    const dateValue = document.createElement('span');
+    dateValue.textContent = formatDate(order.fecha);
+    dateRow.append(dateKey, dateValue);
     body.appendChild(dateRow);
 
     const payRow = document.createElement('div');
@@ -216,7 +226,11 @@ async function openDetail(orderId: number): Promise<void> {
       : order.formaPago === 'EFECTIVO' ? 'Efectivo'
       : order.formaPago === 'TRANSFERENCIA' ? 'Transferencia'
       : order.formaPago;
-    payRow.innerHTML = `<span>Forma de pago</span><span>${payLabel}</span>`;
+    const payKey = document.createElement('span');
+    payKey.textContent = 'Forma de pago';
+    const payValue = document.createElement('span');
+    payValue.textContent = payLabel;
+    payRow.append(payKey, payValue);
     body.appendChild(payRow);
 
     if (order.telefono) {
@@ -232,7 +246,12 @@ async function openDetail(orderId: number): Promise<void> {
 
     const productsTitle = document.createElement('div');
     productsTitle.className = 'detail-row detail-row-header';
-    productsTitle.innerHTML = '<span>Producto</span><span style="text-align:right">Precio × Cant = Subtotal</span>';
+    const productsKey = document.createElement('span');
+    productsKey.textContent = 'Producto';
+    const productsValue = document.createElement('span');
+    productsValue.style.textAlign = 'right';
+    productsValue.textContent = 'Precio × Cant = Subtotal';
+    productsTitle.append(productsKey, productsValue);
     body.appendChild(productsTitle);
 
     order.detalles.forEach(d => {
@@ -266,7 +285,12 @@ async function openDetail(orderId: number): Promise<void> {
       actions.appendChild(btnCancel);
     }
   } catch {
-    body.innerHTML = '<p style="color:#dc2626;text-align:center">Error al cargar el detalle del pedido</p>';
+    body.innerHTML = '';
+    const error = document.createElement('p');
+    error.style.color = '#dc2626';
+    error.style.textAlign = 'center';
+    error.textContent = 'Error al cargar el detalle del pedido';
+    body.appendChild(error);
   }
 }
 
@@ -315,7 +339,12 @@ async function loadPage(page: number): Promise<void> {
   } catch {
     const containerEl = document.getElementById('orders-list');
     if (containerEl) {
-      containerEl.innerHTML = '<p style="color:#dc2626;text-align:center">Error al cargar los pedidos. Intentá de nuevo.</p>';
+      containerEl.innerHTML = '';
+      const error = document.createElement('p');
+      error.style.color = '#dc2626';
+      error.style.textAlign = 'center';
+      error.textContent = 'Error al cargar los pedidos. Intentá de nuevo.';
+      containerEl.appendChild(error);
     }
   } finally {
     hideLoading();
