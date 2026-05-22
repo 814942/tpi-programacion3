@@ -248,6 +248,10 @@ function renderProducts(products: ProductoResponse[]): void {
 
     const article = document.createElement('article');
     article.className = `producto${noDisponible ? ' no-disponible' : ''}`;
+    article.style.cursor = 'pointer';
+    article.addEventListener('click', () => {
+      window.location.href = `/src/pages/store/productDetail/index.html?id=${product.id}`;
+    });
 
     const img = document.createElement('img');
     img.src = product.imagen || '';
@@ -277,7 +281,8 @@ function renderProducts(products: ProductoResponse[]): void {
     };
 
     if (!noDisponible) {
-      button.addEventListener('click', () => {
+      button.addEventListener('click', (e) => {
+        e.stopPropagation();
         showToast(`${product.nombre} agregado al carrito`, 'success');
       });
     }
