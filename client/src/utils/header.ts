@@ -2,14 +2,15 @@ import { logout } from './auth';
 import { ROUTES } from './navigate';
 
 interface CartItem {
-  quantity?: unknown;
+  quantity?: number | string;
 }
 
-export function updateCartBadge(cartBadge: HTMLElement | null = document.getElementById('cart-badge')): void {
-  if (!cartBadge) return;
+export function updateCartBadge(cartBadge?: HTMLElement | null): void {
+  const badge = cartBadge ?? document.getElementById('cart-badge');
+  if (!badge) return;
 
-  cartBadge.textContent = '0';
-  cartBadge.classList.add('hidden');
+  badge.textContent = '0';
+  badge.classList.add('hidden');
 
   try {
     const cart = JSON.parse(localStorage.getItem('cart') || '[]');
@@ -18,8 +19,8 @@ export function updateCartBadge(cartBadge: HTMLElement | null = document.getElem
       : 0;
 
     if (total > 0) {
-      cartBadge.textContent = String(total);
-      cartBadge.classList.remove('hidden');
+      badge.textContent = String(total);
+      badge.classList.remove('hidden');
     }
   } catch {
     // Invalid cart data — ignore
