@@ -93,45 +93,7 @@ Store completo con datos reales desde API, carrito persistente, detalle de produ
 - [ ] Botón "Volver" al catálogo
 - [ ] Loading spinner mientras carga
 
-### US-04: Carrito Persistente
-**As a** Cliente
-**I want** que mi carrito se guarde entre sesiones
-**So that** no perder los productos seleccionados
-
-**Acceptance Criteria:**
-- [ ] Carrito se guarda en localStorage bajo clave `cart`
-- [ ] Al agregar producto, se persiste inmediatamente
-- [ ] Al recargar la página, carrito se restaura
-- [ ] Estructura: `[{ product, quantity }]`
-- [ ] Badge en header muestra cantidad total de items
-
-### US-05: Gestión del Carrito
-**As a** Cliente
-**I want** modificar cantidades y eliminar productos del carrito
-**So that** ajustar mi pedido antes de comprar
-
-**Acceptance Criteria:**
-- [ ] Botón +/- para modificar cantidad
-- [ ] Botón eliminar para quitar producto
-- [ ] Precio unitario y subtotal por producto
-- [ ] Total general actualizado
-- [ ] Botón "Vaciar Carrito"
-- [ ] Estado vacío: mensaje + botón "Ir a la tienda"
-
-### US-06: Checkout
-**As a** Cliente
-**I want** confirmar mi pedido con forma de pago y teléfono
-**So that** finalizar la compra
-
-**Acceptance Criteria:**
-- [ ] Botón "Proceder al Pago" en el carrito
-- [ ] Modal de checkout con: forma de pago (select) y teléfono (requerido)
-- [ ] Forma de pago: TARJETA, TRANSFERENCIA, EFECTIVO
-- [ ] Validación: teléfono requerido
-- [ ] Al confirmar: `POST /api/v1/pedidos`
-- [ ] Éxito: toast + redirigir a "Mis Pedidos"
-- [ ] Error (sin stock): mostrar qué producto falló
-- [ ] Al confirmar, carrito se vacía
+_Las US-04 a US-06 (Carrito Persistente, Gestión del Carrito, Checkout) fueron movidas a `docs/prd/front-cart.md` para su implementación independiente._
 
 ---
 
@@ -141,25 +103,12 @@ Store completo con datos reales desde API, carrito persistente, detalle de produ
 - Sidebar de categorías (GET /api/v1/categorias)
 - Grid de productos (GET /api/v1/productos)
 - Búsqueda y filtros
-- Badge del carrito en header
 
 ### FR-02: Detalle de Producto
 - Vista individual con info completa
 - Selector de cantidad con límite de stock
 - Botón agregar al carrito
 - Loading + error states
-
-### FR-03: Carrito
-- Persistencia en localStorage
-- CRUD de items (+/-, eliminar, vaciar)
-- Cálculo de totales
-- Badge en header
-
-### FR-04: Checkout
-- Modal con formulario
-- POST /api/v1/pedidos
-- Manejo de errores (stock insuficiente)
-- Redirección post-éxito
 
 ---
 
@@ -362,8 +311,9 @@ interface PaginationState {
 |------------|------|
 | back-products | API |
 | back-categories | API |
-| back-orders | API |
 | front-auth | Internal (JWT) |
+| front-cart | Internal (post-checkout redirect) |
+| front-header | Internal (header component) |
 
 ---
 
