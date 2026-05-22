@@ -195,12 +195,14 @@ async function openDetail(orderId: number): Promise<void> {
 
     const statusDiv = document.createElement('div');
     statusDiv.className = 'detail-status';
-    statusDiv.innerHTML = `
-      <span style="font-size:24px">${getStatusIcon(order.estado)}</span>
-      <span class="status-badge ${getStatusBadgeClass(order.estado)}" style="font-size:14px">
-        ${STATUS_LABELS[order.estado] || order.estado}
-      </span>
-    `;
+    const statusIcon = document.createElement('span');
+    statusIcon.style.fontSize = '24px';
+    statusIcon.textContent = getStatusIcon(order.estado);
+    const statusLabel = document.createElement('span');
+    statusLabel.className = `status-badge ${getStatusBadgeClass(order.estado)}`;
+    statusLabel.style.fontSize = '14px';
+    statusLabel.textContent = STATUS_LABELS[order.estado] || order.estado;
+    statusDiv.append(statusIcon, statusLabel);
     body.appendChild(statusDiv);
 
     const dateRow = document.createElement('div');
@@ -220,7 +222,11 @@ async function openDetail(orderId: number): Promise<void> {
     if (order.telefono) {
       const telRow = document.createElement('div');
       telRow.className = 'detail-row';
-      telRow.innerHTML = `<span>Teléfono</span><span>${order.telefono}</span>`;
+      const telKey = document.createElement('span');
+      telKey.textContent = 'Teléfono';
+      const telValue = document.createElement('span');
+      telValue.textContent = order.telefono;
+      telRow.append(telKey, telValue);
       body.appendChild(telRow);
     }
 
@@ -232,10 +238,11 @@ async function openDetail(orderId: number): Promise<void> {
     order.detalles.forEach(d => {
       const row = document.createElement('div');
       row.className = 'detail-row';
-      row.innerHTML = `
-        <span>${d.productoNombre}</span>
-        <span>${formatPeso(d.productoPrecio)} × ${d.cantidad} = ${formatPeso(d.subtotal)}</span>
-      `;
+      const productName = document.createElement('span');
+      productName.textContent = d.productoNombre;
+      const productValues = document.createElement('span');
+      productValues.textContent = `${formatPeso(d.productoPrecio)} × ${d.cantidad} = ${formatPeso(d.subtotal)}`;
+      row.append(productName, productValues);
       body.appendChild(row);
     });
 

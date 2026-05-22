@@ -23,7 +23,7 @@ async function request<T>(method: string, endpoint: string, body?: unknown): Pro
   const response = await fetch(`${API_BASE_URL}${endpoint}`, {
     method,
     headers,
-    body: body ? JSON.stringify(body) : undefined,
+    body: body !== undefined ? JSON.stringify(body) : undefined,
   });
 
   // Handle 401: redirect to login only if session expired (token was sent)
