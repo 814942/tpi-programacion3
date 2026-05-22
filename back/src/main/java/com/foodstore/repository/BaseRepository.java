@@ -52,6 +52,9 @@ public interface BaseRepository<E extends Base, ID extends Serializable> extends
             });
     }
 
+    @Query("SELECT COUNT(e) FROM #{#entityName} e WHERE e.eliminado = false")
+    long countActive();
+
     @Modifying(clearAutomatically = true)
     @Transactional
     @Query("UPDATE #{#entityName} e SET e.eliminado = true WHERE e.id = :id")
