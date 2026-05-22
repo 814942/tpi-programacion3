@@ -314,6 +314,9 @@ async function submitCheckout(): Promise<void> {
   } else {
     hasValidationError = true;
     validaciones = new Map();
+    closeCheckoutModal();
+    showToast('No se pudo validar el carrito. Intentá nuevamente.', 'error');
+    return;
   }
 
   const detalles: DetallePedido[] = cartItems
@@ -340,7 +343,6 @@ async function submitCheckout(): Promise<void> {
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message : 'Error al procesar el pedido';
     closeCheckoutModal();
-    showToast(msg, 'error');
     window.location.href = `/src/pages/client/checkout/resultado.html?success=false&message=${encodeURIComponent(msg)}`;
   } finally {
     isSubmitting = false;
