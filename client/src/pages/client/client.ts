@@ -46,6 +46,8 @@ type ProductViewMode =
   | { type: 'search'; query: string };
 
 let currentProductView: ProductViewMode = { type: 'all' };
+let activeCategoriaId: number | null = null;
+let activeSearchQuery: string | null = null;
 
 function renderPagination(): void {
   btnAnterior.disabled = currentPage <= 0;
@@ -133,15 +135,20 @@ async function fetchCategories(): Promise<void> {
         e.preventDefault();
         const id = (e.target as HTMLElement).dataset.categoriaId;
         if (id === 'all') {
+          activeCategoriaId = null;
+          activeSearchQuery = null;
           currentProductView = { type: 'all' };
           highlightCategory(null);
           clearSearch();
           fetchProducts(0);
         } else if (id) {
-          currentProductView = { type: 'category', categoriaId: parseInt(id) };
+          const catId = parseInt(id);
+          activeCategoriaId = catId;
+          activeSearchQuery = null;
+          currentProductView = { type: 'category', categoriaId: catId };
           highlightCategory(id);
           clearSearch();
-          fetchProductsByCategoria(parseInt(id), 0);
+          fetchProductsByCategoria(catId, 0);
         }
       });
     });
@@ -171,11 +178,13 @@ async function fetchProducts(page: number): Promise<void> {
   }
 }
 
-async function fetchProductsByCategoria(categoriaId: number, page: number): Promise<void> {
+async function fetchProductsByCategoria(categoriaId: number, page: number, search?: string): Promise<void> {
   showLoading();
   currentPage = page;
   try {
-    const response = await api.get<PaginatedResponse<ProductoResponse>>(`/productos/categoria/${categoriaId}?page=${page}&size=${PAGE_SIZE}`);
+    let url = `/productos/categoria/${categoriaId}?page=${page}&size=${PAGE_SIZE}`;
+    if (search) url += `&search=${encodeURIComponent(search)}`;
+    const response = await api.get<PaginatedResponse<ProductoResponse>>(url);
     totalPages = response.totalPages;
     totalItems = response.totalElements;
     renderProducts(response.content);
@@ -208,7 +217,10 @@ async function fetchProductsBySearch(query: string, page: number): Promise<void>
 }
 
 function fetchCurrentProducts(page: number): void {
-  if (currentProductView.type === 'category') {
+  if (activeCategoriaId !== null && activeSearchQuery !== null) {
+    // Category + search combined
+    fetchProductsByCategoria(activeCategoriaId, page, activeSearchQuery);
+  } else if (currentProductView.type === 'category') {
     fetchProductsByCategoria(currentProductView.categoriaId, page);
   } else if (currentProductView.type === 'search') {
     fetchProductsBySearch(currentProductView.query, page);
@@ -285,11 +297,21 @@ function configureSearch(): void {
     e.preventDefault();
     const query = inputBusqueda.value.trim();
     if (query) {
-      currentProductView = { type: 'search', query };
-      highlightCategory(null);
+      activeSearchQuery = query;
       btnClearSearch.classList.add('visible');
-      fetchProductsBySearch(query, 0);
+      if (activeCategoriaId !== null) {
+        // Search within selected category — keep highlight
+        currentProductView = { type: 'search', query };
+        fetchProductsByCategoria(activeCategoriaId, 0, query);
+      } else {
+        // Search all products
+        currentProductView = { type: 'search', query };
+        highlightCategory(null);
+        fetchProductsBySearch(query, 0);
+      }
     } else {
+      activeSearchQuery = null;
+      activeCategoriaId = null;
       currentProductView = { type: 'all' };
       highlightCategory(null);
       fetchProducts(0);
@@ -306,9 +328,18 @@ function configureSearch(): void {
 
   btnClearSearch.addEventListener('click', () => {
     clearSearch();
+    activeSearchQuery = null;
     currentProductView = { type: 'all' };
-    highlightCategory(null);
-    fetchProducts(0);
+    if (activeCategoriaId !== null) {
+      // Restore category view
+      const catId = activeCategoriaId;
+      currentProductView = { type: 'category', categoriaId: catId };
+      highlightCategory(String(catId));
+      fetchProductsByCategoria(catId, 0);
+    } else {
+      highlightCategory(null);
+      fetchProducts(0);
+    }
   });
 }
 
