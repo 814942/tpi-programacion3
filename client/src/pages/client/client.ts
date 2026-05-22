@@ -1,314 +1,378 @@
-// client.ts — Client panel logic (catalog, cart, search)
+// client.ts — Store page logic (catalog, search, categories)
 
-import '../../main';
 import { getUserSession, logout } from '../../utils/auth';
+import { api } from '../../utils/api';
+import type { CategoriaResponse, ProductoResponse, PaginatedResponse } from '../../types';
 
-// ==================== DATA ====================
+// ==================== DOM REFS ====================
 
-interface Product {
-  id: number;
-  name: string;
-  description: string;
-  price: number;
-  image: string;
-  category: string;
-}
+const contenedorProductos = document.getElementById('contenedor-productos')!;
+const listaCategorias = document.getElementById('lista-categorias')!;
+const productosContador = document.getElementById('productos-contador')!;
+const btnAnterior = document.getElementById('btn-anterior') as HTMLButtonElement;
+const btnSiguiente = document.getElementById('btn-siguiente') as HTMLButtonElement;
+const spinner = document.getElementById('loading-spinner')!;
+const errorMessage = document.getElementById('error-message')!;
+const inputBusqueda = document.getElementById('input-busqueda') as HTMLInputElement;
+const btnClearSearch = document.getElementById('btn-clear-search') as HTMLButtonElement;
+const formBusqueda = document.getElementById('form-busqueda') as HTMLFormElement;
 
-const categories: string[] = ['Hamburguesas', 'Pizzas', 'Papas Fritas', 'Bebidas'];
+// ==================== TOAST ====================
 
-const products: Product[] = [
-  {
-    id: 1,
-    name: 'Hamburguesa Triple',
-    description: 'Triple carne, cheddar y bacon',
-    price: 25000,
-    image: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=300&h=200&fit=crop',
-    category: 'Hamburguesas'
-  },
-  {
-    id: 2,
-    name: 'Pizza Muzzarella',
-    description: 'Salsa casera y orégano',
-    price: 18000,
-    image: 'https://images.unsplash.com/photo-1513104890138-7c749659a591?w=300&h=200&fit=crop',
-    category: 'Pizzas'
-  },
-  {
-    id: 3,
-    name: 'Hamburguesa Doble',
-    description: 'Doble carne con lechuga y tomate',
-    price: 20000,
-    image: 'https://images.unsplash.com/photo-1550547660-d9450f859349?w=300&h=200&fit=crop',
-    category: 'Hamburguesas'
-  },
-  {
-    id: 4,
-    name: 'Pizza Especial',
-    description: 'Jamón, morrón y aceitunas',
-    price: 22000,
-    image: 'https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=300&h=200&fit=crop',
-    category: 'Pizzas'
-  },
-  {
-    id: 5,
-    name: 'Pizza Pepperoni',
-    description: 'Pepperoni extra con queso',
-    price: 24000,
-    image: 'https://images.unsplash.com/photo-1628840042765-356cda07504e?w=300&h=200&fit=crop',
-    category: 'Pizzas'
-  },
-  {
-    id: 6,
-    name: 'Papas Fritas',
-    description: 'Papas crocantes con sal gruesa',
-    price: 8000,
-    image: 'https://images.unsplash.com/photo-1573080496219-bb080dd4f877?w=300&h=200&fit=crop',
-    category: 'Papas Fritas'
-  },
-  {
-    id: 7,
-    name: 'Papas con Cheddar',
-    description: 'Papas fritas con salsa cheddar',
-    price: 10000,
-    image: 'https://images.unsplash.com/photo-1630384060421-cb20d0e0649d?w=300&h=200&fit=crop',
-    category: 'Papas Fritas'
-  },
-  {
-    id: 8,
-    name: 'Coca Cola',
-    description: 'Lata 350ml bien fría',
-    price: 3500,
-    image: 'https://images.unsplash.com/photo-1622483767028-3f66f32aef97?w=300&h=200&fit=crop',
-    category: 'Bebidas'
-  },
-  {
-    id: 9,
-    name: 'Agua Mineral',
-    description: 'Agua sin gas 500ml',
-    price: 2500,
-    image: 'https://images.unsplash.com/photo-1548839140-29a749e1cf4d?w=300&h=200&fit=crop',
-    category: 'Bebidas'
-  }
-];
-
-// ==================== CART ====================
-
-interface CartItem {
-  product: Product;
-  quantity: number;
-}
-
-let cart: CartItem[] = [];
-
-// ==================== FUNCTIONS ====================
-
-/**
- * Load categories in the aside
- */
-function loadCategories(): void {
-  const listaCategorias = document.getElementById('lista-categorias');
-  if (!listaCategorias) return;
-
-  listaCategorias.innerHTML = '';
-  
-  // "All" option first
-  const liAll = document.createElement('li');
-  liAll.innerHTML = '<a href="#" data-category="all">Todas</a>';
-  listaCategorias.appendChild(liAll);
-
-  // Each category
-  categories.forEach(cat => {
-    const li = document.createElement('li');
-    li.innerHTML = `<a href="#" data-category="${cat}">${cat}</a>`;
-    listaCategorias.appendChild(li);
-  });
-
-  // Event listeners to filter
-  listaCategorias.querySelectorAll('a').forEach(link => {
-    link.addEventListener('click', (e) => {
-      e.preventDefault();
-      const category = (e.target as HTMLElement).dataset.category;
-      filterByCategory(category || 'all');
-    });
-  });
-}
-
-/**
- * Filter products by category
- */
-function filterByCategory(category: string): void {
-  if (category === 'all') {
-    loadProducts(products);
-  } else {
-    const filtered = products.filter(p => p.category === category);
-    loadProducts(filtered);
-  }
-}
-
-/**
- * Load products in the container
- */
-function loadProducts(productsToShow: Product[]): void {
-  const container = document.getElementById('contenedor-productos');
+function showToast(message: string, type: 'success' | 'error' = 'success'): void {
+  const container = document.getElementById('toast-container');
   if (!container) return;
-
-  container.innerHTML = '';
-
-  productsToShow.forEach(product => {
-    const article = document.createElement('article');
-    article.className = 'producto';
-    article.innerHTML = `
-      <img src="${product.image}" alt="${product.name}">
-      <h3>${product.name}</h3>
-      <p class="descripcion">${product.description}</p>
-      <p class="precio">$${product.price.toLocaleString('es-AR')}</p>
-      <button class="btn-agregar" data-id="${product.id}">Agregar al Carrito</button>
-    `;
-    container.appendChild(article);
-  });
-
-  // Add event listeners to buttons
-  container.querySelectorAll('.btn-agregar').forEach(btn => {
-    btn.addEventListener('click', (e) => {
-      const id = parseInt((e.target as HTMLElement).dataset.id || '0');
-      const product = products.find(p => p.id === id);
-      if (product) {
-        addToCart(product);
-      }
-    });
-  });
+  const toast = document.createElement('div');
+  toast.className = `toast toast-${type}`;
+  toast.textContent = message;
+  container.appendChild(toast);
+  setTimeout(() => {
+    if (toast.parentNode) {
+      toast.parentNode.removeChild(toast);
+    }
+  }, 2500);
 }
 
-/**
- * Add product to cart
- */
-function addToCart(product: Product): void {
-  const existingItem = cart.find(item => item.product.id === product.id);
-  
-  if (existingItem) {
-    existingItem.quantity++;
-  } else {
-    cart.push({ product, quantity: 1 });
+// ==================== PAGINATION STATE ====================
+
+let currentPage = 0;
+let totalPages = 0;
+let totalItems = 0;
+const PAGE_SIZE = 12;
+
+type ProductViewMode =
+  | { type: 'all' }
+  | { type: 'category'; categoriaId: number }
+  | { type: 'search'; query: string };
+
+let currentProductView: ProductViewMode = { type: 'all' };
+let activeCategoriaId: number | null = null;
+let activeSearchQuery: string | null = null;
+
+function renderPagination(): void {
+  btnAnterior.disabled = currentPage <= 0;
+  btnSiguiente.disabled = currentPage >= totalPages - 1;
+  const pageSpan = document.getElementById('pagina-actual');
+  if (pageSpan) {
+    pageSpan.textContent = `Página ${currentPage + 1} de ${totalPages}`;
   }
-  
-  updateCart();
-  alert('Producto agregado al carrito.');
 }
 
-/**
- * Update cart display
- */
-function updateCart(): void {
-  const tbody = document.getElementById('carrito-body');
-  const totalEl = document.getElementById('carrito-total');
-  
-  if (!tbody || !totalEl) return;
+function updateProductCounter(): void {
+  const start = currentPage * PAGE_SIZE + 1;
+  const end = Math.min((currentPage + 1) * PAGE_SIZE, totalItems);
+  if (productosContador) {
+    if (totalItems === 0) {
+      productosContador.textContent = 'No hay productos';
+    } else {
+      productosContador.textContent = `Mostrando ${start}-${end} de ${totalItems} productos`;
+    }
+  }
+}
 
-  if (cart.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="5" style="text-align: center;">El carrito está vacío</td></tr>';
-    totalEl.textContent = '$0';
+// ==================== UI HELPERS ====================
+
+function showLoading(): void {
+  spinner.classList.remove('hidden');
+  errorMessage.classList.add('hidden');
+  contenedorProductos.innerHTML = '';
+}
+
+function hideLoading(): void {
+  spinner.classList.add('hidden');
+}
+
+function showError(msg: string): void {
+  hideLoading();
+  errorMessage.textContent = msg;
+  errorMessage.classList.remove('hidden');
+  productosContador.textContent = 'Error al cargar productos';
+}
+
+function highlightCategory(categoriaId: string | null): void {
+  listaCategorias.querySelectorAll('a').forEach(link => {
+    link.classList.remove('categoria-activa');
+  });
+  if (categoriaId) {
+    const activeLink = listaCategorias.querySelector(`a[data-categoria-id="${categoriaId}"]`);
+    if (activeLink) activeLink.classList.add('categoria-activa');
+  }
+}
+
+function clearSearch(): void {
+  inputBusqueda.value = '';
+  btnClearSearch.classList.remove('visible');
+}
+
+// ==================== API CALLS ====================
+
+async function fetchCategories(): Promise<void> {
+  spinner.classList.remove('hidden');
+  try {
+    const response = await api.get<PaginatedResponse<CategoriaResponse>>('/categorias?page=0&size=100');
+    listaCategorias.innerHTML = '';
+
+    const liAll = document.createElement('li');
+    const allLink = document.createElement('a');
+    allLink.href = '#';
+    allLink.dataset.categoriaId = 'all';
+    allLink.textContent = 'Todas';
+    liAll.appendChild(allLink);
+    listaCategorias.appendChild(liAll);
+
+    response.content.forEach(cat => {
+      const li = document.createElement('li');
+      const link = document.createElement('a');
+      link.href = '#';
+      link.dataset.categoriaId = String(cat.id);
+      link.textContent = cat.nombre;
+      li.appendChild(link);
+      listaCategorias.appendChild(li);
+    });
+
+    listaCategorias.querySelectorAll('a').forEach(link => {
+      link.addEventListener('click', (e) => {
+        e.preventDefault();
+        const id = (e.target as HTMLElement).dataset.categoriaId;
+        if (id === 'all') {
+          activeCategoriaId = null;
+          activeSearchQuery = null;
+          currentProductView = { type: 'all' };
+          highlightCategory(null);
+          clearSearch();
+          fetchProducts(0);
+        } else if (id) {
+          const catId = parseInt(id);
+          activeCategoriaId = catId;
+          activeSearchQuery = null;
+          currentProductView = { type: 'category', categoriaId: catId };
+          highlightCategory(id);
+          clearSearch();
+          fetchProductsByCategoria(catId, 0);
+        }
+      });
+    });
+  } catch (err: unknown) {
+    console.error('Error loading categories:', err);
+  } finally {
+    // Only hide spinner if products also finished or failed
+    // Products has its own hideLoading
+  }
+}
+
+async function fetchProducts(page: number): Promise<void> {
+  showLoading();
+  currentPage = page;
+  try {
+    const response = await api.get<PaginatedResponse<ProductoResponse>>(`/productos?page=${page}&size=${PAGE_SIZE}`);
+    totalPages = response.totalPages;
+    totalItems = response.totalElements;
+    renderProducts(response.content);
+    renderPagination();
+    updateProductCounter();
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : 'Error al cargar productos';
+    showError(msg);
+  } finally {
+    hideLoading();
+  }
+}
+
+async function fetchProductsByCategoria(categoriaId: number, page: number, search?: string): Promise<void> {
+  showLoading();
+  currentPage = page;
+  try {
+    let url = `/productos/categoria/${categoriaId}?page=${page}&size=${PAGE_SIZE}`;
+    if (search) url += `&search=${encodeURIComponent(search)}`;
+    const response = await api.get<PaginatedResponse<ProductoResponse>>(url);
+    totalPages = response.totalPages;
+    totalItems = response.totalElements;
+    renderProducts(response.content);
+    renderPagination();
+    updateProductCounter();
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : 'Error al cargar productos';
+    showError(msg);
+  } finally {
+    hideLoading();
+  }
+}
+
+async function fetchProductsBySearch(query: string, page: number): Promise<void> {
+  showLoading();
+  currentPage = page;
+  try {
+    const response = await api.get<PaginatedResponse<ProductoResponse>>(`/productos?search=${encodeURIComponent(query)}&page=${page}&size=${PAGE_SIZE}`);
+    totalPages = response.totalPages;
+    totalItems = response.totalElements;
+    renderProducts(response.content);
+    renderPagination();
+    updateProductCounter();
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : 'Error al buscar productos';
+    showError(msg);
+  } finally {
+    hideLoading();
+  }
+}
+
+function fetchCurrentProducts(page: number): void {
+  if (activeCategoriaId !== null && activeSearchQuery !== null) {
+    // Category + search combined
+    fetchProductsByCategoria(activeCategoriaId, page, activeSearchQuery);
+  } else if (currentProductView.type === 'category') {
+    fetchProductsByCategoria(currentProductView.categoriaId, page);
+  } else if (currentProductView.type === 'search') {
+    fetchProductsBySearch(currentProductView.query, page);
+  } else {
+    fetchProducts(page);
+  }
+}
+
+// ==================== RENDER ====================
+
+function renderProducts(products: ProductoResponse[]): void {
+  contenedorProductos.innerHTML = '';
+
+  if (products.length === 0) {
+    const emptyMsg = document.createElement('p');
+    emptyMsg.style.cssText = 'text-align:center;padding:40px;color:#666;';
+    emptyMsg.textContent = 'No hay productos disponibles';
+    contenedorProductos.appendChild(emptyMsg);
     return;
   }
 
-  let total = 0;
-  tbody.innerHTML = '';
+  products.forEach(product => {
+    const sinStock = product.stock === 0;
+    const noDisponible = !product.disponible || sinStock;
 
-  cart.forEach((item, index) => {
-    const subtotal = item.product.price * item.quantity;
-    total += subtotal;
+    const article = document.createElement('article');
+    article.className = `producto${noDisponible ? ' no-disponible' : ''}`;
 
-    const tr = document.createElement('tr');
-    tr.innerHTML = `
-      <td>${item.product.name}</td>
-      <td>$${item.product.price.toLocaleString('es-AR')}</td>
-      <td>${item.quantity}</td>
-      <td>$${subtotal.toLocaleString('es-AR')}</td>
-      <td><button class="eliminar" data-index="${index}">Eliminar</button></td>
-    `;
-    tbody.appendChild(tr);
-  });
+    const img = document.createElement('img');
+    img.src = product.imagen || '';
+    img.alt = product.nombre;
+    img.loading = 'lazy';
 
-  totalEl.textContent = `$${total.toLocaleString('es-AR')}`;
+    const title = document.createElement('h3');
+    title.textContent = product.nombre;
 
-  // Event listeners for delete
-  tbody.querySelectorAll('.eliminar').forEach(btn => {
-    btn.addEventListener('click', (e) => {
-      const index = parseInt((e.target as HTMLElement).dataset.index || '0');
-      removeFromCart(index);
-    });
-  });
-}
+    const description = document.createElement('p');
+    description.className = 'descripcion';
+    description.textContent = product.descripcion || '';
 
-/**
- * Remove product from cart
- */
-function removeFromCart(index: number): void {
-  if (index >= 0 && index < cart.length) {
-    if (cart[index].quantity > 1) {
-      cart[index].quantity--;
-    } else {
-      cart.splice(index, 1);
+    const price = document.createElement('p');
+    price.className = 'precio';
+    price.textContent = `$${product.precio.toLocaleString('es-AR')}`;
+
+    article.append(img, title, description, price);
+
+    const button = document.createElement('button');
+    button.className = 'btn-agregar';
+    button.dataset.id = String(product.id);
+    button.textContent = noDisponible ? 'Sin stock' : 'Agregar al Carrito';
+    if (noDisponible) {
+      button.className = 'btn-agregar btn-no-disponible';
+      button.disabled = true
+    };
+
+    if (!noDisponible) {
+      button.addEventListener('click', () => {
+        showToast(`${product.nombre} agregado al carrito`, 'success');
+      });
     }
-    updateCart();
-  }
+
+    article.appendChild(button);
+    contenedorProductos.appendChild(article);
+  });
 }
 
-/**
- * Configure search
- */
+// ==================== SEARCH ====================
+
 function configureSearch(): void {
-  const formSearch = document.getElementById('form-busqueda');
-  const inputSearch = document.getElementById('input-busqueda') as HTMLInputElement;
+  if (!formBusqueda || !inputBusqueda) return;
 
-  if (!formSearch || !inputSearch) return;
-
-  formSearch.addEventListener('submit', (e) => {
+  formBusqueda.addEventListener('submit', (e) => {
     e.preventDefault();
-    const query = inputSearch.value.toLowerCase().trim();
-    
-    if (!query) {
-      loadProducts(products);
-      return;
+    const query = inputBusqueda.value.trim();
+    if (query) {
+      activeSearchQuery = query;
+      btnClearSearch.classList.add('visible');
+      if (activeCategoriaId !== null) {
+        // Search within selected category — keep highlight
+        currentProductView = { type: 'search', query };
+        fetchProductsByCategoria(activeCategoriaId, 0, query);
+      } else {
+        // Search all products
+        currentProductView = { type: 'search', query };
+        highlightCategory(null);
+        fetchProductsBySearch(query, 0);
+      }
+    } else {
+      activeSearchQuery = null;
+      activeCategoriaId = null;
+      currentProductView = { type: 'all' };
+      highlightCategory(null);
+      fetchProducts(0);
     }
+  });
 
-    const results = products.filter(p => 
-      p.name.toLowerCase().includes(query) ||
-      p.description.toLowerCase().includes(query) ||
-      p.category.toLowerCase().includes(query)
-    );
+  inputBusqueda.addEventListener('input', () => {
+    if (inputBusqueda.value.trim()) {
+      btnClearSearch.classList.add('visible');
+    } else {
+      btnClearSearch.classList.remove('visible');
+    }
+  });
 
-    loadProducts(results);
+  btnClearSearch.addEventListener('click', () => {
+    clearSearch();
+    activeSearchQuery = null;
+    currentProductView = { type: 'all' };
+    if (activeCategoriaId !== null) {
+      // Restore category view
+      const catId = activeCategoriaId;
+      currentProductView = { type: 'category', categoriaId: catId };
+      highlightCategory(String(catId));
+      fetchProductsByCategoria(catId, 0);
+    } else {
+      highlightCategory(null);
+      fetchProducts(0);
+    }
   });
 }
 
-/**
- * Display user info in header
- */
+// ==================== USER INFO ====================
+
 function displayUserInfo(): void {
   const user = getUserSession();
   const userInfo = document.getElementById('user-info');
   const btnLogout = document.getElementById('btn-logout');
-
   if (userInfo && user) {
-    userInfo.textContent = `Hola, ${user.email}`;
+    userInfo.textContent = `Hola, ${user.nombre || user.email}`;
   }
-
   if (btnLogout) {
     btnLogout.addEventListener('click', () => {
       logout();
-      alert('Sesión cerrada correctamente.');
       window.location.href = '/';
     });
   }
 }
 
-/**
- * Initialize client page
- */
+// ==================== PAGINATION EVENTS ====================
+
+btnAnterior.addEventListener('click', () => {
+  if (currentPage > 0) fetchCurrentProducts(currentPage - 1);
+});
+
+btnSiguiente.addEventListener('click', () => {
+  if (currentPage < totalPages - 1) fetchCurrentProducts(currentPage + 1);
+});
+
+// ==================== INIT ====================
+
 function initClient(): void {
   const user = getUserSession();
-  
-  // Check if user is authenticated and is client (route guard should handle this)
   if (!user || user.role !== 'USUARIO') {
     document.body.innerHTML = `
       <div style="display:flex;justify-content:center;align-items:center;min-height:100vh;font-family:Arial,sans-serif;">
@@ -321,14 +385,11 @@ function initClient(): void {
     `;
     return;
   }
-
-  // Initialize components
   displayUserInfo();
-  loadCategories();
-  loadProducts(products);
+  currentProductView = { type: 'all' };
+  fetchCategories();
+  fetchProducts(0);
   configureSearch();
-  updateCart();
 }
 
-// Run when DOM is ready
 document.addEventListener('DOMContentLoaded', initClient);
