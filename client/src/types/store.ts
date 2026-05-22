@@ -1,17 +1,17 @@
 export interface CategoriaResponse {
   id: number;
   nombre: string;
-  descripcion: string;
-  imagen: string;
+  descripcion: string | null;
+  imagen: string | null;
 }
 
 export interface ProductoResponse {
   id: number;
   nombre: string;
   precio: number;
-  descripcion: string;
+  descripcion: string | null;
   stock: number;
-  imagen: string;
+  imagen: string | null;
   disponible: boolean;
   categoria: {
     id: number;
