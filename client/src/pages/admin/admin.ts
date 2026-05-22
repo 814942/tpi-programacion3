@@ -2,32 +2,11 @@
 
 import { getUserSession, logout } from '../../utils/auth';
 import { api } from '../../utils/api';
-import type { PaginatedResponse } from '../../types';
 
-interface ProductoDisponibilidad {
-  disponible?: boolean;
-  stock?: number;
-}
-
-function isProductoDisponible(producto: ProductoDisponibilidad): boolean {
-  return producto.disponible === true && (producto.stock ?? 0) > 0;
-}
-
-async function getProductosDisponiblesCount(): Promise<number> {
-  const size = 100;
-  const firstPage = await api.get<PaginatedResponse<ProductoDisponibilidad>>(`/productos?page=0&size=${size}`);
-  const remainingPagePromises: Array<Promise<PaginatedResponse<ProductoDisponibilidad>>> = [];
-  for (let page = 1; page < firstPage.totalPages; page += 1) {
-    remainingPagePromises.push(api.get<PaginatedResponse<ProductoDisponibilidad>>(`/productos?page=${page}&size=${size}`));
-  }
-  const remainingPages = await Promise.all(remainingPagePromises);
-
-  let disponiblesCount = firstPage.content.filter(isProductoDisponible).length;
-  for (const pageResult of remainingPages) {
-    disponiblesCount += pageResult.content.filter(isProductoDisponible).length;
-  }
-
-  return disponiblesCount;
+interface StatsResponse {
+  categorias: number;
+  productos: number;
+  pedidos: number;
 }
 
 async function loadStats(): Promise<void> {
@@ -36,27 +15,19 @@ async function loadStats(): Promise<void> {
   if (!spinner || !statsGrid) return;
 
   try {
-    const [catRes, prodRes, pedidosRes, productosDisponibles] = await Promise.all([
-      api.get<PaginatedResponse<unknown>>('/categorias?page=0&size=1'),
-      api.get<PaginatedResponse<unknown>>('/productos?page=0&size=1'),
-      api.get<PaginatedResponse<unknown>>('/pedidos?page=0&size=1'),
-      getProductosDisponiblesCount(),
-    ]);
+    const stats = await api.get<StatsResponse>('/admin/stats');
 
-    document.getElementById('stat-categorias')!.textContent = String(catRes.totalElements);
-    document.getElementById('stat-productos')!.textContent = String(prodRes.totalElements);
-    document.getElementById('stat-pedidos')!.textContent = String(pedidosRes.totalElements);
-    document.getElementById('stat-disponibles')!.textContent = String(productosDisponibles);
+    document.getElementById('stat-categorias')!.textContent = String(stats.categorias);
+    document.getElementById('stat-productos')!.textContent = String(stats.productos);
+    document.getElementById('stat-pedidos')!.textContent = String(stats.pedidos);
 
     spinner.classList.add('hidden');
     statsGrid.classList.remove('hidden');
-  } catch (err) {
+  } catch {
     spinner.classList.add('hidden');
     const errMsg = document.createElement('p');
     errMsg.style.cssText = 'color:#dc2626;text-align:center;padding:40px;';
-    errMsg.textContent = err instanceof Error && err.message
-      ? err.message
-      : 'Error al cargar las estadísticas. Verifica que el backend esté corriendo.';
+    errMsg.textContent = 'Error al cargar las estadisticas. Verifica que el backend este corriendo.';
     statsGrid.parentNode?.insertBefore(errMsg, statsGrid);
   }
 }
@@ -73,7 +44,7 @@ function initAdmin(): void {
     h1.style.color = '#c33';
     h1.textContent = 'Acceso Denegado';
     const p = document.createElement('p');
-    p.textContent = 'No tenés permisos para ver esta página.';
+    p.textContent = 'No tenes permisos para ver esta pagina.';
     const a = document.createElement('a');
     a.href = '/';
     a.style.color = '#ff4500';

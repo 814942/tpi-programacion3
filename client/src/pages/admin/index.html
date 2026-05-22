@@ -36,21 +36,16 @@
     }
 
     .admin-sidebar {
-      width: var(--sidebar-width); background: #2d2d2d; color: #ccc;
+      width: var(--sidebar-width); background: #000; color: #999;
       padding: 20px 0; position: fixed; top: 60px; bottom: 0; overflow-y: auto;
     }
     .admin-sidebar a {
       display: flex; align-items: center; gap: 10px;
-      padding: 12px 20px; color: #ccc; text-decoration: none;
-      font-size: 14px; transition: all 0.15s;
+      padding: 14px 24px; color: #999; text-decoration: none;
+      font-size: 14px; transition: all 0.15s; border-left: 3px solid transparent;
     }
-    .admin-sidebar span {
-      display: flex; align-items: center; gap: 10px;
-      padding: 12px 20px; color: #888;
-      font-size: 14px;
-    }
-    .admin-sidebar a:hover { background: #3d3d3d; color: var(--white); }
-    .admin-sidebar a.active { background: var(--primary); color: var(--white); font-weight: bold; }
+    .admin-sidebar a:hover { background: #1a1a1a; color: var(--white); }
+    .admin-sidebar a.active { background: #1a1a1a; color: var(--white); font-weight: bold; border-left-color: var(--primary); }
 
     .admin-content {
       margin-left: var(--sidebar-width); padding: 24px; flex: 1;
@@ -74,7 +69,6 @@
     .stat-card.stat-categories { border-left: 4px solid #2563eb; }
     .stat-card.stat-products { border-left: 4px solid #16a34a; }
     .stat-card.stat-orders { border-left: 4px solid #d97706; }
-    .stat-card.stat-available { border-left: 4px solid var(--primary); }
 
     .loading-spinner { display: flex; justify-content: center; padding: 60px; }
     .spinner {
@@ -126,11 +120,6 @@
           <span class="stat-label">Pedidos</span>
           <span class="stat-value" id="stat-pedidos">-</span>
           <a href="/src/pages/admin/orders/" class="stat-link">Gestionar pedidos</a>
-        </div>
-        <div class="stat-card stat-available">
-          <span class="stat-label">Productos disponibles</span>
-          <span class="stat-value" id="stat-disponibles">-</span>
-          <a href="/src/pages/admin/products/" class="stat-link">Ver productos disponibles</a>
         </div>
       </div>
     </main>
