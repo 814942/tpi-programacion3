@@ -169,16 +169,7 @@
 
     .no-disponible {
       opacity: 0.6;
-    }
-
-    .badge-no-disponible {
-      display: inline-block;
-      background: #c33;
-      color: white;
-      padding: 2px 8px;
-      border-radius: 4px;
-      font-size: 12px;
-      margin-top: 8px;
+      cursor: not-allowed;
     }
     
     .search-wrapper {
@@ -280,6 +271,14 @@
     
     .btn-agregar:hover {
       background: var(--primary-hover);
+    }
+
+    .btn-no-disponible:hover {
+      background: var(--primary);
+    }
+
+    .btn-no-disponible {
+      cursor: not-allowed;
     }
     
     #toast-container {

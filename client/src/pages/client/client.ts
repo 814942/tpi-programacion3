@@ -267,18 +267,14 @@ function renderProducts(products: ProductoResponse[]): void {
 
     article.append(img, title, description, price);
 
-    if (noDisponible) {
-      const badge = document.createElement('span');
-      badge.className = 'badge-no-disponible';
-      badge.textContent = sinStock ? 'Sin stock' : 'No disponible';
-      article.appendChild(badge);
-    }
-
     const button = document.createElement('button');
     button.className = 'btn-agregar';
     button.dataset.id = String(product.id);
     button.textContent = noDisponible ? 'Sin stock' : 'Agregar al Carrito';
-    if (noDisponible) button.disabled = true;
+    if (noDisponible) {
+      button.className = 'btn-agregar btn-no-disponible';
+      button.disabled = true
+    };
 
     if (!noDisponible) {
       button.addEventListener('click', () => {
