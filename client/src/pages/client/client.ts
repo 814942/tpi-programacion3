@@ -248,6 +248,20 @@ function renderProducts(products: ProductoResponse[]): void {
 
     const article = document.createElement('article');
     article.className = `producto${noDisponible ? ' no-disponible' : ''}`;
+    article.style.cursor = 'pointer';
+    article.setAttribute('tabindex', '0');
+    article.setAttribute('role', 'link');
+    article.setAttribute('aria-label', `Ver detalle de ${product.nombre}`);
+    const navigateToDetail = (): void => {
+      window.location.href = `/src/pages/store/productDetail/index.html?id=${product.id}`;
+    };
+    article.addEventListener('click', navigateToDetail);
+    article.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ' || e.code === 'Space') {
+        e.preventDefault();
+        navigateToDetail();
+      }
+    });
 
     const img = document.createElement('img');
     img.src = product.imagen || '';
@@ -273,11 +287,12 @@ function renderProducts(products: ProductoResponse[]): void {
     button.textContent = noDisponible ? 'Sin stock' : 'Agregar al Carrito';
     if (noDisponible) {
       button.className = 'btn-agregar btn-no-disponible';
-      button.disabled = true
+      button.disabled = true;
     };
 
     if (!noDisponible) {
-      button.addEventListener('click', () => {
+      button.addEventListener('click', (e) => {
+        e.stopPropagation();
         showToast(`${product.nombre} agregado al carrito`, 'success');
       });
     }

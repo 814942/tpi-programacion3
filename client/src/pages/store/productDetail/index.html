@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Producto - Food Store</title>
+  <style>
+    :root {
+      --primary: #ff4500;
+      --primary-hover: #e03e00;
+      --white: #ffffff;
+      --text: #333333;
+      --text-light: #666666;
+      --bg: #f5f5f5;
+      --border: #ddd;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: Arial, sans-serif; background: var(--bg); min-height: 100vh; }
+    
+    .site-header {
+      background: var(--primary);
+      color: var(--white);
+      padding: 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .site-header h1 { font-size: 28px; }
+    .site-header nav { display: flex; align-items: center; gap: 20px; }
+    #user-info { font-size: 14px; }
+    .btn-logout {
+      padding: 8px 16px; background: var(--white); color: var(--primary);
+      border: none; border-radius: 4px; cursor: pointer; font-weight: bold;
+    }
+    
+    main {
+      max-width: 900px;
+      margin: 40px auto;
+      padding: 0 20px;
+    }
+
+    .loading-spinner {
+      display: flex; justify-content: center; padding: 60px;
+    }
+    .spinner {
+      width: 40px; height: 40px;
+      border: 4px solid var(--border);
+      border-top-color: var(--primary);
+      border-radius: 50%;
+      animation: spin 0.6s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .hidden { display: none !important; }
+
+    .error-message {
+      text-align: center; padding: 40px; color: #dc2626;
+      background: #fef2f2; border-radius: 8px;
+    }
+
+    .producto-detalle {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 40px;
+      background: var(--white);
+      border-radius: 12px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+      padding: 40px;
+    }
+
+    .producto-detalle .imagen img {
+      width: 100%;
+      border-radius: 8px;
+      object-fit: cover;
+      max-height: 400px;
+    }
+
+    .producto-detalle .info {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .producto-detalle h2 {
+      font-size: 28px;
+      color: var(--text);
+    }
+
+    .producto-detalle .descripcion {
+      color: var(--text-light);
+      font-size: 16px;
+      line-height: 1.6;
+    }
+
+    .producto-detalle .precio {
+      font-size: 32px;
+      font-weight: bold;
+      color: var(--primary);
+    }
+
+    .producto-detalle .stock-info {
+      font-size: 14px;
+      color: var(--text-light);
+    }
+
+    .producto-detalle .stock-info.sin-stock {
+      color: #dc2626;
+      font-weight: bold;
+    }
+
+    .producto-detalle .no-disponible-badge {
+      display: inline-block;
+      background: #c33;
+      color: white;
+      padding: 4px 12px;
+      border-radius: 4px;
+      font-size: 14px;
+    }
+
+    .cantidad-control {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .cantidad-control label {
+      font-weight: bold;
+      color: var(--text);
+    }
+
+    .cantidad-control .btn-cant {
+      width: 36px; height: 36px;
+      background: var(--primary);
+      color: var(--white);
+      border: none;
+      border-radius: 4px;
+      font-size: 18px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    .cantidad-control .btn-cant:disabled {
+      background: #ccc;
+      cursor: not-allowed;
+    }
+
+    .cantidad-control .cantidad {
+      font-size: 18px;
+      font-weight: bold;
+      min-width: 30px;
+      text-align: center;
+    }
+
+    .btn-agregar {
+      padding: 14px 32px;
+      background: var(--primary);
+      color: var(--white);
+      border: none;
+      border-radius: 6px;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .btn-agregar:hover {
+      background: var(--primary-hover);
+    }
+
+    .btn-agregar:disabled {
+      background: #ccc;
+      cursor: not-allowed;
+    }
+
+    .btn-volver {
+      display: inline-block;
+      margin-top: 20px;
+      padding: 10px 20px;
+      background: #f0f0f0;
+      color: var(--text);
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+      text-decoration: none;
+    }
+
+    .btn-volver:hover {
+      background: #e0e0e0;
+    }
+
+    #toast-container {
+      position: fixed; bottom: 24px; right: 24px; z-index: 1000;
+      display: flex; flex-direction: column; gap: 8px;
+    }
+    .toast {
+      padding: 12px 20px; border-radius: 8px; font-size: 14px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      animation: toast-in 0.3s ease; max-width: 360px;
+    }
+    .toast.toast-success { background: #16a34a; color: white; }
+    .toast.toast-error { background: #dc2626; color: white; }
+    @keyframes toast-in {
+      from { opacity: 0; transform: translateY(16px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <h1>Food Store</h1>
+    <nav>
+      <span id="user-info"></span>
+      <button id="btn-logout" class="btn-logout">Cerrar Sesión</button>
+    </nav>
+  </header>
+
+  <main>
+    <div id="loading-spinner" class="loading-spinner">
+      <div class="spinner"></div>
+    </div>
+
+    <div id="error-message" class="error-message hidden">
+      <p>Error al cargar el producto.</p>
+      <button onclick="history.back()" class="btn-volver">Volver</button>
+    </div>
+
+    <div id="producto-detalle" class="producto-detalle hidden">
+      <div class="imagen">
+        <img id="producto-imagen" src="" alt="">
+      </div>
+      <div class="info">
+        <h2 id="producto-nombre"></h2>
+        <p class="descripcion" id="producto-descripcion"></p>
+        <p class="precio" id="producto-precio"></p>
+        <p class="stock-info" id="producto-stock"></p>
+        <span class="no-disponible-badge hidden" id="producto-no-disponible">No disponible</span>
+        
+        <div class="cantidad-control" id="cantidad-control">
+          <label>Cantidad:</label>
+          <button id="btn-restar" class="btn-cant">−</button>
+          <span class="cantidad" id="cantidad-valor">1</span>
+          <button id="btn-sumar" class="btn-cant">+</button>
+        </div>
+
+        <button id="btn-agregar-carrito" class="btn-agregar">Agregar al Carrito</button>
+        <a href="/src/pages/client/index.html" class="btn-volver">← Volver al catálogo</a>
+      </div>
+    </div>
+  </main>
+
+  <div id="toast-container"></div>
+
+  <script type="module" src="/src/main.ts"></script>
+  <script type="module" src="./productDetail.ts"></script>
+</body>
+</html>
