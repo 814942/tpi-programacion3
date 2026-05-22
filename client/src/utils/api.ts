@@ -74,6 +74,9 @@ export const api = {
   put<T>(endpoint: string, body: unknown): Promise<T> {
     return request<T>('PUT', endpoint, body);
   },
+  patch<T>(endpoint: string, body?: unknown): Promise<T> {
+    return request<T>('PATCH', endpoint, body);
+  },
   delete<T>(endpoint: string): Promise<T> {
     return request<T>('DELETE', endpoint);
   },
