@@ -16,7 +16,6 @@ public class OpenApiConfig {
         final String securitySchemeName = "bearerAuth";
 
         return new OpenAPI()
-                .openapi("3.1.0")
                 .info(new Info()
                         .title("Food Store API")
                         .version("1.0")
