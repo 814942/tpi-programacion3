@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Categorías - Food Store Admin</title>
+  <title>Usuarios - Food Store Admin</title>
   <style>
     :root {
       --primary: #ff4500;
@@ -44,12 +44,6 @@
       padding: 14px 24px; color: #999; text-decoration: none;
       font-size: 14px; transition: all 0.15s; border-left: 3px solid transparent;
     }
-    .admin-sidebar .sidebar-item-disabled {
-      display: flex; align-items: center; gap: 10px;
-      padding: 14px 24px; color: #666;
-      font-size: 14px; border-left: 3px solid transparent;
-      cursor: default;
-    }
     .admin-sidebar a:hover { background: #1a1a1a; color: var(--white); }
     .admin-sidebar a.active { background: #1a1a1a; color: var(--white); font-weight: bold; border-left-color: var(--primary); }
 
@@ -70,12 +64,18 @@
 
     .table-toolbar {
       display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; gap: 12px;
+      flex-wrap: wrap;
     }
     .table-toolbar input[type="text"] {
-      padding: 8px 12px; border: 1px solid var(--border); border-radius: 4px; font-size: 14px; flex: 1; max-width: 320px;
+      padding: 8px 12px; border: 1px solid var(--border); border-radius: 4px; font-size: 14px; flex: 1; max-width: 240px;
       outline: none;
     }
     .table-toolbar input[type="text"]:focus { border-color: var(--primary); }
+    .table-toolbar select {
+      padding: 8px 12px; border: 1px solid var(--border); border-radius: 4px; font-size: 14px;
+      outline: none; background: var(--white); min-width: 140px;
+    }
+    .table-toolbar select:focus { border-color: var(--primary); }
 
     .btn {
       padding: 8px 16px; border: none; border-radius: 4px; cursor: pointer; font-size: 13px; font-weight: bold;
@@ -94,14 +94,28 @@
       width: 100%; border-collapse: collapse; background: var(--white); border-radius: 8px; overflow: hidden;
       box-shadow: 0 2px 8px rgba(0,0,0,0.08);
     }
-    .data-table th, .data-table td { padding: 12px 16px; text-align: left; font-size: 14px; }
+    .data-table th, .data-table td { text-align: center; padding: 12px 16px; font-size: 14px; }
     .data-table thead { background: #333; color: var(--white); }
     .data-table thead th { font-weight: 600; font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px; }
     .data-table tbody tr { border-bottom: 1px solid var(--border); }
     .data-table tbody tr:nth-child(even) { background: #f4f3ef; }
     .data-table tbody tr:hover { background: #eae9e4; }
-    .data-table td img { width: 50px; height: 50px; object-fit: cover; border-radius: 4px; }
     .data-table .actions { display: flex; gap: 6px; align-items: center; justify-content: center; flex-direction: column; }
+    .data-table .col-id { width: 60px; }
+    .data-table .col-nombre { width: 140px; }
+    .data-table .col-apellido { width: 140px; }
+    .data-table .col-email { width: 200px; }
+    .data-table .col-celular { width: 120px; }
+    .data-table .col-rol { width: 100px; }
+    .data-table .col-fecha { width: 120px; }
+    .data-table .col-acciones { width: 120px; }
+
+    .badge {
+      display: inline-block; padding: 3px 10px; border-radius: 12px;
+      font-size: 12px; font-weight: bold;
+    }
+    .badge-admin { background: #7c3aed; color: #fff; }
+    .badge-usuario { background: #2563eb; color: #fff; }
 
     .pagination {
       display: flex; align-items: center; gap: 12px; margin-top: 16px;
@@ -139,12 +153,12 @@
 
     .form-group { margin-bottom: 16px; }
     .form-group label { display: block; font-size: 13px; font-weight: bold; margin-bottom: 4px; color: var(--text); }
-    .form-group input, .form-group textarea {
+    .form-group input, .form-group select {
       width: 100%; padding: 8px 12px; border: 1px solid var(--border); border-radius: 4px;
       font-size: 14px; outline: none; font-family: Arial, sans-serif;
     }
-    .form-group input:focus, .form-group textarea:focus { border-color: var(--primary); }
-    .form-group textarea { resize: vertical; }
+    .form-group input:focus, .form-group select:focus { border-color: var(--primary); }
+    .form-group select { background: var(--white); cursor: pointer; }
 
     .toast-container {
       position: fixed; bottom: 20px; right: 20px; z-index: 300; display: flex; flex-direction: column; gap: 8px;
@@ -173,39 +187,46 @@
   <div class="admin-layout">
     <nav class="admin-sidebar">
       <a href="/src/pages/admin/index.html">Dashboard</a>
-      <a href="/src/pages/admin/categories/index.html" class="active">Categorías</a>
+      <a href="/src/pages/admin/categories/index.html">Categorías</a>
       <a href="/src/pages/admin/products/index.html">Productos</a>
       <a href="/src/pages/admin/orders/index.html">Pedidos</a>
-      <a href="/src/pages/admin/users/index.html">Usuarios</a>
+      <a href="/src/pages/admin/users/index.html" class="active">Usuarios</a>
     </nav>
 
     <main class="admin-content">
-      <h2>Categorías</h2>
+      <h2>Usuarios</h2>
 
       <div class="table-toolbar">
-        <input type="text" id="search-input" placeholder="Buscar categorías...">
-        <button id="btn-new" class="btn btn-primary">+ Nueva Categoría</button>
+        <input type="text" id="search-input" placeholder="Buscar usuarios...">
+        <select id="filter-rol">
+          <option value="">TODOS</option>
+          <option value="ADMIN">ADMIN</option>
+          <option value="USUARIO">USUARIO</option>
+        </select>
       </div>
 
       <div id="loading-spinner" class="loading-spinner">
         <div class="spinner"></div>
       </div>
 
-      <div id="empty-state" class="empty-state hidden">No se encontraron categorías</div>
+      <div id="empty-state" class="empty-state hidden">No se encontraron usuarios</div>
 
       <div id="error-state" class="error-state hidden"></div>
 
-      <table id="categories-table" class="data-table hidden">
+      <table id="users-table" class="data-table hidden">
         <thead>
           <tr>
-            <th>ID</th>
-            <th>Nombre</th>
-            <th>Descripción</th>
-            <th>Imagen</th>
-            <th>Acciones</th>
+            <th class="col-id">ID</th>
+            <th class="col-nombre">Nombre</th>
+            <th class="col-apellido">Apellido</th>
+            <th class="col-email">Email</th>
+            <th class="col-celular">Celular</th>
+            <th class="col-rol">Rol</th>
+            <th class="col-fecha">Fecha Registro</th>
+            <th class="col-acciones">Acciones</th>
           </tr>
         </thead>
-        <tbody id="categories-tbody"></tbody>
+        <tbody id="users-tbody"></tbody>
       </table>
 
       <div id="pagination" class="pagination hidden">
@@ -224,21 +245,32 @@
   <div id="modal-overlay" class="modal-overlay hidden">
     <div class="modal-card">
       <div class="modal-header">
-        <h3 id="modal-title">Nueva Categoría</h3>
+        <h3 id="modal-title">Editar Usuario</h3>
         <button id="modal-close" class="modal-close">&times;</button>
       </div>
-      <form id="category-form" class="modal-body">
+      <form id="user-form" class="modal-body">
         <div class="form-group">
-          <label for="input-nombre">Nombre *</label>
-          <input type="text" id="input-nombre" required maxlength="100">
+          <label for="input-nombre">Nombre</label>
+          <input type="text" id="input-nombre" maxlength="50">
         </div>
         <div class="form-group">
-          <label for="input-descripcion">Descripción</label>
-          <textarea id="input-descripcion" maxlength="500" rows="3"></textarea>
+          <label for="input-apellido">Apellido</label>
+          <input type="text" id="input-apellido" maxlength="50">
         </div>
         <div class="form-group">
-          <label for="input-imagen">URL Imagen *</label>
-          <input type="url" id="input-imagen" required placeholder="https://...">
+          <label for="input-email">Email</label>
+          <input type="email" id="input-email">
+        </div>
+        <div class="form-group">
+          <label for="input-celular">Celular</label>
+          <input type="text" id="input-celular" maxlength="20" placeholder="Solo números">
+        </div>
+        <div class="form-group">
+          <label for="input-rol">Rol</label>
+          <select id="input-rol">
+            <option value="ADMIN">ADMIN</option>
+            <option value="USUARIO">USUARIO</option>
+          </select>
         </div>
       </form>
       <div class="modal-footer">
@@ -251,6 +283,6 @@
   <div id="toast-container" class="toast-container"></div>
 
   <script type="module" src="/src/main.ts"></script>
-  <script type="module" src="./categories.ts"></script>
+  <script type="module" src="./users.ts"></script>
 </body>
 </html>

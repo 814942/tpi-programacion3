@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Categorías - Food Store Admin</title>
+  <title>Pedidos - Food Store Admin</title>
   <style>
     :root {
       --primary: #ff4500;
@@ -44,12 +44,6 @@
       padding: 14px 24px; color: #999; text-decoration: none;
       font-size: 14px; transition: all 0.15s; border-left: 3px solid transparent;
     }
-    .admin-sidebar .sidebar-item-disabled {
-      display: flex; align-items: center; gap: 10px;
-      padding: 14px 24px; color: #666;
-      font-size: 14px; border-left: 3px solid transparent;
-      cursor: default;
-    }
     .admin-sidebar a:hover { background: #1a1a1a; color: var(--white); }
     .admin-sidebar a.active { background: #1a1a1a; color: var(--white); font-weight: bold; border-left-color: var(--primary); }
 
@@ -70,12 +64,18 @@
 
     .table-toolbar {
       display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; gap: 12px;
+      flex-wrap: wrap;
     }
     .table-toolbar input[type="text"] {
-      padding: 8px 12px; border: 1px solid var(--border); border-radius: 4px; font-size: 14px; flex: 1; max-width: 320px;
+      padding: 8px 12px; border: 1px solid var(--border); border-radius: 4px; font-size: 14px; flex: 1; max-width: 240px;
       outline: none;
     }
     .table-toolbar input[type="text"]:focus { border-color: var(--primary); }
+    .table-toolbar select {
+      padding: 8px 12px; border: 1px solid var(--border); border-radius: 4px; font-size: 14px;
+      outline: none; background: var(--white); min-width: 160px;
+    }
+    .table-toolbar select:focus { border-color: var(--primary); }
 
     .btn {
       padding: 8px 16px; border: none; border-radius: 4px; cursor: pointer; font-size: 13px; font-weight: bold;
@@ -84,24 +84,37 @@
     .btn-primary:hover { background: var(--primary-hover); }
     .btn-secondary { background: #999; color: var(--white); }
     .btn-secondary:hover { background: #777; }
-    .btn-danger { background: #dc2626; color: var(--white); }
-    .btn-danger:hover { background: #b91c1c; }
     .btn-sm { padding: 4px 10px; font-size: 12px; }
-    .btn-edit { background: #2563eb; color: var(--white); }
-    .btn-edit:hover { background: #1d4ed8; }
+    .btn-detail { background: #2563eb; color: var(--white); }
+    .btn-detail:hover { background: #1d4ed8; }
 
     .data-table {
       width: 100%; border-collapse: collapse; background: var(--white); border-radius: 8px; overflow: hidden;
       box-shadow: 0 2px 8px rgba(0,0,0,0.08);
     }
-    .data-table th, .data-table td { padding: 12px 16px; text-align: left; font-size: 14px; }
+    .data-table th, .data-table td { text-align: center; padding: 12px 16px; font-size: 14px; }
     .data-table thead { background: #333; color: var(--white); }
     .data-table thead th { font-weight: 600; font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px; }
     .data-table tbody tr { border-bottom: 1px solid var(--border); }
     .data-table tbody tr:nth-child(even) { background: #f4f3ef; }
     .data-table tbody tr:hover { background: #eae9e4; }
-    .data-table td img { width: 50px; height: 50px; object-fit: cover; border-radius: 4px; }
-    .data-table .actions { display: flex; gap: 6px; align-items: center; justify-content: center; flex-direction: column; }
+    .data-table .actions { display: flex; gap: 6px; align-items: center; justify-content: center; }
+    .data-table .col-id { width: 60px; }
+    .data-table .col-cliente { width: 180px; }
+    .data-table .col-fecha { width: 140px; }
+    .data-table .col-estado { width: 110px; }
+    .data-table .col-items { width: 120px; }
+    .data-table .col-total { width: 100px; }
+    .data-table .col-acciones { width: 100px; }
+
+    .badge {
+      display: inline-block; padding: 3px 10px; border-radius: 12px;
+      font-size: 12px; font-weight: bold;
+    }
+    .badge-pendiente { background: #d97706; color: #fff; }
+    .badge-confirmado { background: #2563eb; color: #fff; }
+    .badge-terminado { background: #16a34a; color: #fff; }
+    .badge-cancelado { background: #dc2626; color: #fff; }
 
     .pagination {
       display: flex; align-items: center; gap: 12px; margin-top: 16px;
@@ -123,7 +136,7 @@
       display: flex; justify-content: center; align-items: center; z-index: 200;
     }
     .modal-card {
-      background: var(--white); border-radius: 10px; padding: 24px; width: 100%; max-width: 500px;
+      background: var(--white); border-radius: 10px; padding: 24px; width: 100%; max-width: 700px;
       box-shadow: 0 4px 20px rgba(0,0,0,0.2);
     }
     .modal-header {
@@ -135,16 +148,29 @@
     }
     .modal-close:hover { color: var(--text); }
     .modal-body { margin-bottom: 20px; }
-    .modal-footer { display: flex; justify-content: flex-end; gap: 8px; }
+    .modal-footer { display: flex; justify-content: flex-end; gap: 8px; align-items: center; }
 
-    .form-group { margin-bottom: 16px; }
-    .form-group label { display: block; font-size: 13px; font-weight: bold; margin-bottom: 4px; color: var(--text); }
-    .form-group input, .form-group textarea {
-      width: 100%; padding: 8px 12px; border: 1px solid var(--border); border-radius: 4px;
-      font-size: 14px; outline: none; font-family: Arial, sans-serif;
+    .detail-section { margin-bottom: 20px; }
+    .detail-section h4 { font-size: 15px; color: var(--text); margin-bottom: 8px; border-bottom: 1px solid var(--border); padding-bottom: 4px; }
+    .detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; font-size: 14px; }
+    .detail-grid .label { color: var(--text-light); font-weight: bold; }
+    .detail-grid .value { color: var(--text); }
+
+    .detail-products-table {
+      width: 100%; border-collapse: collapse; margin-top: 8px;
     }
-    .form-group input:focus, .form-group textarea:focus { border-color: var(--primary); }
-    .form-group textarea { resize: vertical; }
+    .detail-products-table th, .detail-products-table td {
+      padding: 8px 12px; text-align: left; font-size: 13px; border-bottom: 1px solid var(--border);
+    }
+    .detail-products-table thead th { font-weight: bold; color: var(--text-light); font-size: 12px; text-transform: uppercase; }
+    .detail-products-table tfoot td { font-weight: bold; font-size: 14px; border-top: 2px solid var(--text); }
+
+    .estado-change { display: flex; gap: 8px; align-items: center; margin-top: 12px; }
+    .estado-change select {
+      padding: 8px 12px; border: 1px solid var(--border); border-radius: 4px; font-size: 14px;
+      outline: none; background: var(--white); flex: 1;
+    }
+    .estado-change select:focus { border-color: var(--primary); }
 
     .toast-container {
       position: fixed; bottom: 20px; right: 20px; z-index: 300; display: flex; flex-direction: column; gap: 8px;
@@ -173,39 +199,47 @@
   <div class="admin-layout">
     <nav class="admin-sidebar">
       <a href="/src/pages/admin/index.html">Dashboard</a>
-      <a href="/src/pages/admin/categories/index.html" class="active">Categorías</a>
+      <a href="/src/pages/admin/categories/index.html">Categorías</a>
       <a href="/src/pages/admin/products/index.html">Productos</a>
-      <a href="/src/pages/admin/orders/index.html">Pedidos</a>
+      <a href="/src/pages/admin/orders/index.html" class="active">Pedidos</a>
       <a href="/src/pages/admin/users/index.html">Usuarios</a>
     </nav>
 
     <main class="admin-content">
-      <h2>Categorías</h2>
+      <h2>Pedidos</h2>
 
       <div class="table-toolbar">
-        <input type="text" id="search-input" placeholder="Buscar categorías...">
-        <button id="btn-new" class="btn btn-primary">+ Nueva Categoría</button>
+        <input type="text" id="search-input" placeholder="Buscar pedidos...">
+        <select id="filter-estado">
+          <option value="">TODOS</option>
+          <option value="PENDIENTE">PENDIENTE</option>
+          <option value="CONFIRMADO">CONFIRMADO</option>
+          <option value="TERMINADO">TERMINADO</option>
+          <option value="CANCELADO">CANCELADO</option>
+        </select>
       </div>
 
       <div id="loading-spinner" class="loading-spinner">
         <div class="spinner"></div>
       </div>
 
-      <div id="empty-state" class="empty-state hidden">No se encontraron categorías</div>
+      <div id="empty-state" class="empty-state hidden">No se encontraron pedidos</div>
 
       <div id="error-state" class="error-state hidden"></div>
 
-      <table id="categories-table" class="data-table hidden">
+      <table id="orders-table" class="data-table hidden">
         <thead>
           <tr>
-            <th>ID</th>
-            <th>Nombre</th>
-            <th>Descripción</th>
-            <th>Imagen</th>
-            <th>Acciones</th>
+            <th class="col-id">ID</th>
+            <th class="col-cliente">Cliente</th>
+            <th class="col-fecha">Fecha</th>
+            <th class="col-estado">Estado</th>
+            <th class="col-items">Items</th>
+            <th class="col-total">Total</th>
+            <th class="col-acciones">Acciones</th>
           </tr>
         </thead>
-        <tbody id="categories-tbody"></tbody>
+        <tbody id="orders-tbody"></tbody>
       </table>
 
       <div id="pagination" class="pagination hidden">
@@ -221,29 +255,65 @@
     </main>
   </div>
 
-  <div id="modal-overlay" class="modal-overlay hidden">
+  <div id="detail-modal-overlay" class="modal-overlay hidden">
     <div class="modal-card">
       <div class="modal-header">
-        <h3 id="modal-title">Nueva Categoría</h3>
-        <button id="modal-close" class="modal-close">&times;</button>
+        <h3 id="detail-title">Detalle del Pedido</h3>
+        <button id="detail-close" class="modal-close">&times;</button>
       </div>
-      <form id="category-form" class="modal-body">
-        <div class="form-group">
-          <label for="input-nombre">Nombre *</label>
-          <input type="text" id="input-nombre" required maxlength="100">
+      <div class="modal-body" id="detail-body">
+        <div class="detail-section">
+          <h4>Cliente</h4>
+          <div class="detail-grid">
+            <span class="label">Nombre:</span>
+            <span class="value" id="d-cliente-nombre"></span>
+            <span class="label">Email:</span>
+            <span class="value" id="d-cliente-email"></span>
+          </div>
         </div>
-        <div class="form-group">
-          <label for="input-descripcion">Descripción</label>
-          <textarea id="input-descripcion" maxlength="500" rows="3"></textarea>
+        <div class="detail-section">
+          <h4>Pedido</h4>
+          <div class="detail-grid">
+            <span class="label">Fecha:</span>
+            <span class="value" id="d-fecha"></span>
+            <span class="label">Estado:</span>
+            <span class="value" id="d-estado"></span>
+            <span class="label">Forma de Pago:</span>
+            <span class="value" id="d-forma-pago"></span>
+            <span class="label">Total:</span>
+            <span class="value" id="d-total"></span>
+          </div>
         </div>
-        <div class="form-group">
-          <label for="input-imagen">URL Imagen *</label>
-          <input type="url" id="input-imagen" required placeholder="https://...">
+        <div class="detail-section">
+          <h4>Productos</h4>
+          <table class="detail-products-table">
+            <thead>
+              <tr>
+                <th>Producto</th>
+                <th>Precio Unit.</th>
+                <th>Cant.</th>
+                <th>Subtotal</th>
+              </tr>
+            </thead>
+            <tbody id="d-productos-tbody"></tbody>
+            <tfoot>
+              <tr>
+                <td colspan="3" style="text-align:right;">Total:</td>
+                <td id="d-total-footer"></td>
+              </tr>
+            </tfoot>
+          </table>
         </div>
-      </form>
+        <div class="detail-section" id="d-estado-section">
+          <h4>Cambiar Estado</h4>
+          <div class="estado-change">
+            <select id="d-estado-select"></select>
+            <button id="d-update-estado" class="btn btn-primary">Actualizar Estado</button>
+          </div>
+        </div>
+      </div>
       <div class="modal-footer">
-        <button id="btn-cancel" class="btn btn-secondary">Cancelar</button>
-        <button id="btn-save" class="btn btn-primary">Guardar</button>
+        <button id="detail-btn-close" class="btn btn-secondary">Cerrar</button>
       </div>
     </div>
   </div>
@@ -251,6 +321,6 @@
   <div id="toast-container" class="toast-container"></div>
 
   <script type="module" src="/src/main.ts"></script>
-  <script type="module" src="./categories.ts"></script>
+  <script type="module" src="./orders.ts"></script>
 </body>
 </html>
