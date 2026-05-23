@@ -20,7 +20,7 @@ const ESTADO_BADGE: Record<string, string> = {
 
 const TRANSICIONES: Record<string, string[]> = {
   PENDIENTE: ['CONFIRMADO', 'CANCELADO'],
-  CONFIRMADO: ['TERMINADO'],
+  CONFIRMADO: ['TERMINADO', 'CANCELADO'],
   TERMINADO: [],
   CANCELADO: [],
 };
@@ -82,8 +82,8 @@ async function loadOrders(page: number, size: number, search?: string, estado?: 
 
   try {
     let url = `/pedidos?page=${page}&size=${size}`;
-    if (search) url += `&search=${encodeURIComponent(search)}`;
-    if (estado) url += `&search=${encodeURIComponent(estado)}`;
+    const effectiveSearch = estado || search;
+    if (effectiveSearch) url += `&search=${encodeURIComponent(effectiveSearch)}`;
     const response = await api.get<PaginatedResponse<PedidoResponse>>(url);
     currentPage = response.page;
     totalPages = response.totalPages;

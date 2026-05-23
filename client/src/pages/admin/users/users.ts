@@ -71,8 +71,8 @@ async function loadUsers(page: number, size: number, search?: string, rol?: stri
 
   try {
     let url = `/usuarios?page=${page}&size=${size}`;
-    if (search) url += `&search=${encodeURIComponent(search)}`;
-    if (rol) url += `&search=${encodeURIComponent(rol)}`;
+    const effectiveSearch = rol || search;
+    if (effectiveSearch) url += `&search=${encodeURIComponent(effectiveSearch)}`;
     const response = await api.get<PaginatedResponse<UsuarioResponse>>(url);
     currentPage = response.page;
     totalPages = response.totalPages;

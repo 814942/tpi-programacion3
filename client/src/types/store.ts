@@ -28,7 +28,7 @@ export interface PaginatedResponse<T> {
 }
 
 export interface DetallePedidoResponse {
-  id?: number;
+  id: number;
   productoNombre: string;
   productoPrecio: number;
   productoDescripcion: string | null;
