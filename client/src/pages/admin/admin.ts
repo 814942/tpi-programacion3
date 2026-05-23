@@ -7,6 +7,7 @@ interface StatsResponse {
   categorias: number;
   productos: number;
   pedidos: number;
+  usuarios: number;
 }
 
 async function loadStats(): Promise<void> {
@@ -16,10 +17,12 @@ async function loadStats(): Promise<void> {
 
   try {
     const stats = await api.get<StatsResponse>('/admin/stats');
+    console.log('Stats loaded:', stats);
 
     document.getElementById('stat-categorias')!.textContent = String(stats.categorias);
     document.getElementById('stat-productos')!.textContent = String(stats.productos);
     document.getElementById('stat-pedidos')!.textContent = String(stats.pedidos);
+    document.getElementById('stat-usuarios')!.textContent = String(stats.usuarios);
 
     spinner.classList.add('hidden');
     statsGrid.classList.remove('hidden');
