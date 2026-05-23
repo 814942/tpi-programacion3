@@ -10,4 +10,8 @@ export default defineConfig({
   server: {
     open: true,
   },
+  test: {
+    environment: 'jsdom',
+    include: ['src/**/*.test.ts'],
+  },
 });
