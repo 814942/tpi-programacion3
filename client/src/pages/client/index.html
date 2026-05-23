@@ -135,6 +135,14 @@
       color: var(--text-light);
     }
 
+    .sort-control {
+      display: flex; align-items: center; gap: 6px;
+    }
+    .sort-control select {
+      padding: 4px 8px; border: 1px solid var(--border);
+      border-radius: 4px; font-size: 13px;
+    }
+
     .paginacion {
       display: flex;
       align-items: center;
@@ -391,6 +399,15 @@
 
       <div class="productos-header">
         <span id="productos-contador">Cargando productos...</span>
+        <div class="sort-control">
+          <label for="sort-select">Ordenar:</label>
+          <select id="sort-select">
+            <option value="nombre,asc">Nombre A-Z</option>
+            <option value="nombre,desc">Nombre Z-A</option>
+            <option value="precio,asc">Precio menor</option>
+            <option value="precio,desc">Precio mayor</option>
+          </select>
+        </div>
       </div>
 
       <div id="loading-spinner" class="loading-spinner">

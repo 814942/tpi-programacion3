@@ -49,6 +49,11 @@ type ProductViewMode =
 let currentProductView: ProductViewMode = { type: 'all' };
 let activeCategoriaId: number | null = null;
 let activeSearchQuery: string | null = null;
+let currentSort = 'nombre,asc';
+
+function getSortParam(): string {
+  return `&sort=${currentSort}`;
+}
 
 function renderPagination(): void {
   btnAnterior.disabled = currentPage <= 0;
@@ -169,7 +174,7 @@ async function fetchProducts(page: number): Promise<void> {
   showLoading();
   currentPage = page;
   try {
-    const response = await api.get<PaginatedResponse<ProductoResponse>>(`/productos?page=${page}&size=${PAGE_SIZE}`);
+    const response = await api.get<PaginatedResponse<ProductoResponse>>(`/productos?page=${page}&size=${PAGE_SIZE}${getSortParam()}`);
     totalPages = response.totalPages;
     totalItems = response.totalElements;
     renderProducts(response.content);
@@ -187,7 +192,7 @@ async function fetchProductsByCategoria(categoriaId: number, page: number, searc
   showLoading();
   currentPage = page;
   try {
-    let url = `/productos/categoria/${categoriaId}?page=${page}&size=${PAGE_SIZE}`;
+    let url = `/productos/categoria/${categoriaId}?page=${page}&size=${PAGE_SIZE}${getSortParam()}`;
     if (search) url += `&search=${encodeURIComponent(search)}`;
     const response = await api.get<PaginatedResponse<ProductoResponse>>(url);
     totalPages = response.totalPages;
@@ -207,7 +212,7 @@ async function fetchProductsBySearch(query: string, page: number): Promise<void>
   showLoading();
   currentPage = page;
   try {
-    const response = await api.get<PaginatedResponse<ProductoResponse>>(`/productos?search=${encodeURIComponent(query)}&page=${page}&size=${PAGE_SIZE}`);
+    const response = await api.get<PaginatedResponse<ProductoResponse>>(`/productos?search=${encodeURIComponent(query)}&page=${page}&size=${PAGE_SIZE}${getSortParam()}`);
     totalPages = response.totalPages;
     totalItems = response.totalElements;
     renderProducts(response.content);
@@ -418,6 +423,12 @@ function initClient(): void {
   fetchCategories();
   fetchProducts(0);
   configureSearch();
+
+  const sortSelect = document.getElementById('sort-select') as HTMLSelectElement;
+  sortSelect?.addEventListener('change', () => {
+    currentSort = sortSelect.value;
+    fetchProducts(0);
+  });
 }
 
 document.addEventListener('DOMContentLoaded', initClient);
