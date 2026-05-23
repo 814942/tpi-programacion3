@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Productos - Food Store Admin</title>
+  <style>
+    :root {
+      --primary: #ff4500;
+      --primary-hover: #e03e00;
+      --white: #faf9f5;
+      --text: #333333;
+      --text-light: #666666;
+      --bg: #faf9f5;
+      --border: #ddd;
+      --sidebar-width: 220px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: Arial, sans-serif; background: var(--bg); min-height: 100vh; }
+
+    .admin-header {
+      background: var(--primary); color: var(--white); padding: 16px 24px;
+      display: flex; justify-content: space-between; align-items: center;
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    }
+    .admin-header h1 { font-size: 24px; }
+    .admin-header nav { display: flex; align-items: center; gap: 16px; }
+    .admin-header #user-info { font-size: 14px; }
+    .btn-logout {
+      padding: 6px 14px; background: var(--white); color: var(--primary);
+      border: none; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 13px;
+    }
+
+    .admin-layout {
+      display: flex; padding-top: 60px; min-height: 100vh;
+    }
+
+    .admin-sidebar {
+      width: var(--sidebar-width); background: #000; color: #999;
+      padding: 20px 0; position: fixed; top: 60px; bottom: 0; overflow-y: auto;
+    }
+    .admin-sidebar a {
+      display: flex; align-items: center; gap: 10px;
+      padding: 14px 24px; color: #999; text-decoration: none;
+      font-size: 14px; transition: all 0.15s; border-left: 3px solid transparent;
+    }
+    .admin-sidebar .sidebar-item-disabled {
+      display: flex; align-items: center; gap: 10px;
+      padding: 14px 24px; color: #666;
+      font-size: 14px; border-left: 3px solid transparent;
+      cursor: default;
+    }
+    .admin-sidebar a:hover { background: #1a1a1a; color: var(--white); }
+    .admin-sidebar a.active { background: #1a1a1a; color: var(--white); font-weight: bold; border-left-color: var(--primary); }
+
+    .admin-content {
+      margin-left: var(--sidebar-width); padding: 24px; flex: 1;
+    }
+
+    .admin-content h2 { margin-bottom: 24px; color: var(--text); }
+
+    .loading-spinner { display: flex; justify-content: center; padding: 60px; }
+    .spinner {
+      width: 32px; height: 32px;
+      border: 4px solid var(--border); border-top-color: var(--primary);
+      border-radius: 50%; animation: spin 0.6s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .hidden { display: none !important; }
+
+    .table-toolbar {
+      display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; gap: 12px;
+      flex-wrap: wrap;
+    }
+    .table-toolbar input[type="text"] {
+      padding: 8px 12px; border: 1px solid var(--border); border-radius: 4px; font-size: 14px; flex: 1; max-width: 240px;
+      outline: none;
+    }
+    .table-toolbar input[type="text"]:focus { border-color: var(--primary); }
+    .table-toolbar select {
+      padding: 8px 12px; border: 1px solid var(--border); border-radius: 4px; font-size: 14px;
+      outline: none; background: var(--white); min-width: 180px;
+    }
+    .table-toolbar select:focus { border-color: var(--primary); }
+
+    .btn {
+      padding: 8px 16px; border: none; border-radius: 4px; cursor: pointer; font-size: 13px; font-weight: bold;
+    }
+    .btn-primary { background: var(--primary); color: var(--white); }
+    .btn-primary:hover { background: var(--primary-hover); }
+    .btn-secondary { background: #999; color: var(--white); }
+    .btn-secondary:hover { background: #777; }
+    .btn-danger { background: #dc2626; color: var(--white); }
+    .btn-danger:hover { background: #b91c1c; }
+    .btn-sm { padding: 4px 10px; font-size: 12px; }
+    .btn-edit { background: #2563eb; color: var(--white); }
+    .btn-edit:hover { background: #1d4ed8; }
+
+    .data-table {
+      width: 100%; border-collapse: collapse; background: var(--white); border-radius: 8px; overflow: hidden;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    }
+    .data-table th, .data-table td { padding: 12px 16px; text-align: left; font-size: 14px; }
+    .data-table thead { background: #333; color: var(--white); }
+    .data-table thead th { font-weight: 600; font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px; }
+    .data-table tbody tr { border-bottom: 1px solid var(--border); }
+    .data-table tbody tr:nth-child(even) { background: #f4f3ef; }
+    .data-table tbody tr:hover { background: #eae9e4; }
+    .data-table td img { width: 50px; height: 50px; object-fit: cover; border-radius: 4px; }
+    .data-table .actions { display: flex; gap: 6px; align-items: center; }
+    .data-table .col-id { width: 60px; }
+    .data-table .col-img { width: 70px; }
+    .data-table .col-precio { width: 100px; }
+    .data-table .col-stock { width: 80px; }
+    .data-table .col-disponible { width: 100px; }
+    .data-table .col-acciones { width: 140px; }
+
+    .badge {
+      display: inline-block; padding: 3px 10px; border-radius: 12px;
+      font-size: 12px; font-weight: bold;
+    }
+    .badge-success { background: #16a34a; color: #fff; }
+    .badge-danger { background: #dc2626; color: #fff; }
+
+    .pagination {
+      display: flex; align-items: center; gap: 12px; margin-top: 16px;
+      justify-content: center; flex-wrap: wrap;
+    }
+    .pagination button {
+      padding: 6px 14px; border: 1px solid var(--border); background: var(--white); color: var(--text);
+      border-radius: 4px; cursor: pointer; font-size: 13px;
+    }
+    .pagination button:disabled { opacity: 0.5; cursor: default; }
+    .pagination button:hover:not(:disabled) { background: #eae9e4; }
+    .pagination #page-info { font-size: 14px; color: var(--text-light); }
+    .pagination select {
+      padding: 6px 8px; border: 1px solid var(--border); border-radius: 4px; font-size: 13px;
+    }
+
+    .modal-overlay {
+      position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5);
+      display: flex; justify-content: center; align-items: center; z-index: 200;
+    }
+    .modal-card {
+      background: var(--white); border-radius: 10px; padding: 24px; width: 100%; max-width: 520px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+    }
+    .modal-header {
+      display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;
+    }
+    .modal-header h3 { font-size: 20px; color: var(--text); }
+    .modal-close {
+      background: none; border: none; font-size: 24px; cursor: pointer; color: #999;
+    }
+    .modal-close:hover { color: var(--text); }
+    .modal-body { margin-bottom: 20px; }
+    .modal-footer { display: flex; justify-content: flex-end; gap: 8px; }
+
+    .form-group { margin-bottom: 16px; }
+    .form-group label { display: block; font-size: 13px; font-weight: bold; margin-bottom: 4px; color: var(--text); }
+    .form-group input, .form-group textarea, .form-group select {
+      width: 100%; padding: 8px 12px; border: 1px solid var(--border); border-radius: 4px;
+      font-size: 14px; outline: none; font-family: Arial, sans-serif;
+    }
+    .form-group input:focus, .form-group textarea:focus, .form-group select:focus { border-color: var(--primary); }
+    .form-group textarea { resize: vertical; }
+    .form-group select { background: var(--white); cursor: pointer; }
+    .form-group .checkbox-label {
+      display: flex; align-items: center; gap: 8px; font-weight: normal; cursor: pointer;
+    }
+    .form-group .checkbox-label input[type="checkbox"] {
+      width: auto; cursor: pointer;
+    }
+
+    .toast-container {
+      position: fixed; bottom: 20px; right: 20px; z-index: 300; display: flex; flex-direction: column; gap: 8px;
+    }
+    .toast {
+      padding: 12px 20px; border-radius: 6px; color: var(--white); font-size: 14px;
+      animation: toast-in 0.3s ease;
+    }
+    .toast-success { background: #16a34a; }
+    .toast-error { background: #dc2626; }
+    @keyframes toast-in { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+    .empty-state, .error-state { text-align: center; padding: 40px; font-size: 16px; color: var(--text-light); }
+    .error-state { color: #dc2626; }
+  </style>
+</head>
+<body>
+  <header class="admin-header">
+    <h1>Food Store Admin</h1>
+    <nav>
+      <span id="user-info"></span>
+      <button id="btn-logout" class="btn-logout" type="button">Cerrar Sesión</button>
+    </nav>
+  </header>
+
+  <div class="admin-layout">
+    <nav class="admin-sidebar">
+      <a href="/src/pages/admin/index.html">Dashboard</a>
+      <a href="/src/pages/admin/categories/index.html">Categorías</a>
+      <a href="/src/pages/admin/products/index.html" class="active">Productos</a>
+      <span class="sidebar-item-disabled">Pedidos</span>
+      <span class="sidebar-item-disabled">Usuarios</span>
+    </nav>
+
+    <main class="admin-content">
+      <h2>Productos</h2>
+
+      <div class="table-toolbar">
+        <input type="text" id="search-input" placeholder="Buscar productos...">
+        <select id="filter-categoria">
+          <option value="">Todas las categorías</option>
+        </select>
+        <button id="btn-new" class="btn btn-primary">+ Nuevo Producto</button>
+      </div>
+
+      <div id="loading-spinner" class="loading-spinner">
+        <div class="spinner"></div>
+      </div>
+
+      <div id="empty-state" class="empty-state hidden">No se encontraron productos</div>
+
+      <div id="error-state" class="error-state hidden"></div>
+
+      <table id="products-table" class="data-table hidden">
+        <thead>
+          <tr>
+            <th class="col-id">ID</th>
+            <th class="col-img">Imagen</th>
+            <th>Nombre</th>
+            <th class="col-precio">Precio</th>
+            <th class="col-stock">Stock</th>
+            <th>Categoría</th>
+            <th class="col-disponible">Disponible</th>
+            <th class="col-acciones">Acciones</th>
+          </tr>
+        </thead>
+        <tbody id="products-tbody"></tbody>
+      </table>
+
+      <div id="pagination" class="pagination hidden">
+        <button id="btn-prev" disabled>Anterior</button>
+        <span id="page-info"></span>
+        <select id="page-size">
+          <option value="10">10</option>
+          <option value="20">20</option>
+          <option value="50">50</option>
+        </select>
+        <button id="btn-next">Siguiente</button>
+      </div>
+    </main>
+  </div>
+
+  <div id="modal-overlay" class="modal-overlay hidden">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 id="modal-title">Nuevo Producto</h3>
+        <button id="modal-close" class="modal-close">&times;</button>
+      </div>
+      <form id="product-form" class="modal-body">
+        <div class="form-group">
+          <label for="input-nombre">Nombre *</label>
+          <input type="text" id="input-nombre" required maxlength="100">
+        </div>
+        <div class="form-group">
+          <label for="input-descripcion">Descripción</label>
+          <textarea id="input-descripcion" maxlength="500" rows="3"></textarea>
+        </div>
+        <div class="form-group">
+          <label for="input-precio">Precio *</label>
+          <input type="number" id="input-precio" step="0.01" min="0.01" required>
+        </div>
+        <div class="form-group">
+          <label for="input-stock">Stock *</label>
+          <input type="number" id="input-stock" min="0" required>
+        </div>
+        <div class="form-group">
+          <label for="input-categoria">Categoría *</label>
+          <select id="input-categoria" required>
+            <option value="">Seleccionar...</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="input-imagen">URL Imagen</label>
+          <input type="url" id="input-imagen" placeholder="https://...">
+        </div>
+        <div class="form-group">
+          <label class="checkbox-label">
+            <input type="checkbox" id="input-disponible" checked> Producto disponible
+          </label>
+        </div>
+      </form>
+      <div class="modal-footer">
+        <button id="btn-cancel" class="btn btn-secondary">Cancelar</button>
+        <button id="btn-save" class="btn btn-primary">Guardar</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast-container" class="toast-container"></div>
+
+  <script type="module" src="/src/main.ts"></script>
+  <script type="module" src="./products.ts"></script>
+</body>
+</html>
