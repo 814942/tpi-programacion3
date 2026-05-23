@@ -8,7 +8,7 @@
     :root {
       --primary: #ff4500;
       --primary-hover: #e03e00;
-      --white: #f5f5f5
+      --white: #f5f5f5;;
       --text: #333333;
       --text-light: #666666;
       --bg: #faf9f5;
@@ -147,8 +147,14 @@
       display: flex;
       align-items: center;
       justify-content: center;
+      flex-direction: column;
       gap: 12px;
       padding: 16px 0;
+    }
+
+    .productos-paginacion{
+      color: var(--text-light);
+      font-size: 16px;
     }
 
     .btn-pag {
@@ -237,6 +243,9 @@
       border-radius: 8px;
       box-shadow: 0 2px 10px rgba(0,0,0,0.1);
       text-align: center;
+
+      position: relative;
+      padding-bottom: 60px; 
     }
     
     .producto img {
@@ -271,6 +280,11 @@
       border: none;
       border-radius: 4px;
       cursor: pointer;
+
+      position: absolute;
+      bottom: 15px; /* Ajusta según el padding del contenedor */
+      left: 15px;   /* Ajusta según el padding del contenedor */
+      right: 15px;  /* Si quieres que ocupe todo el ancho */
     }
     
     .btn-agregar:hover {
@@ -398,7 +412,7 @@
       </form>
 
       <div class="productos-header">
-        <span id="productos-contador">Cargando productos...</span>
+        
         <div class="sort-control">
           <label for="sort-select">Ordenar:</label>
           <select id="sort-select">
@@ -420,9 +434,12 @@
       <section id="contenedor-productos"></section>
 
       <div class="paginacion" id="paginacion">
-        <button id="btn-anterior" class="btn-pag" disabled>← Anterior</button>
-        <span id="pagina-actual">Página 1</span>
-        <button id="btn-siguiente" class="btn-pag" disabled>Siguiente →</button>
+        <div>
+          <button id="btn-anterior" class="btn-pag" disabled>← Anterior</button>
+          <span id="pagina-actual">Página 1</span>
+          <button id="btn-siguiente" class="btn-pag" disabled>Siguiente →</button>
+        </div>
+        <span class="productos-paginacion" id="productos-contador">Cargando productos...</span>
       </div>
     </div>
   </main>
