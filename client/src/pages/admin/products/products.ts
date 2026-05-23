@@ -300,8 +300,8 @@ async function handleSave(): Promise<void> {
     return;
   }
   const precio = parseFloat(inputPrecio.value);
-  if (isNaN(precio) || precio <= 0) {
-    showToast('El precio debe ser mayor a 0', 'error');
+  if (isNaN(precio) || precio <= 0.01) {
+    showToast('El precio debe ser mayor a 0.01', 'error');
     return;
   }
   const stock = parseInt(inputStock.value, 10);
@@ -365,8 +365,11 @@ function confirmDelete(id: number, btn: HTMLButtonElement): void {
   btnNo.className = 'btn btn-secondary btn-sm';
   btnNo.textContent = 'No';
   btnNo.addEventListener('click', () => {
-    newBtn.textContent = 'Eliminar';
-    newBtn.style.background = '';
+    const restoredBtn = newBtn.cloneNode(true) as HTMLButtonElement;
+    restoredBtn.textContent = 'Eliminar';
+    restoredBtn.style.background = '';
+    restoredBtn.addEventListener('click', () => confirmDelete(id, restoredBtn));
+    newBtn.parentNode?.replaceChild(restoredBtn, newBtn);
     if (btnNo.parentNode) btnNo.parentNode.removeChild(btnNo);
   });
   td.insertBefore(btnNo, newBtn.nextSibling);
