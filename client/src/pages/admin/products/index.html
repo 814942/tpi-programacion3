@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Categorías - Food Store Admin</title>
+  <title>Productos - Food Store Admin</title>
   <style>
     :root {
       --primary: #ff4500;
@@ -70,12 +70,18 @@
 
     .table-toolbar {
       display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; gap: 12px;
+      flex-wrap: wrap;
     }
     .table-toolbar input[type="text"] {
-      padding: 8px 12px; border: 1px solid var(--border); border-radius: 4px; font-size: 14px; flex: 1; max-width: 320px;
+      padding: 8px 12px; border: 1px solid var(--border); border-radius: 4px; font-size: 14px; flex: 1; max-width: 240px;
       outline: none;
     }
     .table-toolbar input[type="text"]:focus { border-color: var(--primary); }
+    .table-toolbar select {
+      padding: 8px 12px; border: 1px solid var(--border); border-radius: 4px; font-size: 14px;
+      outline: none; background: var(--white); min-width: 180px;
+    }
+    .table-toolbar select:focus { border-color: var(--primary); }
 
     .btn {
       padding: 8px 16px; border: none; border-radius: 4px; cursor: pointer; font-size: 13px; font-weight: bold;
@@ -94,7 +100,7 @@
       width: 100%; border-collapse: collapse; background: var(--white); border-radius: 8px; overflow: hidden;
       box-shadow: 0 2px 8px rgba(0,0,0,0.08);
     }
-    .data-table th, .data-table td { padding: 12px 16px; text-align: left; font-size: 14px; }
+    .data-table th, .data-table td { text-align: center; padding: 12px 16px; font-size: 14px; }
     .data-table thead { background: #333; color: var(--white); }
     .data-table thead th { font-weight: 600; font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px; }
     .data-table tbody tr { border-bottom: 1px solid var(--border); }
@@ -102,6 +108,19 @@
     .data-table tbody tr:hover { background: #eae9e4; }
     .data-table td img { width: 50px; height: 50px; object-fit: cover; border-radius: 4px; }
     .data-table .actions { display: flex; gap: 6px; align-items: center; justify-content: center; flex-direction: column; }
+    .data-table .col-id { width: 60px; }
+    .data-table .col-img { width: 70px; }
+    .data-table .col-precio { width: 100px; }
+    .data-table .col-stock { width: 80px; }
+    .data-table .col-disponible { width: 100px; }
+    .data-table .col-acciones { width: 140px; }
+
+    .badge {
+      display: inline-block; padding: 3px 10px; border-radius: 12px;
+      font-size: 12px; font-weight: bold;
+    }
+    .badge-success { background: #16a34a; color: #fff; }
+    .badge-danger { background: #dc2626; color: #fff; }
 
     .pagination {
       display: flex; align-items: center; gap: 12px; margin-top: 16px;
@@ -123,7 +142,7 @@
       display: flex; justify-content: center; align-items: center; z-index: 200;
     }
     .modal-card {
-      background: var(--white); border-radius: 10px; padding: 24px; width: 100%; max-width: 500px;
+      background: var(--white); border-radius: 10px; padding: 24px; width: 100%; max-width: 520px;
       box-shadow: 0 4px 20px rgba(0,0,0,0.2);
     }
     .modal-header {
@@ -139,12 +158,19 @@
 
     .form-group { margin-bottom: 16px; }
     .form-group label { display: block; font-size: 13px; font-weight: bold; margin-bottom: 4px; color: var(--text); }
-    .form-group input, .form-group textarea {
+    .form-group input, .form-group textarea, .form-group select {
       width: 100%; padding: 8px 12px; border: 1px solid var(--border); border-radius: 4px;
       font-size: 14px; outline: none; font-family: Arial, sans-serif;
     }
-    .form-group input:focus, .form-group textarea:focus { border-color: var(--primary); }
+    .form-group input:focus, .form-group textarea:focus, .form-group select:focus { border-color: var(--primary); }
     .form-group textarea { resize: vertical; }
+    .form-group select { background: var(--white); cursor: pointer; }
+    .form-group .checkbox-label {
+      display: flex; align-items: center; gap: 8px; font-weight: normal; cursor: pointer;
+    }
+    .form-group .checkbox-label input[type="checkbox"] {
+      width: auto; cursor: pointer;
+    }
 
     .toast-container {
       position: fixed; bottom: 20px; right: 20px; z-index: 300; display: flex; flex-direction: column; gap: 8px;
@@ -173,39 +199,45 @@
   <div class="admin-layout">
     <nav class="admin-sidebar">
       <a href="/src/pages/admin/index.html">Dashboard</a>
-      <a href="/src/pages/admin/categories/index.html" class="active">Categorías</a>
-      <span class="sidebar-item-disabled">Productos</span>
+      <a href="/src/pages/admin/categories/index.html">Categorías</a>
+      <a href="/src/pages/admin/products/index.html" class="active">Productos</a>
       <span class="sidebar-item-disabled">Pedidos</span>
       <span class="sidebar-item-disabled">Usuarios</span>
     </nav>
 
     <main class="admin-content">
-      <h2>Categorías</h2>
+      <h2>Productos</h2>
 
       <div class="table-toolbar">
-        <input type="text" id="search-input" placeholder="Buscar categorías...">
-        <button id="btn-new" class="btn btn-primary">+ Nueva Categoría</button>
+        <input type="text" id="search-input" placeholder="Buscar productos...">
+        <select id="filter-categoria">
+          <option value="">Todas las categorías</option>
+        </select>
+        <button id="btn-new" class="btn btn-primary">+ Nuevo Producto</button>
       </div>
 
       <div id="loading-spinner" class="loading-spinner">
         <div class="spinner"></div>
       </div>
 
-      <div id="empty-state" class="empty-state hidden">No se encontraron categorías</div>
+      <div id="empty-state" class="empty-state hidden">No se encontraron productos</div>
 
       <div id="error-state" class="error-state hidden"></div>
 
-      <table id="categories-table" class="data-table hidden">
+      <table id="products-table" class="data-table hidden">
         <thead>
           <tr>
-            <th>ID</th>
+            <th class="col-id">ID</th>
+            <th class="col-img">Imagen</th>
             <th>Nombre</th>
-            <th>Descripción</th>
-            <th>Imagen</th>
-            <th>Acciones</th>
+            <th class="col-precio">Precio</th>
+            <th class="col-stock">Stock</th>
+            <th>Categoría</th>
+            <th class="col-disponible">Disponible</th>
+            <th class="col-acciones">Acciones</th>
           </tr>
         </thead>
-        <tbody id="categories-tbody"></tbody>
+        <tbody id="products-tbody"></tbody>
       </table>
 
       <div id="pagination" class="pagination hidden">
@@ -224,10 +256,10 @@
   <div id="modal-overlay" class="modal-overlay hidden">
     <div class="modal-card">
       <div class="modal-header">
-        <h3 id="modal-title">Nueva Categoría</h3>
+        <h3 id="modal-title">Nuevo Producto</h3>
         <button id="modal-close" class="modal-close">&times;</button>
       </div>
-      <form id="category-form" class="modal-body">
+      <form id="product-form" class="modal-body">
         <div class="form-group">
           <label for="input-nombre">Nombre *</label>
           <input type="text" id="input-nombre" required maxlength="100">
@@ -237,8 +269,27 @@
           <textarea id="input-descripcion" maxlength="500" rows="3"></textarea>
         </div>
         <div class="form-group">
-          <label for="input-imagen">URL Imagen *</label>
-          <input type="url" id="input-imagen" required placeholder="https://...">
+          <label for="input-precio">Precio *</label>
+          <input type="number" id="input-precio" step="0.01" min="0.02" required>
+        </div>
+        <div class="form-group">
+          <label for="input-stock">Stock *</label>
+          <input type="number" id="input-stock" min="0" required>
+        </div>
+        <div class="form-group">
+          <label for="input-categoria">Categoría *</label>
+          <select id="input-categoria" required>
+            <option value="">Seleccionar...</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="input-imagen">URL Imagen</label>
+          <input type="url" id="input-imagen" placeholder="https://...">
+        </div>
+        <div class="form-group">
+          <label class="checkbox-label">
+            <input type="checkbox" id="input-disponible" checked> Producto disponible
+          </label>
         </div>
       </form>
       <div class="modal-footer">
@@ -251,6 +302,6 @@
   <div id="toast-container" class="toast-container"></div>
 
   <script type="module" src="/src/main.ts"></script>
-  <script type="module" src="./categories.ts"></script>
+  <script type="module" src="./products.ts"></script>
 </body>
 </html>
