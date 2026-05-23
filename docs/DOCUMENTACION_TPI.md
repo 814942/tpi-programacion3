@@ -437,7 +437,7 @@ Base path: `/api/v1`
 | Item | Estado | Riesgo |
 |------|--------|--------|
 | Documentación PDF | ✅ Completada | Bajo |
-| Video demostración | ❌ Pendiente | **Alto** (requerido) |
+| Video demostración | ✅ Completada | Bajo |
 | Sorting en UI | ✅ Agregado | Bajo |
 | Tests frontend | ✅ 14 tests | Bajo |
 
@@ -450,27 +450,6 @@ Base path: `/api/v1`
 | Endpoints | ~20 | — |
 | Páginas | — | 13 |
 | Librerías externas | Spring Boot + 4 | **0** |
-
----
-
-## 12. Capturas de Pantalla
-
-*(Insertar capturas de pantalla del sistema funcionando)*
-
-### Cliente
-1. Login/Registro
-2. Catálogo con categorías y paginación
-3. Detalle de producto con selector de cantidad
-4. Carrito con validación de productos
-5. Checkout modal
-6. Historial de pedidos
-
-### Admin
-7. Dashboard con estadísticas
-8. CRUD Categorías (tabla + modal)
-9. CRUD Productos (tabla con filtro + modal)
-10. Gestión de Pedidos (detalle + cambio de estado)
-11. Gestión de Usuarios
 
 ---
 
