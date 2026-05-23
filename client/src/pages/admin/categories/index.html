@@ -44,6 +44,12 @@
       padding: 14px 24px; color: #999; text-decoration: none;
       font-size: 14px; transition: all 0.15s; border-left: 3px solid transparent;
     }
+    .admin-sidebar .sidebar-item-disabled {
+      display: flex; align-items: center; gap: 10px;
+      padding: 14px 24px; color: #666;
+      font-size: 14px; border-left: 3px solid transparent;
+      cursor: default;
+    }
     .admin-sidebar a:hover { background: #1a1a1a; color: var(--white); }
     .admin-sidebar a.active { background: #1a1a1a; color: var(--white); font-weight: bold; border-left-color: var(--primary); }
 
@@ -168,9 +174,9 @@
     <nav class="admin-sidebar">
       <a href="/src/pages/admin/index.html">Dashboard</a>
       <a href="/src/pages/admin/categories/index.html" class="active">Categorías</a>
-      <a>Productos</a>
-      <a>Pedidos</a>
-      <a>Usuarios</a>
+      <span class="sidebar-item-disabled">Productos</span>
+      <span class="sidebar-item-disabled">Pedidos</span>
+      <span class="sidebar-item-disabled">Usuarios</span>
     </nav>
 
     <main class="admin-content">

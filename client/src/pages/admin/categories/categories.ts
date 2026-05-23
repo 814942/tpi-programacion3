@@ -106,13 +106,18 @@ function renderTable(categorias: CategoriaResponse[]): void {
     tdDesc.textContent = cat.descripcion || '';
 
     const tdImg = document.createElement('td');
-    const img = document.createElement('img');
-    img.src = cat.imagen || '';
-    img.alt = cat.nombre;
-    img.width = 50;
-    img.height = 50;
-    img.style.cssText = 'object-fit: cover; border-radius: 4px;';
-    tdImg.appendChild(img);
+    if (cat.imagen && cat.imagen.trim()) {
+      const img = document.createElement('img');
+      img.src = cat.imagen;
+      img.alt = cat.nombre;
+      img.width = 50;
+      img.height = 50;
+      img.loading = 'lazy';
+      img.style.cssText = 'object-fit: cover; border-radius: 4px;';
+      tdImg.appendChild(img);
+    } else {
+      tdImg.textContent = '-';
+    }
 
     const tdAcciones = document.createElement('td');
     tdAcciones.className = 'actions';
@@ -123,7 +128,7 @@ function renderTable(categorias: CategoriaResponse[]): void {
     btnEdit.addEventListener('click', () => openEditModal(cat));
 
     const btnDelete = document.createElement('button');
-    btnDelete.className = 'btn btn-delete btn-sm';
+    btnDelete.className = 'btn btn-danger btn-sm';
     btnDelete.textContent = 'Eliminar';
     btnDelete.addEventListener('click', () => confirmDelete(cat.id, btnDelete));
 
@@ -195,11 +200,12 @@ function closeModal(): void {
 }
 
 async function handleSave(): Promise<void> {
+  const form = document.getElementById('category-form') as HTMLFormElement;
   const inputNombre = document.getElementById('input-nombre') as HTMLInputElement;
   const inputDesc = document.getElementById('input-descripcion') as HTMLTextAreaElement;
   const inputImg = document.getElementById('input-imagen') as HTMLInputElement;
   const btnSave = document.getElementById('btn-save') as HTMLButtonElement;
-  if (!inputNombre || !inputDesc || !inputImg || !btnSave) return;
+  if (!form || !inputNombre || !inputDesc || !inputImg || !btnSave) return;
 
   if (!inputNombre.value.trim()) {
     showToast('El nombre es obligatorio', 'error');
@@ -207,6 +213,9 @@ async function handleSave(): Promise<void> {
   }
   if (!inputImg.value.trim()) {
     showToast('La URL de la imagen es obligatoria', 'error');
+    return;
+  }
+  if (!form.reportValidity()) {
     return;
   }
 
@@ -246,26 +255,27 @@ function confirmDelete(id: number, btn: HTMLButtonElement): void {
   btn.textContent = '¿Seguro?';
   btn.style.background = '#b91c1c';
 
+  const newBtn = btn.cloneNode(true) as HTMLButtonElement;
+  btn.parentNode?.replaceChild(newBtn, btn);
+  const rowsOnCurrentPage = document.getElementById('categories-tbody')?.children.length || 0;
+
   const btnNo = document.createElement('button');
   btnNo.className = 'btn btn-secondary btn-sm';
   btnNo.textContent = 'No';
   btnNo.addEventListener('click', () => {
-    btn.textContent = 'Eliminar';
-    btn.style.background = '';
+    newBtn.textContent = 'Eliminar';
+    newBtn.style.background = '';
     if (btnNo.parentNode) btnNo.parentNode.removeChild(btnNo);
   });
-  td.insertBefore(btnNo, btn.nextSibling);
-
-  const newBtn = btn.cloneNode(true) as HTMLButtonElement;
-  btn.parentNode?.replaceChild(newBtn, btn);
+  td.insertBefore(btnNo, newBtn.nextSibling);
 
   newBtn.addEventListener('click', async () => {
     try {
-      if (currentPage > 0 && totalItems <= 1) {
-        currentPage--;
-      }
       await api.delete(`/categorias/${id}`);
       showToast('Categoría eliminada correctamente', 'success');
+      if (currentPage > 0 && rowsOnCurrentPage <= 1) {
+        currentPage--;
+      }
       if (btnNo.parentNode) btnNo.parentNode.removeChild(btnNo);
       await loadCategories(currentPage, PAGE_SIZE, searchTerm || undefined);
     } catch (err: unknown) {
