@@ -1,17 +1,26 @@
 # Food Store - TPI Programación III UTN
 
-> Sistema de delivery de viandas saludables — Frontend + Backend
+> Sistema de delivery de comidas saludables — Full Stack
 
-## Stack
+| Alumno | Pablo Garay |
+|--------|-------------|
+| **Institución** | Universidad Tecnológica Nacional |
+| **Carrera** | Tecnicatura Universitaria en Programación |
+| **Materia** | Programación III |
+
+---
+
+## Stack Tecnológico
 
 | Capa | Tecnología |
 |------|------------|
-| **Frontend** | TypeScript 5, Vite 5, HTML5, CSS3 |
-| **Backend** | Java 17, Spring Boot 3.x, Gradle |
-| **Base de datos** | PostgreSQL 15+ |
-| **Autenticación** | JWT Stateless (jjwt) |
+| **Frontend** | TypeScript 5 (strict), Vite 5, HTML5, CSS3 — **0 librerías externas** |
+| **Backend** | Java 17, Spring Boot 3.4, Gradle |
+| **Base de datos** | PostgreSQL 15+ / H2 (test) |
+| **Autenticación** | JWT Stateless (jjwt 0.12.5) + BCrypt |
 | **API** | RESTful, documentada con OpenAPI / Swagger UI |
-| **Build** | Gradle (backend) + NPM (frontend) |
+| **Testing Backend** | JUnit 5 + Mockito + MockMvc (21 tests) |
+| **Testing Frontend** | Vitest + jsdom (14 tests) |
 
 ---
 
@@ -19,460 +28,274 @@
 
 ```
 tpi/
-├── client/               # Frontend SPA (TypeScript + Vite)
-│   ├── AGENT.md          # Convenciones de código frontend
-│   ├── index.html        # Entry point (Vite)
-│   ├── package.json      # Dependencias frontend
-│   ├── tsconfig.json     # TypeScript strict
-│   ├── vite.config.ts    # Config Vite
-│   └── src/
-│       ├── main.ts       # Punto de entrada + route guard
-│       ├── types/        # Interfaces TypeScript
-│       ├── utils/        # Utilidades (auth, router, API client)
-│       └── pages/        # Páginas de la aplicación
-│           ├── auth/     # Login, registro, forbidden
-│           ├── store/    # Home, detalle producto, carrito
-│           ├── client/   # Área del cliente (pedidos)
-│           └── admin/    # Panel de administración
+├── client/                          # Frontend SPA (TypeScript + Vite)
+│   ├── AGENT.md                     # Convenciones de código frontend
+│   ├── index.html                   # Landing page
+│   ├── src/
+│   │   ├── main.ts                  # Entry point + route guard
+│   │   ├── style.css                # Estilos globales
+│   │   ├── types/                   # Interfaces TypeScript
+│   │   ├── utils/                   # Utilidades (auth, api, router, header)
+│   │   └── pages/
+│   │       ├── auth/                # Login, registro, forbidden
+│   │       ├── store/               # Detalle de producto
+│   │       ├── client/              # Catálogo, carrito, checkout, pedidos
+│   │       └── admin/               # Dashboard, CRUDs, gestión
+│   ├── package.json
+│   ├── tsconfig.json
+│   └── vite.config.ts
 │
-├── back/                 # Backend API REST (Spring Boot)
-│   ├── AGENT.md          # Convenciones de código backend
-│   ├── build.gradle      # Dependencias backend
+├── back/                            # Backend API REST (Spring Boot)
+│   ├── AGENT.md                     # Convenciones de código backend
+│   ├── build.gradle
 │   └── src/main/java/com/foodstore/
-│       ├── model/        # Entidades JPA
-│       ├── repository/   # Repositorios
-│       ├── service/      # Lógica de negocio
-│       ├── controller/   # REST Controllers
-│       ├── dto/          # Data Transfer Objects
-│       ├── security/     # JWT + Security Config
-│       ├── exception/    # Manejo de excepciones
-│       └── config/       # Configuraciones (CORS, seed data)
+│       ├── model/                   # Entidades JPA (Base, Producto, Pedido, etc.)
+│       ├── repository/              # Repositorios + BaseRepository
+│       ├── service/                 # Lógica de negocio
+│       ├── controller/              # REST Controllers
+│       ├── dto/                     # 21 DTOs (request/response)
+│       ├── security/                # JWT + Security Config
+│       ├── exception/               # GlobalExceptionHandler
+│       └── config/                  # OpenAPI, CORS, seed data
 │
-├── docs/                 # Documentación del proyecto
-│   ├── Consigna_TPI_Prog-3.md   # Consigna completa
-│   ├── prd/              # PRDs por feature
-│   │   ├── back-infrastructure.md
-│   │   ├── back-auth-jwt.md
-│   │   ├── back-categories.md
-│   │   ├── back-users.md
-│   │   ├── back-products.md
-│   │   ├── back-orders.md
-│   │   ├── front-sync-audit.md
-│   │   ├── front-auth.md
-│   │   ├── front-store.md
-│   │   ├── front-client-orders.md
-│   │   └── front-admin.md
-│   └── Trabajo\ Integrador\ Javascript.md
-│   └── Trabajo\ Integrador\ typescript.md
+├── docs/
+│   ├── Consigna_TPI_Prog-3.md       # Consigna completa (29 HUs)
+│   ├── DOCUMENTACION_TPI.md         # Documentación técnica completa
+│   └── prd/                         # PRDs por feature
+│       ├── front-auth.md
+│       ├── front-store.md
+│       ├── front-cart.md
+│       ├── front-header.md
+│       ├── front-client-orders.md
+│       └── front-admin.md
 │
+├── .github/workflows/               # CI: backend + frontend
 ├── .gitignore
 └── README.md
 ```
 
 ---
 
-## Funcionalidades
+## Funcionalidades Implementadas
 
 ### Cliente (USUARIO)
-| Funcionalidad | Estado |
-|---------------|--------|
-| Registro de usuario | ⏳ Migrar a API real |
-| Inicio de sesión con JWT | ⏳ Migrar a API real |
-| Catálogo de productos | ✅ Parcial (mockeado) |
-| Filtro por categorías | ✅ Parcial (mockeado) |
-| Búsqueda de productos | ✅ Parcial (mockeado) |
-| Detalle de producto | ❌ Pendiente |
-| Carrito de compras | ⏳ Parcial (en memoria, sin checkout) |
-| Checkout / Confirmar pedido | ❌ Pendiente |
-| Historial de pedidos | ❌ Pendiente |
-| Cancelar pedido | ❌ Pendiente |
+
+| Funcionalidad | Estado | Detalle |
+|---------------|--------|---------|
+| Registro de usuario | ✅ | Con nombre, apellido, email, celular, password validado |
+| Inicio de sesión con JWT | ✅ | JWT real con expiración, almacenado en localStorage |
+| Catálogo de productos | ✅ | Desde API real con paginación, loading y error states |
+| Filtro por categorías | ✅ | Sidebar con categorías desde API + highlight activo |
+| Búsqueda de productos | ✅ | Con botón X para limpiar, search + categoría combinados |
+| Ordenamiento | ✅ | Por nombre (A-Z, Z-A) y precio (menor, mayor) |
+| Detalle de producto | ✅ | Selector cantidad con límite de stock, badge disponibilidad |
+| Carrito de compras | ✅ | 2 columnas, persistencia localStorage, controles +/- |
+| Validación de productos | ✅ | Warnings amarillos si no existe/no disponible/sin stock |
+| Checkout / Confirmar pedido | ✅ | Modal con forma de pago + teléfono, re-validación |
+| Resultado del pedido | ✅ | Verde éxito / Rojo error |
+| Historial de pedidos | ✅ | Agrupado por fecha, tipo Meli |
+| Cancelar pedido | ✅ | Solo PENDIENTE, confirmación inline |
 
 ### Administrador (ADMIN)
+
 | Funcionalidad | Estado |
 |---------------|--------|
-| Dashboard con estadísticas | ❌ Pendiente |
-| CRUD Categorías | ❌ Pendiente |
-| CRUD Productos | ❌ Pendiente |
-| Gestión de Pedidos | ❌ Pendiente |
-| Gestión de Usuarios | ❌ Pendiente |
+| Dashboard con estadísticas | ✅ (sidebar #000, endpoint /admin/stats) |
+| CRUD Categorías | ✅ (tabla paginada, modal, búsqueda) |
+| CRUD Productos | ✅ (filtro por categoría, modal con 7 campos) |
+| Gestión de Pedidos | ✅ (filtro estado, modal detalle, cambio estado) |
+| Gestión de Usuarios | ✅ (búsqueda, filtro rol, editar, eliminar) |
 
 ### Backend API
+
 | Funcionalidad | Estado |
 |---------------|--------|
-| Infraestructura (Base, repos, exceptions) | ❌ Pendiente |
-| Autenticación JWT | ❌ Pendiente |
-| CRUD Categorías | ❌ Pendiente |
-| CRUD Usuarios | ❌ Pendiente |
-| CRUD Productos | ❌ Pendiente |
-| Pedidos con snapshot y stock | ❌ Pendiente |
+| Infraestructura (Base, repos, exceptions) | ✅ |
+| Autenticación JWT + BCrypt | ✅ |
+| CRUD Categorías con soft delete | ✅ |
+| CRUD Usuarios | ✅ |
+| CRUD Productos con categoría | ✅ |
+| Pedidos transaccionales con snapshot | ✅ |
+| Validación de productos | ✅ (POST /productos/validate) |
+| Estadísticas admin | ✅ (GET /admin/stats) |
+| OpenAPI / Swagger | ✅ |
+| 21 tests | ✅ |
 
 ---
 
-## Requisitos
+## Cobertura vs Consigna (29 HUs)
 
-### Frontend
-- Node.js 18+
-- NPM 9+
+| Épica | HUs | Estado |
+|-------|-----|--------|
+| EP-01: Categorías | HU-001 a 005 | ✅ CRUD con soft delete |
+| EP-02: Usuarios | HU-006 a 010 | ✅ Registro + CRUD admin |
+| EP-03: Productos | HU-011 a 016 | ✅ CRUD con stock y categoría |
+| EP-04: Pedidos | HU-017 a 022 | ✅ Transaccional + estados |
+| EP-05: Infraestructura | HU-023 a 029 | ✅ Base, JWT, OpenAPI, CORS |
 
-### Backend
-- Java 17+ (JDK 17 o 21)
-- PostgreSQL 15+
-- Gradle (usar `./gradlew` o `gradlew.bat` incluido en el proyecto)
+Ver `docs/Consigna_TPI_Prog-3.md` para detalle de cada HU.
 
 ---
 
 ## Instalación y Ejecución
 
-### Linux (Ubuntu/Debian)
+### Requisitos
 
-#### 1. Instalar Java
+- **Frontend:** Node.js 18+ (testeado con v24)
+- **Backend:** Java 17+ (JDK 17 o 21)
+- **Base de datos:** PostgreSQL 15+ (o usar H2 en memoria)
 
-```bash
-# Instalar OpenJDK 17
-sudo apt update
-sudo apt install -y openjdk-17-jdk
-
-# Verificar
-java -version
-# → openjdk version "17.x.x"
-```
-
-#### 2. Instalar PostgreSQL
+### 1. Base de datos
 
 ```bash
-sudo apt install -y postgresql postgresql-contrib
-sudo systemctl start postgresql
-sudo systemctl enable postgresql   # arranque automático al iniciar
-sudo systemctl status postgresql   # verificar que está corriendo
-```
-
-#### 3. Crear la base de datos
-
-```bash
+# PostgreSQL (opcional — se puede usar H2 sin instalación)
 sudo -u postgres psql -c "CREATE DATABASE foodstore;"
 sudo -u postgres psql -c "ALTER USER postgres PASSWORD 'postgres';"
-sudo -u postgres psql -c "\l" | grep foodstore   # verificar
 ```
 
-#### 4. Compilar y ejecutar
+### 2. Backend
 
 ```bash
 cd back
 
-# Build (descarga dependencias + compila + tests)
+# Build + tests
 ./gradlew build
-
-# Build sin tests (más rápido)
-./gradlew build -x test
-
-# Solo tests
-./gradlew test
 
 # Iniciar servidor (localhost:8080)
 ./gradlew bootRun
-```
 
----
-
-### Windows (PowerShell / Git Bash / CMD)
-
-#### 1. Instalar Java
-
-- Bajá el instalador desde [Adoptium Temurin 17](https://adoptium.net/temurin/releases/?version=17) (archivo `.msi`)
-- Ejecutalo, siguiente, siguiente
-- **Verificar** desde **PowerShell** o **CMD**:
-  ```cmd
-  java -version
-  ```
-  → tiene que mostrar `openjdk version "17.x.x"`
-
-  También funciona con **Java 21** (el proyecto compila a bytecode 17):
-  ```cmd
-  java -version
-  # → openjdk version "21.x.x"  ✅ compatible
-  ```
-
-> 💡 Si tenés varias versiones de Java, creá la variable de entorno `JAVA_HOME` apuntando a la instalación de Java 17 o 21.
-
-#### 2. Instalar PostgreSQL
-
-- Bajá el installer de [EnterpriseDB PostgreSQL](https://www.enterprisedb.com/downloads/postgres-postgresql-downloads)
-- Ejecutalo, siguiente, siguiente
-- Cuando pregunte:
-  - **Password para `postgres`**: poné `postgres`
-  - **Puerto**: dejá `5432`
-- Al final, **Stack Builder** preguntará si querés instalar extras — podés saltarlo
-
-#### 3. Crear la base de datos (desde PowerShell/CMD)
-
-```powershell
-# Opción A — desde terminal
-"C:\Program Files\PostgreSQL\17\bin\psql.exe" -U postgres -c "CREATE DATABASE foodstore;"
-
-# Te va a pedir la contraseña que pusiste durante la instalación
-```
-
-**Opción B — desde DBeaver** (recomendado si ya lo tenés):
-1. Abrí DBeaver
-2. Nueva Conexión → PostgreSQL
-3. Host: `localhost`, Puerto: `5432`
-4. Usuario: `postgres`, Password: la que pusiste
-5. Test Connection → Finish
-6. Click derecho en la conexión → Create New Database → nombre: `foodstore`
-
-#### 4. Compilar y ejecutar
-
-Desde **PowerShell** o **CMD**:
-
-```powershell
-cd tpi\back
-
-# Build completo (descarga dependencias + compila + tests)
-.\gradlew.bat build
-
-# Build sin tests
-.\gradlew.bat build -x test
-
-# Solo tests
-.\gradlew.bat test
-
-# Iniciar servidor (localhost:8080)
-.\gradlew.bat bootRun
-```
-
-Desde **Git Bash** (MINGW64):
-
-```bash
-cd tpi/back
-
-# Usar ./gradlew en vez de .\gradlew.bat
-./gradlew build
-./gradlew bootRun
-```
-
-> Si tenés **Git Bash**, usá `./gradlew` (el script para Unix). Si estás en **PowerShell** o **CMD**, usá `.\gradlew.bat`.
-
-#### 5. VS Code Extensions recomendadas
-
-| Extensión | ID | Para qué |
-|-----------|-----|----------|
-| Extension Pack for Java | `vscjava.vscode-java-pack` | Lenguaje, debug, test |
-| Spring Boot Extension Pack | `vmware.vscode-boot-dev-pack` | Spring Boot, properties, snippets |
-| Gradle for Java | `vscjava.vscode-gradle` | Tareas de Gradle desde VS Code |
-| Lombok Annotations | `vscjava.vscode-lombok` | Soporte `@Data`, `@Builder` |
-
-Instalálas desde `Ctrl+Shift+X` buscando por ID.
-
----
-
-### Para ambas plataformas
-
-#### Verificar que funciona
-
-```bash
-curl http://localhost:8080/api-docs
-# → JSON con la especificación OpenAPI
-
-# O abrí en el navegador:
-# http://localhost:8080/swagger-ui/index.html
-```
-
-> Al iniciar por primera vez, se crea automáticamente un usuario admin (seed data):
-> - **Email**: `admin@admin.com`
-> - **Password**: `123456`
-
-#### (Alternativa) Ejecutar con H2 en memoria — sin PostgreSQL
-
-Si no tenés PostgreSQL instalado o solo querés probar rápido:
-
-```bash
-# Linux / Git Bash
+# Con H2 en memoria (sin PostgreSQL)
 ./gradlew bootRun --args='--spring.profiles.active=test'
-
-# PowerShell / CMD
-.\gradlew.bat bootRun --args='--spring.profiles.active=test'
 ```
 
-Esto usa H2 (base de datos en memoria) en vez de PostgreSQL. **Los datos se pierden al apagar.** Ideal para desarrollo rápido o demos.
+### 3. Frontend
 
-### Credenciales y Configuración Local
-
-Spring Boot maneja credenciales sensibles con un sistema de perfiles y resolución por orden de precedencia:
-
-1. **application.properties** — valores default para desarrollo (en git)
-2. **application-local.properties** — credenciales reales de tu máquina (**NO subir a git**)
-3. **Variables de entorno** — `DB_PASSWORD`, `JWT_SECRET`, etc.
-4. **Argumentos de línea de comandos** — `--spring.datasource.password=xxx`
-
-#### Para desarrollo local (recomendado)
-
-Creá `back/src/main/resources/application-local.properties`:
-
-```properties
-# No subir a git (ya está en .gitignore)
-spring.datasource.password=tuPasswordPostgres
-```
-
-Y levantás con:
-
-```bash
-./gradlew bootRun --args='--spring.profiles.active=local'
-```
-
-#### Vía variable de entorno (alternativa)
-
-```bash
-# Linux / Git Bash
-export DB_PASSWORD=miPassword123
-./gradlew bootRun
-
-# Windows PowerShell
-$env:DB_PASSWORD="miPassword123"
-.\gradlew.bat bootRun
-```
-
-#### Variables disponibles
-
-| Variable | Default | Descripción |
-|----------|---------|-------------|
-| `DB_URL` | `jdbc:postgresql://localhost:5433/foodstore` | URL de conexión a PostgreSQL |
-| `DB_USERNAME` | `postgres` | Usuario de la base de datos |
-| `DB_PASSWORD` | `postgres` | Contraseña de la base de datos |
-| `JWT_SECRET` | *default hardcodeado* | Clave secreta para firmar tokens JWT |
-| `JWT_EXPIRATION` | `86400000` (24h) | Expiración del token en milisegundos |
-| `SERVER_PORT` | `8080` | Puerto del servidor |
-
-### Troubleshooting
-
-| Error | Causa | Solución |
-|-------|-------|----------|
-| `Error: no se ha encontrado o cargado la clase principal org.gradle.wrapper.GradleWrapperMain` | Falta `gradle/wrapper/gradle-wrapper.jar` | `git pull` para traer el archivo o descargalo manualmente |
-| `JAVA_HOME is not set` | Java no está instalado o no está en el PATH | Instalar JDK 17+ y verificar con `java -version` |
-| `Failed to load ApplicationContext` en tests | Tests intentan conectar a PostgreSQL | El test ya usa `@ActiveProfiles("test")` con H2. Si sigue fallando, revisá `application-test.properties` |
-| `Port 8080 already in use` | Otro proceso usando el puerto | Cambiá el puerto con `--server.port=8081` o matá el proceso anterior |
-
-#### Si `./gradlew build` falla con el wrapper
-
-```bash
-# Asegurate de tener la última versión del repo
-git pull
-
-# Si el gradle-wrapper.jar sigue sin existir, descargalo:
-# Linux / Git Bash
-curl -sL "https://raw.githubusercontent.com/gradle/gradle/v8.7.0/gradlew" -o gradlew
-chmod +x gradlew
-curl -sL "https://raw.githubusercontent.com/gradle/gradle/v8.7.0/gradle/wrapper/gradle-wrapper.jar" -o gradle/wrapper/gradle-wrapper.jar
-
-# Windows (PowerShell)
-Invoke-WebRequest -Uri "https://raw.githubusercontent.com/gradle/gradle/v8.7.0/gradle/wrapper/gradle-wrapper.jar" -OutFile "gradle/wrapper/gradle-wrapper.jar"
-```
-
-### Configuración de base de datos
-
-Las credenciales de PostgreSQL se configuran en `back/src/main/resources/application.properties`:
-
-```properties
-spring.datasource.url=jdbc:postgresql://localhost:5433/foodstore
-spring.datasource.username=postgres
-spring.datasource.password=postgres
-```
-
-Si tus credenciales son distintas, ajustalas ahí.
-
-### Frontend
 ```bash
 cd client
 npm install
-npm run dev
-# Abrir en http://localhost:5173
+npm run dev        # http://localhost:5173
 ```
 
-### API Documentation (una vez iniciado el backend)
-- Swagger UI: http://localhost:8080/swagger-ui/index.html
-- OpenAPI spec: http://localhost:8080/api-docs
+### 4. Verificar
+
+```bash
+# Swagger UI
+open http://localhost:8080/swagger-ui/index.html
+
+# API
+curl http://localhost:8080/v3/api-docs
+```
+
+### Seed Data
+
+Al iniciar por primera vez, se crea automáticamente:
+
+| Rol | Email | Password |
+|-----|-------|----------|
+| **ADMIN** | `admin@admin.com` | `123456` |
 
 ---
 
 ## Scripts
 
 ### Frontend
-```bash
-cd client
-npm run dev        # Desarrollo con hot reload
-npm run build      # Compilar para producción
-npm run preview    # Previsualizar build
-npm run typecheck  # TypeScript type checking
-```
+
+| Comando | Descripción |
+|---------|-------------|
+| `npm run dev` | Desarrollo con hot reload |
+| `npm run build` | Compilar para producción |
+| `npm run preview` | Previsualizar build |
+| `npm test` | Ejecutar tests (Vitest) |
 
 ### Backend
-```bash
-cd back
-./gradlew bootRun      # Iniciar servidor
-./gradlew build         # Compilar + tests
-./gradlew test          # Ejecutar tests
-./gradlew compileJava   # Verificar que compila
-```
+
+| Comando | Descripción |
+|---------|-------------|
+| `./gradlew bootRun` | Iniciar servidor |
+| `./gradlew build` | Compilar + ejecutar tests |
+| `./gradlew test` | Solo tests |
+| `./gradlew compileJava` | Solo compilar |
 
 ---
 
-## Documentación del Proyecto
+## API Endpoints
+
+Base path: `/api/v1`
+
+### Auth (público)
+| Método | Endpoint |
+|--------|----------|
+| POST | `/auth/login` |
+| POST | `/auth/register` |
+
+### Productos
+| Método | Endpoint | Acceso |
+|--------|----------|--------|
+| GET | `/productos` | Authenticated |
+| GET | `/productos/{id}` | Authenticated |
+| GET | `/productos/categoria/{id}` | Authenticated |
+| POST | `/productos` | ADMIN |
+| POST | `/productos/validate` | Authenticated |
+
+### Categorías
+| Método | Endpoint | Acceso |
+|--------|----------|--------|
+| GET | `/categorias` | Authenticated |
+| POST / PUT / DELETE | `/categorias/{id}` | ADMIN |
+
+### Pedidos
+| Método | Endpoint | Acceso |
+|--------|----------|--------|
+| POST | `/pedidos` | USUARIO |
+| GET | `/pedidos` | ADMIN |
+| GET | `/pedidos/usuario` | Authenticated (propios) |
+| PATCH | `/pedidos/{id}/cancelar` | Owner o ADMIN |
+| PATCH | `/pedidos/{id}/estado` | ADMIN |
+
+### Usuarios (todos ADMIN)
+| Método | Endpoint |
+|--------|----------|
+| GET | `/usuarios` |
+| PUT | `/usuarios/{id}` |
+| DELETE | `/usuarios/{id}` |
+
+### Admin
+| Método | Endpoint |
+|--------|----------|
+| GET | `/admin/stats` |
+
+---
+
+## Documentación
 
 | Documento | Descripción |
 |-----------|-------------|
-| `docs/Consigna_TPI_Prog-3.md` | Consigna completa con 29 HUs |
-| `docs/prd/back-infrastructure.md` | Base entity, JWT, exceptions, CORS, OpenAPI |
-| `docs/prd/back-auth-jwt.md` | Login/Register con JWT |
-| `docs/prd/back-categories.md` | CRUD categorías |
-| `docs/prd/back-users.md` | CRUD usuarios |
-| `docs/prd/back-products.md` | CRUD productos con categoría |
-| `docs/prd/back-orders.md` | Pedidos con snapshot y control de stock |
-| `docs/prd/front-sync-audit.md` | Relevamiento: qué existe vs qué falta |
-| `docs/prd/front-auth.md` | Login/Register conectado a API |
-| `docs/prd/front-store.md` | Catálogo, carrito, checkout |
-| `docs/prd/front-client-orders.md` | Historial de pedidos del cliente |
-| `docs/prd/front-admin.md` | Dashboard + CRUDs + gestión pedidos |
+| `docs/DOCUMENTACION_TPI.md` | Documentación técnica completa (12 secciones) |
+| `docs/Consigna_TPI_Prog-3.md` | Consigna original con 29 HUs |
+| `docs/prd/` | PRDs por feature (6 documentos) |
 | `client/AGENT.md` | Convenciones de código frontend |
 | `back/AGENT.md` | Convenciones de código backend |
+| `http://localhost:8080/swagger-ui/index.html` | Documentación interactiva de la API |
 
 ---
 
-## Plan de Desarrollo (Sprints)
+## CI/CD
 
-### Sprint 1 — Fundamentos (back-infrastructure + categorías + auth)
-- [ ] HU-023: Entidad Base
-- [ ] HU-024: Repositorio Base
-- [ ] HU-025: Manejo de Excepciones
-- [ ] HU-026: Encriptación BCrypt
-- [ ] HU-001..005: CRUD Categorías
-- [ ] HU-006: Registro de Usuario
-- [ ] HU-027: Carga Inicial (seed)
-- [ ] HU-028: OpenAPI
-- [ ] HU-029: CORS
-- [ ] JWT: Provider, Filter, SecurityConfig
+El workflow de GitHub Actions (`build-and-bootrun.yml`) ejecuta en cada PR:
 
-### Sprint 2 — Usuarios y Productos
-- [ ] HU-007..010: CRUD Usuarios
-- [ ] HU-011..016: CRUD Productos
-
-### Sprint 3 — Pedidos y Frontend
-- [ ] HU-017..022: CRUD Pedidos
-- [ ] Frontend: store, client orders, admin panel
+| Job | Descripción |
+|-----|-------------|
+| `build-and-bootrun` | Backend: compila + tests + smoke test |
+| `frontend` | Frontend: `npm ci` → `tsc --noEmit` → `npm run build` |
 
 ---
 
-## PRDs
+## Testing
 
-Todos los PRDs están en `docs/prd/`. Cada uno detalla:
-- Clases / componentes involucrados
-- Flujos de usuario (mermaid)
-- Validaciones y reglas de negocio
-- API contracts (request/response)
-- DoD con testing
-- Dependencias
+```bash
+# Backend (21 tests)
+cd back && ./gradlew test
 
----
-
-## Alumno
-
-**Pablo Garay**  
-Universidad Tecnológica Nacional — Programación III
+# Frontend (14 tests)
+cd client && npm test
+```
